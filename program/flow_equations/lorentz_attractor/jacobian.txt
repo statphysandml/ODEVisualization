@@ -1,0 +1,1 @@
+List[List[-10.`, 10.`, 0], List[Plus[28.`, Times[-1, z[k]]], -1, Times[-1, x[k]]], List[y[k], x[k], Rational[-8, 3]]]

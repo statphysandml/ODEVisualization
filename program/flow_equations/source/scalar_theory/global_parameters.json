@@ -1,0 +1,18 @@
+{
+    "dim": 10,
+    "theory": "scalar_theory",
+    "explicit_variable": "k",
+    "explicit_functions": [
+        "j",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h",
+        "i",
+        "a"
+    ],
+    "k": 1
+}

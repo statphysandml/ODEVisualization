@@ -1,0 +1,20 @@
+{
+    "dim": 12,
+    "theory": "small_three_level_system",
+    "explicit_variable": "k",
+    "explicit_functions": [
+        "gere",
+        "grre",
+        "egre",
+        "erre",
+        "rgre",
+        "rere",
+        "geim",
+        "grim",
+        "egim",
+        "erim",
+        "rgim",
+        "reim"
+    ],
+    "k": 1
+}

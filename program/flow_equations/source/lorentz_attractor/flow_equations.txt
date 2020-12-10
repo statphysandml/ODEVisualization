@@ -1,0 +1,1 @@
+List[Equal[Derivative[1][x][k], Times[10.`, Plus[Times[-1, x[k]], y[k]]]], Equal[Derivative[1][y][k], Plus[Times[-1, y[k]], Times[x[k], Plus[28.`, Times[-1, z[k]]]]]], Equal[Derivative[1][z][k], Plus[Times[x[k], y[k]], Times[Rational[-8, 3], z[k]]]]]

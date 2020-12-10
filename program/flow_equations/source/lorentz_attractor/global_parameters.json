@@ -1,0 +1,11 @@
+{
+    "dim": 3,
+    "theory": "lorentz_attractor",
+    "explicit_variable": "k",
+    "explicit_functions": [
+        "x",
+        "y",
+        "z"
+    ],
+    "k": 1
+}

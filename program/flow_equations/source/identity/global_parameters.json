@@ -1,0 +1,11 @@
+{
+    "dim": 5,
+    "theory": "identity",
+    "explicit_variable": "k",
+    "explicit_functions": [
+        "a",
+        "b",
+        "c"
+    ],
+    "k": 1
+}
