@@ -30,3 +30,13 @@ doc/source/*
 __pychache__/
 
 projects/*
+program/*
+build/*
+install/*
+.vscode/*
+
+examples/Testing/*
+!examples/Testing/CMakeLists.txt
+!examples/Testing/include
+!examples/Testing/src
+config.h
