@@ -1,8 +1,8 @@
 #include "../../include/hypercubes/hypercubes.hpp"
 
-HyperCubes::HyperCubes(const cudaT k_, const std::vector< std::vector<int> > n_branches_per_depth_,
+HyperCubes::HyperCubes(const std::vector< std::vector<int> > n_branches_per_depth_,
     const std::vector <std::pair<cudaT, cudaT> > lambda_ranges_) :
-    dim(lambda_ranges_.size()), k(k_),
+    dim(lambda_ranges_.size()),
     n_branches_per_depth(n_branches_per_depth_),
     accum_n_branches_per_dim(HyperCubes::compute_accum_n_branches_per_dim(n_branches_per_depth_, lambda_ranges_.size())),
     accum_n_branches_per_depth(HyperCubes::compute_accum_n_branches_per_depth(n_branches_per_depth_, lambda_ranges_.size())),
@@ -78,7 +78,7 @@ void HyperCubes::compute_summed_positive_signs_per_cube(dev_vec_bool &velocity_s
 //]
 
 GridComputationWrapper HyperCubes::generate_and_linearize_nodes(const int total_number_of_cubes, const int maximum_depth,
-        const std::vector<Node* > &nodes_to_be_computed) const
+        const std::vector<Node*> &nodes_to_be_computed) const
 {
     NodesExpander nodesexpander(total_number_of_cubes, maximum_depth, nodes_to_be_computed);
 
@@ -280,16 +280,16 @@ void HyperCubes::compute_cube_center_vertices(GridComputationWrapper &grcompwrap
     vertex_mode = CenterVertices;
 }
 
-void HyperCubes::determine_vertex_velocities(FlowEquationsWrapper * flow_equations)
+/* void HyperCubes::determine_vertex_velocities(FlowEquationsWrapper * flow_equations)
 {
-    vertex_velocities = compute_vertex_velocities(vertices, flow_equations);
+    vertex_velocities = compute_vertex_velocities(vertices, flow_equations); */
     // Testing
     /* if(monitor)
         for(auto dim_index = 0; dim_index < dim; dim_index++)
             print_range("Vertex velocities in dimension " + std::to_string(dim_index + 1), vertex_velocities[dim_index].begin(), vertex_velocities[dim_index].end()); */
-}
+// }
 
-thrust::host_vector<int> HyperCubes::determine_potential_fixed_points()
+thrust::host_vector<int> HyperCubes::determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities)
 {
     if (vertex_mode != CubeVertices and vertex_mode != CenterVertices)
     {
@@ -362,10 +362,10 @@ const odesolver::DevDatC& HyperCubes::get_vertices() const
     return vertices;
 }
 
-const odesolver::DevDatC& HyperCubes::get_vertex_velocities() const
+/* const odesolver::DevDatC& HyperCubes::get_vertex_velocities() const
 {
     return vertex_velocities;
-}
+} */
 
 // Test function
 

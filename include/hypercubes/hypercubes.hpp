@@ -28,7 +28,7 @@ class HyperCubes
 {
 public:
     // Base constructor
-    HyperCubes(const cudaT k_, const std::vector< std::vector<int> > n_branches_per_depth_,
+    HyperCubes(const std::vector< std::vector<int> > n_branches_per_depth_,
                const std::vector <std::pair<cudaT, cudaT> > lambda_ranges_);
 
     // ToDo: Add rule of five
@@ -57,12 +57,12 @@ public:
     void compute_reference_vertices(GridComputationWrapper &grcompwrap);
     void compute_cube_center_vertices(GridComputationWrapper &grcompwrap);
 
-    void determine_vertex_velocities(FlowEquationsWrapper * flow_equations);
+    // void determine_vertex_velocities(FlowEquationsWrapper * flow_equations);
 
-    thrust::host_vector<int> determine_potential_fixed_points();
+    thrust::host_vector<int> determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities);
 
     const odesolver::DevDatC& get_vertices() const;
-    const odesolver::DevDatC& get_vertex_velocities() const;
+    // const odesolver::DevDatC& get_vertex_velocities() const;
 
     // Function for testing if project_coordinates_on_expanded_cube_and_depth_per_cube_indices works
     // Todo: To be implemented
@@ -71,7 +71,6 @@ public:
 protected:
     // Constants
     const uint8_t dim;
-    const cudaT k;
 
     const std::vector< std::vector<int> > n_branches_per_depth;
     const thrust::host_vector< thrust::host_vector<int> > accum_n_branches_per_dim;
@@ -81,7 +80,7 @@ protected:
     // Variables defined depending on your usage
     int total_number_of_cubes;
     odesolver::DevDatC vertices; // (total_number_of_cubes x n_cube) x dim (len = dim) OR total_number_of_cubes x dim (len = dim)
-    odesolver::DevDatC vertex_velocities; // (total_number_of_cubes x n_cube) x dim (len = dim) OR total_number_of_cubes x dim (len = dim)
+    // odesolver::DevDatC vertex_velocities; // (total_number_of_cubes x n_cube) x dim (len = dim) OR total_number_of_cubes x dim (len = dim)
 
     // Possible modes -> correspond to different possible usages of hypercubes
     enum VertexMode { CubeVertices, ReferenceVertices, CenterVertices};

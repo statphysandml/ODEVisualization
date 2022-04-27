@@ -8,21 +8,27 @@
 #include <vector>
 #include <string>
 
+#include <param_helper/json.hpp>
+
 #include "../odesolver/util/header.hpp"
 #include "../odesolver/util/dev_dat.hpp"
+
+using json = nlohmann::json;
 
 class FlowEquationsWrapper
 {
 public:
-    static FlowEquationsWrapper * make_flow_equation(std::string theory);
-
     virtual void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables, const int dim_index) = 0;
+    
     virtual uint8_t get_dim() = 0;
-    virtual bool pre_installed_theory() = 0;
+
+    virtual json get_json() const {
+        return {};
+    }
 
     static std::string name()
     {
-        return "FlowEquationsWrapper";
+        return "flow_equation";
     }
 };
 
@@ -30,5 +36,14 @@ struct FlowEquation
 {
     virtual void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) = 0;
 };
+
+template<typename FlowEquations, typename... Args>
+std::shared_ptr<FlowEquationsWrapper> generate_flow_equations(Args... args)
+{
+    return std::make_shared<FlowEquations>(FlowEquations(args...));
+}
+
+/* Operations that can be applied on both, vertices as well as regular coordinates */
+odesolver::DevDatC compute_vertex_velocities(const odesolver::DevDatC &coordinates, FlowEquationsWrapper * flow_equations);
 
 #endif //PROJECT_FLOW_EQUATION_HPP

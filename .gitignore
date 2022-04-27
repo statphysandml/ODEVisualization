@@ -40,3 +40,9 @@ examples/Testing/*
 !examples/Testing/include
 !examples/Testing/src
 config.h
+
+examples/LorentzAttractor/*
+!examples/LorentzAttractor/CMakeLists.txt
+!examples/LorentzAttractor/include
+!examples/LorentzAttractor/src
+config.h

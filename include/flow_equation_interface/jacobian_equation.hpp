@@ -8,20 +8,24 @@
 #include <vector>
 #include <string>
 
+#include <param_helper/json.hpp>
+
 #include "../odesolver/util/header.hpp"
 #include "../odesolver/util/dev_dat.hpp"
+
+using json = nlohmann::json;
 
 class JacobianWrapper
 {
 public:
-    static JacobianWrapper * make_jacobian(std::string theory);
-
     virtual void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables, const int row_idx, const int col_idx) = 0;
+    
     virtual void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables, const int matrix_idx) = 0;
+    
     virtual uint8_t get_dim() = 0;
-    static std::string name()
-    {
-        return "JacobianWrapper";
+    
+    virtual json get_json() const {
+        return {};
     }
 };
 

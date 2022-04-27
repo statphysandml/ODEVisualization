@@ -32,7 +32,4 @@ struct FlowEquationSystem
     uint8_t dim;
 };
 
-/* Operations that can be applied on both, vertices as well as regular coordinates */
-odesolver::DevDatC compute_vertex_velocities(const odesolver::DevDatC &coordinates, FlowEquationsWrapper * flow_equations);
-
 #endif //PROGRAM_FLOW_EQUATION_SYSTEM_HPP

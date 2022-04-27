@@ -23,9 +23,9 @@ public:
         nodes.push_back(node);
     }
 
-    std::tuple< std::vector<Node* >, int, int > get_first_nodes(const int number_of_cubes);
+    std::tuple<std::vector<Node*>, int, int> get_first_nodes(const int number_of_cubes);
 
-    void add_nodes(std::vector<Node* > new_nodes)
+    void add_nodes(std::vector<Node*> new_nodes)
     {
         // append new_nodes to nodes
         nodes.insert(nodes.end(), new_nodes.begin(), new_nodes.end());
@@ -35,13 +35,13 @@ public:
         return nodes.size();
     }
 
-    static void get_nodes_info(const std::vector<Node* > &nodes_)
+    static void get_nodes_info(const std::vector<Node*> &nodes_)
     {
         std::for_each(nodes_.begin(), nodes_.end(), [](Node* const& node) { node->info(); });
     }
 
 private:
-    std::vector<Node* > nodes;
+    std::vector<Node*> nodes;
     int initial_number_of_nodes_in_depth_zero;
 };
 

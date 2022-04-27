@@ -1,7 +1,6 @@
 add_library(odevisualisationlib STATIC
     flow_equation_interface/flow_equation.cu
-    flow_equation_interface/jacobian_equation.cu
-    flow_equation_interface/flow_equation_system.cu
+    # flow_equation_interface/jacobian_equation.cu
     # executer.cu
     hypercubes/hypercubes.cu
     hypercubes/node.cu

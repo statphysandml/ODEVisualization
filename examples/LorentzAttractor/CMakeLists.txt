@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # Set a name and a version number for your project:
-project(Testing VERSION 0.0.1 LANGUAGES CXX CUDA)
+project(LorentzAttractor VERSION 0.0.1 LANGUAGES CXX CUDA)
 
 # Initialize some default paths
 include(GNUInstallDirs)
@@ -76,21 +76,22 @@ include(FeatureSummary)
 feature_summary(WHAT ALL)
 
 add_executable(
-    Testing
+    LorentzAttractor
     src/main.cpp
     src/dev_dat_t.cu
     src/fixed_point_search_t.cu
-    flow_equations/three_point_system/three_point_system_flow_equation.cu
+    flow_equations/lorentz_attractor/lorentz_attractor_flow_equation.cu
 )
 
 if(RUN_WITH_PYTHON_BACKEND)
-    target_compile_definitions(Testing PUBLIC PYTHON_BACKEND)
+    target_compile_definitions(LorentzAttractor PUBLIC PYTHON_BACKEND)
 endif()
 
 if(GPU)
-    target_compile_definitions(Testing PUBLIC -D GPU)
+    target_compile_definitions(LorentzAttractor PUBLIC -D GPU)
 endif()
 
-target_compile_options(Testing PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
-set_target_properties(Testing PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_STANDARD 14)
-target_link_libraries(Testing PUBLIC odevisualisationlib::odevisualisationlib ${target_link_libraries_python_appendix})
+target_compile_options(LorentzAttractor PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
+
+set_target_properties(LorentzAttractor PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_STANDARD 14)
+target_link_libraries(LorentzAttractor PUBLIC odevisualisationlib::odevisualisationlib ${target_link_libraries_python_appendix})

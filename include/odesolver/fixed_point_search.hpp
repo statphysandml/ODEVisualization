@@ -16,8 +16,7 @@
 #include "hypercubes/hypercubes.hpp"
 #include "hypercubes/leaf.hpp"
 #include "util/helper_functions.hpp"
-#include "util/frgvisualization_parameters.hpp"
-#include "util/path_parameters.hpp"
+#include "util/ode_visualisation.hpp"
 // ## ToDo: Reinclude - Commented during reodering #include "coordinate_operator.hpp"
 
 #include <param_helper/json.hpp>
@@ -25,33 +24,36 @@
 using json = nlohmann::json;
 
 
-class FixedPointSearch : public FRGVisualizationParameters
+class FixedPointSearch : public ODEVisualisation
 {
 public:
     // From config
-    explicit FixedPointSearch(const json params, const PathParameters path_parameters);
+    explicit FixedPointSearch(
+        const json params,
+        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr_,
+        std::shared_ptr<JacobianWrapper> jacobians_ptr=nullptr,
+        const std::string computation_parameters_path=param_helper::proj::project_root()
+    );
 
     // From file
-    FixedPointSearch(
-        const std::string theory,
-        const std::string mode_type,
-        const std::string results_dir,
-        const std::string root_dir="/data/",
-        const bool relative_path=true
+    static FixedPointSearch from_file(
+        const std::string rel_config_dir,
+        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr_,
+        std::shared_ptr<JacobianWrapper> jacobians_ptr=nullptr,
+        const std::string computation_parameters_path=param_helper::proj::project_root()
     );
 
     // From parameters
-    FixedPointSearch(
-            const std::string theory,
-            const int maximum_recursion_depth,
-            const std::vector< std::vector<int> > n_branches_per_depth,
-            const std::vector <std::pair<cudaT, cudaT> > lambda_ranges,
-            const std::string mode="fixed_point_search", // default mode
-            const std::string root_dir="/data/",
-            const bool relative_path=true
+    static FixedPointSearch from_parameters(
+        const int maximum_recursion_depth,
+        const std::vector<std::vector<int>> n_branches_per_depth,
+        const std::vector<std::pair<cudaT, cudaT>> lambda_ranges,
+        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr_,
+        std::shared_ptr<JacobianWrapper> jacobians_ptr=nullptr,
+        const std::string computation_parameters_path=param_helper::proj::project_root()
     );
 
-    struct ClusterParameters : public Parameters
+    struct ClusterParameters : public param_helper::params::Parameters
     {
         ClusterParameters(const json params);
 
@@ -88,35 +90,32 @@ public:
 
     // Getter functions
 
-    std::vector< Leaf* > get_solutions();
+    std::vector<Leaf*> get_solutions();
     odesolver::DevDatC get_fixed_points() const;
 
     // File interactions
 
-    void compute_and_write_fixed_point_characteristics_to_file(std::string dir);
+    void compute_and_write_fixed_point_characteristics_to_file(std::string rel_dir);
 
-    void write_solutions_to_file(std::string dir) const;
-    void load_solutions_from_file(std::string dir);
+    void write_solutions_to_file(std::string rel_dir) const;
+    void load_solutions_from_file(std::string rel_dir);
 
-    void write_fixed_points_to_file(std::string dir) const;
-    void load_fixed_points_from_file(std::string dir);
+    void write_fixed_points_to_file(std::string rel_dir) const;
+    void load_fixed_points_from_file(std::string rel_dir);
 
 private:
     uint dim_;
     int maximum_recursion_depth_;
-    cudaT k_;
 
-    std::vector< std::vector<int> > n_branches_per_depth_;
-    std::vector <std::pair<cudaT, cudaT> > lambda_ranges_;
-
-    FlowEquationsWrapper * flow_equations_;
+    std::vector<std::vector<int>> n_branches_per_depth_;
+    std::vector<std::pair<cudaT, cudaT>> lambda_ranges_;
 
     Buffer buffer_;
     std::vector<Leaf*> solutions_;
     odesolver::DevDatC fixed_points_;
 
     // Iterate over nodes and generate new nodes based on the indices of pot fixed points
-    std::tuple< std::vector<Node* >, std::vector< Leaf* > > generate_new_nodes_and_leaves(const thrust::host_vector<int> &host_indices_of_pot_fixed_points, const std::vector< Node* > &nodes);
+    std::tuple<std::vector<Node*>, std::vector<Leaf*>> generate_new_nodes_and_leaves(const thrust::host_vector<int> &host_indices_of_pot_fixed_points, const std::vector< Node* > &nodes);
 
     void run_gpu_computing_task();
 

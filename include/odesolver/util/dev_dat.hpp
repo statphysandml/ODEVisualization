@@ -96,28 +96,25 @@ namespace odesolver {
         // Copy constructor
         DevDat(const DevDat& other) : Vec(other), dim_(other.dim_), N_(other.N_)
         {
-            std::cout << "Copy constructor is called" << std::endl;
+            // std::cout << "Copy constructor is called" << std::endl;
             initialize_dimension_iterators();
         }
 
         // Assignment - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
         DevDat& operator=(DevDat other) {
-            std::cout << "Assignment operator is called" << std::endl;
+            /* std::cout << "Assignment operator is called" << std::endl;
             print_range("This", this->begin(), this->end());
-            print_range("Other", other.begin(), other.end());
-            // thrust::swap(static_cast<Vec&>(*this), static_cast<Vec&>(other));
+            print_range("Other", other.begin(), other.end()); */
             swapp(*this, other);
-            return *this; // = DevDat(other);
+            return *this;
         }
 
         // Move constructor
         DevDat(DevDat&& other) noexcept : DevDat() // initialize via default constructor, C++11 only
         {
-            std::cout << "&& Move operator is called" << std::endl;
+            /* std::cout << "&& Move operator is called" << std::endl;
             print_range("This", this->begin(), this->end());
-            print_range("Other", other.begin(), other.end());
-            // thrust::swap(static_cast<Vec&>(*this), static_cast<Vec&>(other));
-            // Vec::operator=(other);
+            print_range("Other", other.begin(), other.end()); */
             swapp(*this, other);
         }
 

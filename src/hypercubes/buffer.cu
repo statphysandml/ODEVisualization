@@ -38,7 +38,7 @@ std::tuple< std::vector<Node* >, int, int > Buffer::get_first_nodes(const int nu
 
 
     // return first elements till iterator and delete the nodes in the buffer list
-    std::vector<Node* > to_be_returned_nodes(nodes.begin(), node_iterator);
+    std::vector<Node*> to_be_returned_nodes(nodes.begin(), node_iterator);
 
     nodes.erase(nodes.begin(), node_iterator);
 
