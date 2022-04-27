@@ -20,7 +20,7 @@ FixedPointSearch::FixedPointSearch(
                    [] (json &dat) { return dat.get< std::pair<cudaT, cudaT> >(); });
 
     Node * root_node_ptr = new Node(0, compute_internal_end_index(n_branches_per_depth_[0]), std::vector< int >{});
-    buffer_ = Buffer(root_node_ptr);
+    buffer_ = Buffer(std::move(root_node_ptr));
 
     // Tests
     if (n_branches_per_depth_.size() != maximum_recursion_depth_)
@@ -219,7 +219,7 @@ void FixedPointSearch::write_fixed_points_to_file(std::string rel_dir) const
 void FixedPointSearch::load_fixed_points_from_file(std::string rel_dir)
 {
     json j = param_helper::fs::read_parameter_file(param_helper::proj::project_root() + rel_dir + "/", "fixed_points", false);
-    std::vector < std::vector<double> > fixed_points;
+    std::vector<std::vector<double>> fixed_points;
     fixed_points.reserve(j["number_of_fixed_points"].get< int >());
     for(auto &sol: j["fixed_points"])
         fixed_points.push_back(sol.get< std::vector<double> >());
@@ -228,10 +228,10 @@ void FixedPointSearch::load_fixed_points_from_file(std::string rel_dir)
 }
 
 // Iterate over nodes and generate new nodes based on the indices of pot fixed points
-std::tuple<std::vector<Node*>, std::vector<Leaf*>> FixedPointSearch::generate_new_nodes_and_leaves(const thrust::host_vector<int> &host_indices_of_pot_fixed_points, const std::vector<Node*> &nodes)
+void FixedPointSearch::generate_new_nodes_and_leaves(const thrust::host_vector<int> &host_indices_of_pot_fixed_points, const std::vector<Node*> &nodes)
 {
-    std::vector<Node*> new_nodes;
-    std::vector<Leaf*> new_leaves;
+    int n_new_nodes = 0;
+    int n_new_leaves = 0;
 
     // No potential fixed points have been found
     if(host_indices_of_pot_fixed_points.size() > 0)
@@ -258,13 +258,13 @@ std::tuple<std::vector<Node*>, std::vector<Leaf*>> FixedPointSearch::generate_ne
 
                     // Generate new nodes
                     if(node->get_depth() + 1 < maximum_recursion_depth_) {
-                        new_nodes.push_back(
-                                new Node(0, compute_internal_end_index(n_branches_per_depth_[node->get_depth() + 1]),
-                                         parent_cube_indices));
+                        buffer_.append_node(0, compute_internal_end_index(n_branches_per_depth_[node->get_depth() + 1]), parent_cube_indices);
+                        n_new_nodes++;
                     }
                     else // Found solution -> Generate new leaf
                     {
-                        new_leaves.push_back(new Leaf(parent_cube_indices));
+                        solutions_.push_back(new Leaf(parent_cube_indices));
+                        n_new_leaves++;
                     }
                     // Update
                     pot_fixed_point_iterator++;
@@ -276,30 +276,37 @@ std::tuple<std::vector<Node*>, std::vector<Leaf*>> FixedPointSearch::generate_ne
             index_offset += node->get_n_cubes();
         }
 
-        assert(host_indices_of_pot_fixed_points.size() ==  (new_nodes.size() + new_leaves.size()) && "Number of new nodes and number of potential fixed points do not coincide");
+        assert(host_indices_of_pot_fixed_points.size() ==  n_new_nodes + n_new_leaves && "Number of new nodes and number of potential fixed points do not coincide");
     }
-    return std::make_tuple(new_nodes, new_leaves);
+
+    // buffer_.add_nodes(new_nodes);
+    // solutions_.insert(solutions_.end(), new_leaves.begin(), new_leaves.end());
+
+    /* if(monitor) {
+        std::cout << "\n### New nodes" << std::endl;
+        buffer_.get_nodes_info(new_nodes);
+    } */
 }
 
 void FixedPointSearch::run_gpu_computing_task()
 {
-    std::vector<Node*> nodes_to_be_computed;
+    std::vector<Node*> node_package;
     int total_number_of_cubes = 0;
     int maximum_depth = 0;
 
     // Get nodes for the gpu from buffer
-    std::tie(nodes_to_be_computed, total_number_of_cubes, maximum_depth) = buffer_.get_first_nodes(computation_parameters_.number_of_cubes_per_gpu_call_);
+    std::tie(node_package, total_number_of_cubes, maximum_depth) = buffer_.get_first_nodes(computation_parameters_.number_of_cubes_per_gpu_call_);
 
     if(monitor) {
-        std::cout << "\n### Nodes for the qpu: " << nodes_to_be_computed.size() << ", total number of cubes: "
+        std::cout << "\n### Nodes for the qpu: " << node_package.size() << ", total number of cubes: "
                   << total_number_of_cubes << std::endl;
-        buffer_.get_nodes_info(nodes_to_be_computed);
+        buffer_.get_nodes_info(node_package);
     }
 
     HyperCubes hypercubes(n_branches_per_depth_, lambda_ranges_);
 
     // Use helper class to perform gpu tasks on nodes
-    GridComputationWrapper grcompwrap = hypercubes.generate_and_linearize_nodes(total_number_of_cubes, maximum_depth, nodes_to_be_computed);
+    GridComputationWrapper grcompwrap = hypercubes.generate_and_linearize_nodes(total_number_of_cubes, maximum_depth, node_package);
 
     // Compute the actual vertices by first expanding each cube according to the number of vertices to
     // a vector of reference vertices of length total_number_of_cubes*dim and then computing the indices
@@ -315,19 +322,10 @@ void FixedPointSearch::run_gpu_computing_task()
     thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes.determine_potential_fixed_points(vertex_velocities);
 
     // Generate new nodes and derive solutions based on nodes and indices of potential fixed points
-    std::vector< Node* > new_nodes;
-    std::vector< Leaf* > new_leaves;
-    std::tie(new_nodes, new_leaves) = generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, nodes_to_be_computed);
-    buffer_.add_nodes(new_nodes);
-    solutions_.insert(solutions_.end(), new_leaves.begin(), new_leaves.end());
-
-    if(monitor) {
-        std::cout << "\n### New nodes" << std::endl;
-        buffer_.get_nodes_info(new_nodes);
-    }
+    generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, node_package);
 
     // Delete evaluated nodes
-    for(auto &node : nodes_to_be_computed)
+    for(auto &node : node_package)
     {
         --NodeCounter<Node>::objects_alive[node->get_depth()];
         delete node;

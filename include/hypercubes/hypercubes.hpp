@@ -42,7 +42,7 @@ public:
     // Main Function for node expansion- Executes extract_node_information and expand_node_information_according_to_number_of_nodes to
     // return expanded_cube_indices_ptr and expanded_depth_per_cube_ptr for further computation
     GridComputationWrapper generate_and_linearize_nodes(const int total_number_of_cubes, const int maximum_depth,
-                                                        const std::vector<Node* > &nodes_to_be_computed) const;
+                                                        const std::vector<Node* > &node_package) const;
 
     // Further (simpler functions for generating grid computation wrapper from other resources
 

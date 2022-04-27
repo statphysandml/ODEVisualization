@@ -422,23 +422,23 @@ HyperCubes * Visualization::compute_vertex_velocities_of_sub_problem(
         Buffer * buffer_ptr,
         const std::vector <std::pair<cudaT, cudaT> > lambda_ranges)
 {
-    std::vector< Node* > nodes_to_be_computed;
+    std::vector< Node* > node_package;
     int total_number_of_cubes = 0;
     int maximum_depth = 0;
 
     // Get nodes for the gpu from buffer
-    std::tie(nodes_to_be_computed, total_number_of_cubes, maximum_depth) = buffer_ptr->get_first_nodes(number_of_cubes_per_gpu_call);
+    std::tie(node_package, total_number_of_cubes, maximum_depth) = buffer_ptr->get_first_nodes(number_of_cubes_per_gpu_call);
 
     if(monitor) {
-        std::cout << "\n### Nodes for the qpu: " << nodes_to_be_computed.size() << ", total number of cubes: "
+        std::cout << "\n### Nodes for the qpu: " << node_package.size() << ", total number of cubes: "
                   << total_number_of_cubes << std::endl;
-        buffer_ptr->get_nodes_info(nodes_to_be_computed);
+        buffer_ptr->get_nodes_info(node_package);
     }
 
     auto * hypercubes_ptr = new HyperCubes(vp.k, std::vector< std::vector<int> > {vp.n_branches}, lambda_ranges);
 
     // Use helper class to perform gpu tasks on nodes
-    GridComputationWrapper grcompwrap = hypercubes_ptr->generate_and_linearize_nodes(total_number_of_cubes, maximum_depth, nodes_to_be_computed);
+    GridComputationWrapper grcompwrap = hypercubes_ptr->generate_and_linearize_nodes(total_number_of_cubes, maximum_depth, node_package);
 
     // Compute the actual vertices by first expanding each cube according to the number of vertices to
     // a vector of reference vertices of length total_number_of_cubes*dim and then computing the indices

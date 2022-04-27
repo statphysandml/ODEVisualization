@@ -115,7 +115,7 @@ private:
     odesolver::DevDatC fixed_points_;
 
     // Iterate over nodes and generate new nodes based on the indices of pot fixed points
-    std::tuple<std::vector<Node*>, std::vector<Leaf*>> generate_new_nodes_and_leaves(const thrust::host_vector<int> &host_indices_of_pot_fixed_points, const std::vector< Node* > &nodes);
+    void generate_new_nodes_and_leaves(const thrust::host_vector<int> &host_indices_of_pot_fixed_points, const std::vector<Node*> &nodes);
 
     void run_gpu_computing_task();
 

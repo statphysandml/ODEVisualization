@@ -78,9 +78,9 @@ void HyperCubes::compute_summed_positive_signs_per_cube(dev_vec_bool &velocity_s
 //]
 
 GridComputationWrapper HyperCubes::generate_and_linearize_nodes(const int total_number_of_cubes, const int maximum_depth,
-        const std::vector<Node*> &nodes_to_be_computed) const
+        const std::vector<Node*> &node_package) const
 {
-    NodesExpander nodesexpander(total_number_of_cubes, maximum_depth, nodes_to_be_computed);
+    NodesExpander nodesexpander(total_number_of_cubes, maximum_depth, node_package);
 
     // Fill vectors of length number of nodes
     nodesexpander.extract_node_information();

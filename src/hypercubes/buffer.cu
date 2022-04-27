@@ -23,6 +23,7 @@ std::tuple< std::vector<Node* >, int, int > Buffer::get_first_nodes(const int nu
         node_iterator++;
     }
 
+    // Divide last node into two nodes so that the total_number_of_cubes doesn't exceed the desired number_of_cubes
     if(total_number_of_cubes > number_of_cubes)
     {
         // Iterate back
@@ -38,14 +39,14 @@ std::tuple< std::vector<Node* >, int, int > Buffer::get_first_nodes(const int nu
 
 
     // return first elements till iterator and delete the nodes in the buffer list
-    std::vector<Node*> to_be_returned_nodes(nodes.begin(), node_iterator);
+    std::vector<Node*> node_package(nodes.begin(), node_iterator);
 
     nodes.erase(nodes.begin(), node_iterator);
 
     // std::cout << "\n### To be returned nodes" << std::endl;
-    // get_nodes_info(to_be_returned_nodes);
+    // get_nodes_info(node_package);
     //std::cout << "\n### Nodes after erase" << std::endl;
     //get_nodes_info(nodes);
 
-    return std::make_tuple(to_be_returned_nodes, total_number_of_cubes, maximum_depth);
+    return std::make_tuple(node_package, total_number_of_cubes, maximum_depth);
 }

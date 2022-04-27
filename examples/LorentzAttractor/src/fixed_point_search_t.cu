@@ -3,14 +3,14 @@
 
 void find_fixed_points()
 {
-    const int maximum_recursion_depth = 18;
+    const int maximum_recursion_depth = 3;
     const std::vector< std::vector<int> > n_branches_per_depth = std::vector< std::vector<int> > {
-            std::vector<int> {20, 20, 20}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
+            std::vector<int> {4, 4, 4}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}/*,
             std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
             std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
             std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
             std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
-            std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}};
+            std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}*/};
     // mu, lambda, g
     const std::vector <std::pair<cudaT, cudaT> > lambda_ranges = std::vector <std::pair<cudaT, cudaT> > {
             std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-1.0, 31.0)};
@@ -23,7 +23,7 @@ void find_fixed_points()
     );
 
     // Setting gpu specfic computation parameters (optional) - parameters are already set default
-    const int number_of_cubes_per_gpu_call = 2000000;
+    const int number_of_cubes_per_gpu_call = 20000;
     const int maximum_number_of_gpu_calls = 1000;
     fixed_point_search.set_computation_parameters(
             number_of_cubes_per_gpu_call,

@@ -25,10 +25,10 @@ public:
 
     std::tuple<std::vector<Node*>, int, int> get_first_nodes(const int number_of_cubes);
 
-    void add_nodes(std::vector<Node*> new_nodes)
+    void append_node(const int internal_start_index, int internal_end_index, const std::vector< int > parent_cube_indices)
     {
         // append new_nodes to nodes
-        nodes.insert(nodes.end(), new_nodes.begin(), new_nodes.end());
+        nodes.push_back(new Node(internal_start_index, internal_end_index, parent_cube_indices));
     }
 
     size_t len() const {

@@ -19,8 +19,11 @@
 class NodesExpander
 {
 public:
-    NodesExpander(const int total_number_of_cubes_, const int maximum_depth_,
-               const std::vector<Node* > &nodes_);
+    NodesExpander(
+        const int total_number_of_cubes_,
+        const int maximum_depth_,
+        const std::vector<Node* > &nodes_
+    );
 
     // Fills based on the nodes the given arrays for a later computation of vertices
     /* Example output
