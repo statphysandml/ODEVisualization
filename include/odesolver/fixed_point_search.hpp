@@ -1,7 +1,3 @@
-//
-// Created by lukas on 13.03.19.
-//
-
 #ifndef PROJECT_FIXEDPOINTSEARCH_HPP
 #define PROJECT_FIXEDPOINTSEARCH_HPP
 
@@ -17,7 +13,7 @@
 #include "hypercubes/leaf.hpp"
 #include "util/helper_functions.hpp"
 #include "util/ode_visualisation.hpp"
-// ## ToDo: Reinclude - Commented during reodering #include "coordinate_operator.hpp"
+#include "util/json_conversions.hpp"
 
 #include <param_helper/json.hpp>
 
@@ -30,16 +26,16 @@ public:
     // From config
     explicit FixedPointSearch(
         const json params,
-        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr_,
-        std::shared_ptr<JacobianWrapper> jacobians_ptr=nullptr,
+        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr,
+        std::shared_ptr<JacobianEquationWrapper> jacobians_ptr=nullptr,
         const std::string computation_parameters_path=param_helper::proj::project_root()
     );
 
     // From file
     static FixedPointSearch from_file(
         const std::string rel_config_dir,
-        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr_,
-        std::shared_ptr<JacobianWrapper> jacobians_ptr=nullptr,
+        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr,
+        std::shared_ptr<JacobianEquationWrapper> jacobians_ptr=nullptr,
         const std::string computation_parameters_path=param_helper::proj::project_root()
     );
 
@@ -48,8 +44,8 @@ public:
         const int maximum_recursion_depth,
         const std::vector<std::vector<int>> n_branches_per_depth,
         const std::vector<std::pair<cudaT, cudaT>> lambda_ranges,
-        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr_,
-        std::shared_ptr<JacobianWrapper> jacobians_ptr=nullptr,
+        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr,
+        std::shared_ptr<JacobianEquationWrapper> jacobians_ptr=nullptr,
         const std::string computation_parameters_path=param_helper::proj::project_root()
     );
 
@@ -73,11 +69,6 @@ public:
         const uint maximum_number_of_iterations_;
     };
 
-    ~FixedPointSearch()
-    {
-        clear_solutions();
-    }
-
     // Main function
 
     void find_fixed_point_solutions();
@@ -90,12 +81,10 @@ public:
 
     // Getter functions
 
-    std::vector<Leaf*> get_solutions();
+    std::vector<std::shared_ptr<Leaf>> get_solutions();
     odesolver::DevDatC get_fixed_points() const;
 
     // File interactions
-
-    void compute_and_write_fixed_point_characteristics_to_file(std::string rel_dir);
 
     void write_solutions_to_file(std::string rel_dir) const;
     void load_solutions_from_file(std::string rel_dir);
@@ -111,15 +100,15 @@ private:
     std::vector<std::pair<cudaT, cudaT>> lambda_ranges_;
 
     Buffer buffer_;
-    std::vector<Leaf*> solutions_;
+    std::vector<std::shared_ptr<Leaf>> solutions_;
     odesolver::DevDatC fixed_points_;
 
     // Iterate over nodes and generate new nodes based on the indices of pot fixed points
     void generate_new_nodes_and_leaves(const thrust::host_vector<int> &host_indices_of_pot_fixed_points, const std::vector<Node*> &nodes);
 
     void run_gpu_computing_task();
-
-    void clear_solutions();
 };
+
+std::vector<std::vector<double>> load_fixed_points(std::string rel_dir);
 
 #endif //PROJECT_FIXEDPOINTSEARCH_HPP

@@ -3,9 +3,10 @@
 #include <odesolver/util/python_integration.hpp>
 
 // #include "../include/dev_dat_t.hpp"
-// #include "../flow_equations/three_point_system/three_point_system_jacobian.hpp"
-#include "../include/fixed_point_search_t.hpp"
+#include "../include/full_example.hpp"
+// #include "../include/flow_equations_t.hpp"
 
+#include "../include/evaluate_t.hpp"
 
 int main(int argc, char **argv) {
     // Initialize project dependent parameters
@@ -24,7 +25,17 @@ int main(int argc, char **argv) {
     // testing_devdat();
     // fixed_point_search();
     // fixed_points_search();
+    // find_fixed_points();
+    // compute_vertex_velocities_t();
+    
+    /* auto jacobian_elements = compute_jacobian_elements_t();
+    auto jac = Jacobians(jacobian_elements);
+    jac.compute_characteristics(); */
+
+    // evaluate_velocities_and_jacobians();
     find_fixed_points();
+    evaluate_fixed_points();
+
 
     // Finalization
 #ifdef PYTHON_BACKEND

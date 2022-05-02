@@ -20,7 +20,7 @@ class FlowEquationsWrapper
 public:
     virtual void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables, const int dim_index) = 0;
     
-    virtual uint8_t get_dim() = 0;
+    virtual size_t get_dim() = 0;
 
     virtual json get_json() const {
         return {};
@@ -40,10 +40,9 @@ struct FlowEquation
 template<typename FlowEquations, typename... Args>
 std::shared_ptr<FlowEquationsWrapper> generate_flow_equations(Args... args)
 {
-    return std::make_shared<FlowEquations>(FlowEquations(args...));
+    return std::make_shared<FlowEquations>(args...);
 }
 
-/* Operations that can be applied on both, vertices as well as regular coordinates */
 odesolver::DevDatC compute_vertex_velocities(const odesolver::DevDatC &coordinates, FlowEquationsWrapper * flow_equations);
 
 #endif //PROJECT_FLOW_EQUATION_HPP

@@ -12,33 +12,33 @@ using json = nlohmann::json;
 class Leaf
 {
 public:
-    Leaf(const std::vector< int > cube_indices_) :
-            cube_indices(cube_indices_), depth(cube_indices_.size() - 1)
+    Leaf(const std::vector<int> cube_indices) :
+            cube_indices_(cube_indices), depth_(cube_indices.size() - 1)
     {}
 
     void info() const {
         std::cout << "\nSolution: " << std::endl;
-        std::cout << "\tDepth: " << depth << std::endl;
+        std::cout << "\tDepth: " << depth_ << std::endl;
         std::cout << "\tCube indices:";
-        for(const auto& cube_index: cube_indices)
+        for(const auto& cube_index: cube_indices_)
             std::cout << " " << cube_index;
         std::cout << std::endl;
     }
 
     int get_ith_cube_depth_index(int i) const
     {
-        return cube_indices[i];
+        return cube_indices_[i];
     }
 
     json to_json() const
     {
-        return json {{"depth", depth},
-                     {"cube_indices", cube_indices}};
+        return json {{"depth", depth_},
+                     {"cube_indices", cube_indices_}};
     }
 
 private:
-    const int depth;
-    const std::vector< int > cube_indices; // root, first cube, second cube, etc.
+    const int depth_;
+    const std::vector<int> cube_indices_; // root, first cube, second cube, etc.
 };
 
 #endif //PROJECT_LEAF_HPP

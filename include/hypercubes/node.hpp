@@ -5,8 +5,9 @@
 #ifndef PROJECT_NODE_HPP
 #define PROJECT_NODE_HPP
 
-#include <numeric>
 #include <iostream>
+#include <numeric>
+#include <memory>
 
 #include "nodecounter.hpp"
 
@@ -17,63 +18,68 @@ int compute_internal_end_index(const std::vector<int> &n_branches);
 class Node : NodeCounter<Node>
 {
 public:
-    Node(const int internal_start_index_, int internal_end_index_, const std::vector< int > parent_cube_indices_) :
-    NodeCounter(parent_cube_indices_.size()),
-    level_node_index(NodeCounter<Node>::objects_created[parent_cube_indices_.size()]),
-    depth(parent_cube_indices_.size()),
-    internal_start_index(internal_start_index_),
-    internal_end_index(internal_end_index_), parent_cube_indices(parent_cube_indices_)
+    Node(const int internal_start_index, int internal_end_index, const std::vector< int > parent_cube_indices) :
+    NodeCounter(parent_cube_indices.size()),
+    level_node_index_(NodeCounter<Node>::objects_created[parent_cube_indices.size()]),
+    depth_(parent_cube_indices.size()),
+    internal_start_index_(internal_start_index),
+    internal_end_index_(internal_end_index), parent_cube_indices_(parent_cube_indices)
     {}
 
-    // Generate a new node and adapt the end index of the current node
-    Node* cut_node(const int cut_index)
+    ~Node()
     {
-        Node * new_node_ptr = new Node(internal_start_index + cut_index + 1, internal_end_index, parent_cube_indices); // internal_start_index has been added recently
-        internal_end_index = internal_start_index + cut_index + 1;
-        return new_node_ptr;
+        --NodeCounter::objects_alive[get_depth()];
+    }
+
+    // Generate a new node and adapt the end index of the current node
+    std::shared_ptr<Node> cut_node(const int cut_index)
+    {
+        std::shared_ptr<Node> new_node_ptr = std::make_shared<Node>(internal_start_index_ + cut_index + 1, internal_end_index_, parent_cube_indices_);
+        internal_end_index_ = internal_start_index_ + cut_index + 1;
+        return std::move(new_node_ptr);
     }
 
     int get_depth() const {
-        return depth;
+        return depth_;
     }
 
     int get_internal_start_index() const {
-        return internal_start_index;
+        return internal_start_index_;
     }
 
     int get_internal_end_index() const {
-        return internal_end_index;
+        return internal_end_index_;
     }
 
     const std::vector<int>& get_parent_cube_indices() const {
-        return parent_cube_indices;
+        return parent_cube_indices_;
     }
 
     int get_n_cubes() const {
-        return internal_end_index - internal_start_index;
+        return internal_end_index_ - internal_start_index_;
     }
 
     void info() const {
-        std::cout << "\n\tLevel node index: " << level_node_index << std::endl;
-        std::cout << "\tInternal start index: " << internal_start_index << std::endl;
-        std::cout << "\tInternal end index: " << internal_end_index << std::endl;
+        std::cout << "\n\tLevel node index: " << level_node_index_ << std::endl;
+        std::cout << "\tInternal start index: " << internal_start_index_ << std::endl;
+        std::cout << "\tInternal end index: " << internal_end_index_ << std::endl;
         std::cout << "\tNumber of cubes: " << get_n_cubes() << std::endl;
-        std::cout << "\tDepth: " << depth << std::endl;
+        std::cout << "\tDepth: " << depth_ << std::endl;
         std::cout << "\tParent cube indices:";
-        for(const auto& parent_cube_index: parent_cube_indices)
+        for(const auto& parent_cube_index: parent_cube_indices_)
             std::cout << " " << parent_cube_index;
         std::cout << std::endl;
     }
 
-    // if max depth -> node is undividable??
+    // if max depth -> node is undiviadble??
 
 private:
-    const int level_node_index; // corresponds to the i-th generated node in that depth
-    const int depth;
-    const std::vector< int > parent_cube_indices; // root, first node, second node, etc.
+    const int level_node_index_; // corresponds to the i-th generated node in that depth
+    const int depth_;
+    const std::vector< int > parent_cube_indices_; // root, first node, second node, etc.
 
-    const int internal_start_index; // inclusive
-    int internal_end_index; // exclusive
+    const int internal_start_index_; // inclusive
+    int internal_end_index_; // exclusive
 };
 
 #endif //PROJECT_NODE_HPP

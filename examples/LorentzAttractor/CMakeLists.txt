@@ -22,6 +22,7 @@ set(PYTHON_SCRIPTS_PATH "./python_scripts" CACHE STRING "Path to the potential p
 
 # Include libraries
 find_package(ParamHelper CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 find_package(ODEVisualisationLib CONFIG REQUIRED)
 
 # SET(CudaUsage "OFF" CACHE STRING "Defines whether code is executed on GPU or CPU with thrust.")
@@ -79,8 +80,11 @@ add_executable(
     LorentzAttractor
     src/main.cpp
     src/dev_dat_t.cu
-    src/fixed_point_search_t.cu
+    src/full_example.cu
+    src/flow_equations_t.cu
+    src/evaluate_t.cu
     flow_equations/lorentz_attractor/lorentz_attractor_flow_equation.cu
+    flow_equations/lorentz_attractor/lorentz_attractor_jacobian_equation.cu
 )
 
 if(RUN_WITH_PYTHON_BACKEND)

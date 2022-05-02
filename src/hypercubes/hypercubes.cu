@@ -1,7 +1,7 @@
 #include "../../include/hypercubes/hypercubes.hpp"
 
-HyperCubes::HyperCubes(const std::vector< std::vector<int> > n_branches_per_depth_,
-    const std::vector <std::pair<cudaT, cudaT> > lambda_ranges_) :
+HyperCubes::HyperCubes(const std::vector< std::vector<int>> n_branches_per_depth_,
+    const std::vector <std::pair<cudaT, cudaT>> lambda_ranges_) :
     dim(lambda_ranges_.size()),
     n_branches_per_depth(n_branches_per_depth_),
     accum_n_branches_per_dim(HyperCubes::compute_accum_n_branches_per_dim(n_branches_per_depth_, lambda_ranges_.size())),
@@ -11,9 +11,9 @@ HyperCubes::HyperCubes(const std::vector< std::vector<int> > n_branches_per_dept
 
 //[ Static functions
 
-thrust::host_vector< thrust::host_vector<int> > HyperCubes::compute_accum_n_branches_per_dim(const std::vector< std::vector<int> > &n_branches_per_depth_, const uint dim_)
+thrust::host_vector<thrust::host_vector<int>> HyperCubes::compute_accum_n_branches_per_dim(const std::vector< std::vector<int>> &n_branches_per_depth_, const uint dim_)
 {
-    thrust::host_vector< thrust::host_vector<int> > accum_n_branches_per_dim_(dim_);
+    thrust::host_vector<thrust::host_vector<int>> accum_n_branches_per_dim_(dim_);
     for(auto dim_index = 0; dim_index < dim_; dim_index++)
     {
         thrust::host_vector<int> accum_n_branches(n_branches_per_depth_.size() + 1);
@@ -26,9 +26,9 @@ thrust::host_vector< thrust::host_vector<int> > HyperCubes::compute_accum_n_bran
     return accum_n_branches_per_dim_;
 }
 
-thrust::host_vector< thrust::host_vector<int> > HyperCubes::compute_accum_n_branches_per_depth(const std::vector< std::vector<int> > &n_branches_per_depth_, const uint dim_)
+thrust::host_vector<thrust::host_vector<int>> HyperCubes::compute_accum_n_branches_per_depth(const std::vector< std::vector<int>> &n_branches_per_depth_, const uint dim_)
 {
-    thrust::host_vector< thrust::host_vector<int> > accum_n_branches_per_depth_(n_branches_per_depth_.size());
+    thrust::host_vector<thrust::host_vector<int>> accum_n_branches_per_depth_(n_branches_per_depth_.size());
     for(auto depth_index = 0; depth_index < n_branches_per_depth_.size(); depth_index++)
     {
         thrust::host_vector<int> accum_n_branches(dim_ + 1);
@@ -149,7 +149,7 @@ GridComputationWrapper HyperCubes::project_coordinates_on_expanded_cube_and_dept
     return grcompwrap;
 }
 
-GridComputationWrapper HyperCubes::project_leaves_on_expanded_cube_and_depth_per_cube_indices(std::vector<Leaf* > &leaves, int depth) const
+GridComputationWrapper HyperCubes::project_leaves_on_expanded_cube_and_depth_per_cube_indices(std::vector<Leaf*> &leaves, int depth) const
 {
     if(depth == -1)
         depth = n_branches_per_depth.size() - 1;

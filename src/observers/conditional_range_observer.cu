@@ -24,12 +24,14 @@ struct compare_to_previous_change
 };
 
 
-ConditionalRangeObserverParameters::ConditionalRangeObserverParameters(const json params_) : Parameters(params_),
-                                                         minimum_delta_t(get_value_by_key<cudaT>("minimum_delta_t")),
-                                                         maximum_flow_val(get_value_by_key<cudaT>("maximum_flow_val"))
+ConditionalRangeObserverParameters::ConditionalRangeObserverParameters(
+    const json params, FlowEquationsWrapper * const flow_equations_
+) : Evolution(params, flow_equations_),
+    minimum_delta_t(get_entry<cudaT>("minimum_delta_t")),
+    maximum_flow_val(get_entry<cudaT>("maximum_flow_val"))
 {
-    auto boundary_lambda_ranges_ = get_value_by_key<json>("boundary_lambda_ranges");
-    auto minimum_change_of_state_ = get_value_by_key<json>("minimum_change_of_state");
+    auto boundary_lambda_ranges_ = get_entry<json>("boundary_lambda_ranges");
+    auto minimum_change_of_state_ = get_entry<json>("minimum_change_of_state");
 
     std::transform(boundary_lambda_ranges_.begin(), boundary_lambda_ranges_.end(), std::back_inserter(boundary_lambda_ranges),
                    [] (json &dat) { return dat.get< std::pair<cudaT, cudaT> >(); });

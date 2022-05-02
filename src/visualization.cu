@@ -427,7 +427,7 @@ HyperCubes * Visualization::compute_vertex_velocities_of_sub_problem(
     int maximum_depth = 0;
 
     // Get nodes for the gpu from buffer
-    std::tie(node_package, total_number_of_cubes, maximum_depth) = buffer_ptr->get_first_nodes(number_of_cubes_per_gpu_call);
+    std::tie(node_package, total_number_of_cubes, maximum_depth) = buffer_ptr->pop_node_package(number_of_cubes_per_gpu_call);
 
     if(monitor) {
         std::cout << "\n### Nodes for the qpu: " << node_package.size() << ", total number of cubes: "

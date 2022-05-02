@@ -1,7 +1,3 @@
-//
-// Created by lukas on 25.07.19.
-//
-
 #ifndef PROGRAM_ODEVISUALISATION_PARAMETERS_HPP
 #define PROGRAM_ODEVISUALISATION_PARAMETERS_HPP
 
@@ -25,7 +21,7 @@ public:
     explicit ODEVisualisation(
         const json params,
         std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr=nullptr,
-        std::shared_ptr<JacobianWrapper> jacobians_ptr=nullptr,
+        std::shared_ptr<JacobianEquationWrapper> jacobians_ptr=nullptr,
         const std::string computation_parameters_path=param_helper::proj::project_root()
     ) : Parameters(params),
         flow_equations_ptr_(flow_equations_ptr),
@@ -64,12 +60,12 @@ public:
         return flow_equations_ptr_.get();
     }
 
-    void set_jacobians(std::shared_ptr<JacobianWrapper> jacobians_ptr)
+    void set_jacobians(std::shared_ptr<JacobianEquationWrapper> jacobians_ptr)
     {
         jacobians_ptr_ = jacobians_ptr;
     }
 
-    JacobianWrapper* get_jacobians()
+    JacobianEquationWrapper* get_jacobians()
     {
         return jacobians_ptr_.get();
     }
@@ -85,7 +81,7 @@ public:
 
 protected:
     std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr_;
-    std::shared_ptr<JacobianWrapper> jacobians_ptr_;
+    std::shared_ptr<JacobianEquationWrapper> jacobians_ptr_;
     const std::string computation_parameters_path_;
 
     ComputationParameters computation_parameters_;

@@ -47,6 +47,9 @@ endif()
 include_directories(ext/ParamHelper/include)
 add_subdirectory(ext/ParamHelper)
 
+include_directories(ext/eigen/Eigen)
+add_subdirectory(ext/eigen)
+
 ### if(BUILD_PYTHON_BINDINGS)
 ###     message("Integrate python for python_bindings")
 ###     # Add Python bindings

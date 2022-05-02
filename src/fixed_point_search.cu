@@ -5,7 +5,7 @@
 FixedPointSearch::FixedPointSearch(
     const json params,
     std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr,
-    std::shared_ptr<JacobianWrapper> jacobians_ptr,
+    std::shared_ptr<JacobianEquationWrapper> jacobians_ptr,
     const std::string computation_parameters_path
 ) : ODEVisualisation(params, flow_equations_ptr, jacobians_ptr, computation_parameters_path),
     dim_(get_entry<json>("flow_equation")["dim"].get<cudaT>()),
@@ -19,15 +19,15 @@ FixedPointSearch::FixedPointSearch(
     std::transform(lambda_ranges.begin(), lambda_ranges.end(), std::back_inserter(lambda_ranges_),
                    [] (json &dat) { return dat.get< std::pair<cudaT, cudaT> >(); });
 
-    Node * root_node_ptr = new Node(0, compute_internal_end_index(n_branches_per_depth_[0]), std::vector< int >{});
+    std::shared_ptr<Node> root_node_ptr = std::make_shared<Node>(0, compute_internal_end_index(n_branches_per_depth_[0]), std::vector< int >{});
     buffer_ = Buffer(std::move(root_node_ptr));
 
     // Tests
-    if (n_branches_per_depth_.size() != maximum_recursion_depth_)
+    if (n_branches_per_depth_.size() < maximum_recursion_depth_)
     {
         std::cout << "\nERROR: Maximum recursion depth " << maximum_recursion_depth_
-                  << " and number of branches per depth " << n_branches_per_depth_.size()
-                  << " do not coincide" << std::endl;
+                  << " is smaller than the available number of branches per depth " << n_branches_per_depth_.size()
+                  << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -55,11 +55,11 @@ FixedPointSearch::FixedPointSearch(
 FixedPointSearch FixedPointSearch::from_file(
     const std::string rel_config_dir,
     std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr,
-    std::shared_ptr<JacobianWrapper> jacobians_ptr,
+    std::shared_ptr<JacobianEquationWrapper> jacobians_ptr,
     const std::string computation_parameters_path
 )
 {
-    return FixedPointSearch::FixedPointSearch(
+    return FixedPointSearch(
         param_helper::fs::read_parameter_file(
             param_helper::proj::project_root() + rel_config_dir + "/", "config", false),
         flow_equations_ptr,
@@ -73,7 +73,7 @@ FixedPointSearch FixedPointSearch::from_parameters(
         const std::vector< std::vector<int> > n_branches_per_depth,
         const std::vector <std::pair<cudaT, cudaT> > lambda_ranges,
         std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr,
-        std::shared_ptr<JacobianWrapper> jacobians_ptr,
+        std::shared_ptr<JacobianEquationWrapper> jacobians_ptr,
         const std::string computation_parameters_path
 )
 {
@@ -112,9 +112,7 @@ void FixedPointSearch::find_fixed_point_solutions()
     auto c = 0;
     while(c < computation_parameters_.maximum_number_of_gpu_calls_ and buffer_.len() > 0)
     {
-        std::cout << "\n\n######### New computation round: " << c <<  "#########" << std::endl;
-        NodeCounter<Node>::number_of_alive_nodes_per_depth();
-        std::cout << std::endl;
+        std::cout << "\n\n######### New computation round: " << c <<  " #########" << std::endl;
         run_gpu_computing_task();
         c++;
     }
@@ -127,7 +125,11 @@ void FixedPointSearch::cluster_solutions_to_fixed_points(const uint maximum_expe
     // Compute vertices of solutions
     HyperCubes solution_cubes(n_branches_per_depth_, lambda_ranges_);
 
-    GridComputationWrapper grcompwrap = solution_cubes.project_leaves_on_expanded_cube_and_depth_per_cube_indices(solutions_);
+    std::vector<Leaf*> solutions;
+    std::transform(solutions_.begin(), solutions_.end(), std::back_inserter(solutions), [](const std::shared_ptr<Leaf>& leaf_ptr) {
+        return leaf_ptr.get();
+    });
+    GridComputationWrapper grcompwrap = solution_cubes.project_leaves_on_expanded_cube_and_depth_per_cube_indices(solutions);
     solution_cubes.compute_cube_center_vertices(grcompwrap);
 
     // Get center vertices
@@ -157,7 +159,7 @@ void FixedPointSearch::cluster_solutions_to_fixed_points_from_file()
     cluster_solutions_to_fixed_points_from_parameters(cluster_parameters);
 }
 
-std::vector<Leaf*> FixedPointSearch::get_solutions()
+std::vector<std::shared_ptr<Leaf>> FixedPointSearch::get_solutions()
 {
     return solutions_;
 }
@@ -166,27 +168,6 @@ odesolver::DevDatC FixedPointSearch::get_fixed_points() const
 {
     return fixed_points_;
 }
-
-
-/* ## ToDo: Reinclude - Commented during reodering 
-void FixedPointSearch::compute_and_write_fixed_point_characteristics_to_file(std::string rel_dir)
-{
-    // ToDo: If fixed_points are not defined - Try to load them file first, otherwise throw error
-
-    CoordinateOperatorParameters coordinate_operator_parameters = CoordinateOperatorParameters::from_parameters(
-            path_parameters.theory,
-            {},
-            "evaluate",
-            path_parameters.root_dir,
-            path_parameters.relative_path);
-    CoordinateOperator fixed_point_evaluator(coordinate_operator_parameters);
-    fixed_point_evaluator.set_raw_coordinates(fixed_points);
-
-    fixed_point_evaluator.compute_velocities();
-    fixed_point_evaluator.compute_jacobians_and_eigendata();
-
-    fixed_point_evaluator.write_characteristics_to_file(dir);
-} */
 
 void FixedPointSearch::write_solutions_to_file(std::string rel_dir) const
 {
@@ -198,31 +179,31 @@ void FixedPointSearch::write_solutions_to_file(std::string rel_dir) const
 
 void FixedPointSearch::load_solutions_from_file(std::string rel_dir)
 {
-    clear_solutions();
+    solutions_.clear();
 
     json j = param_helper::fs::read_parameter_file(param_helper::proj::project_root() + rel_dir + "/", "solutions", false);
-    solutions_.reserve(j["number_of_solutions"].get< int >());
+    solutions_.reserve(j["number_of_solutions"].get<int>());
     for(auto &sol: j["solutions"])
-        solutions_.push_back(new Leaf(sol["cube_indices"].get< std::vector<int> >()));
+        solutions_.push_back(std::make_shared<Leaf>(sol["cube_indices"].get<std::vector<int>>()));
     std::cout << "solutions loaded" << std::endl;
 }
 
 void FixedPointSearch::write_fixed_points_to_file(std::string rel_dir) const
 {
-    json j;
     auto transposed_fixed_points = fixed_points_.transpose_device_data();
-    for(auto &fixed_point : transposed_fixed_points)
-        j.push_back(fixed_point);
-    param_helper::fs::write_parameter_file(json {{"number_of_fixed_points", transposed_fixed_points.size()}, {"fixed_points", j}}, param_helper::proj::project_root() + "/" + rel_dir + "/", "fixed_points", false);
+    param_helper::fs::write_parameter_file(
+        json {
+            {"number_of_fixed_points", transposed_fixed_points.size()},
+            {"fixed_points", vec_vec_to_json(transposed_fixed_points)}
+        },
+        param_helper::proj::project_root() + "/" + rel_dir + "/", "fixed_points",
+        false
+    );
 }
 
 void FixedPointSearch::load_fixed_points_from_file(std::string rel_dir)
 {
-    json j = param_helper::fs::read_parameter_file(param_helper::proj::project_root() + rel_dir + "/", "fixed_points", false);
-    std::vector<std::vector<double>> fixed_points;
-    fixed_points.reserve(j["number_of_fixed_points"].get< int >());
-    for(auto &sol: j["fixed_points"])
-        fixed_points.push_back(sol.get< std::vector<double> >());
+    auto fixed_points = load_fixed_points(rel_dir);
     fixed_points_ = odesolver::DevDatC(fixed_points);
     std::cout << "fixed points loaded" << std::endl;
 }
@@ -263,7 +244,7 @@ void FixedPointSearch::generate_new_nodes_and_leaves(const thrust::host_vector<i
                     }
                     else // Found solution -> Generate new leaf
                     {
-                        solutions_.push_back(new Leaf(parent_cube_indices));
+                        solutions_.push_back(std::make_shared<Leaf>(parent_cube_indices));
                         n_new_leaves++;
                     }
                     // Update
@@ -295,7 +276,7 @@ void FixedPointSearch::run_gpu_computing_task()
     int maximum_depth = 0;
 
     // Get nodes for the gpu from buffer
-    std::tie(node_package, total_number_of_cubes, maximum_depth) = buffer_.get_first_nodes(computation_parameters_.number_of_cubes_per_gpu_call_);
+    std::tie(node_package, total_number_of_cubes, maximum_depth) = buffer_.pop_node_package(computation_parameters_.number_of_cubes_per_gpu_call_);
 
     if(monitor) {
         std::cout << "\n### Nodes for the qpu: " << node_package.size() << ", total number of cubes: "
@@ -325,16 +306,16 @@ void FixedPointSearch::run_gpu_computing_task()
     generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, node_package);
 
     // Delete evaluated nodes
-    for(auto &node : node_package)
+    /* for(auto &node : node_package)
     {
         --NodeCounter<Node>::objects_alive[node->get_depth()];
         delete node;
-    }
+    } */
 }
 
-void FixedPointSearch::clear_solutions()
+
+std::vector<std::vector<double>> load_fixed_points(std::string rel_dir)
 {
-    for(auto &sol: solutions_)
-        delete sol;
-    solutions_.clear();
+    json j = param_helper::fs::read_parameter_file(param_helper::proj::project_root() + rel_dir + "/", "fixed_points", false);
+    return json_to_vec_vec(j["fixed_points"]);
 }

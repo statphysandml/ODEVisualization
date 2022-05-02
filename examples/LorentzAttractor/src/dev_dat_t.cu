@@ -1,5 +1,22 @@
 #include "../include/dev_dat_t.hpp"
 
+odesolver::DevDatC gen_normal_devdat(uint dim, uint N)
+{
+    // Generate (dim x N) random numbers
+    uint discard = 0;
+    odesolver::DevDatC random_numbers(dim, N, 0);
+    for(auto dim_index = 0; dim_index < dim; dim_index++) {
+        thrust::transform(
+                thrust::make_counting_iterator(0 + discard),
+                thrust::make_counting_iterator(N + discard),
+                random_numbers[dim_index].begin(),
+                RandomNormalGenerator());
+        discard += N;
+    }
+    return std::move(random_numbers);
+}
+
+// oDo: eplace part
 void testing_devdat() {
     int driver_version , runtime_version;
     cudaDriverGetVersion( &driver_version );
@@ -18,7 +35,9 @@ void testing_devdat() {
     dev_vec d_vec = h_vec;
     print_range("Device vector", d_vec.begin(), d_vec.end());
 
-    odesolver::DevDatC sampled_coordinates(d_vec, 2);
+    /* odesolver::DevDatC sampled_coordinates(d_vec, 2); */
+    
+    odesolver::DevDatC sampled_coordinates = gen_normal_devdat(2, 10);
 
     sampled_coordinates.print_dim_by_dim();
     sampled_coordinates.print_elem_by_elem();

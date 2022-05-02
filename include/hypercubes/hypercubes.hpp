@@ -42,7 +42,7 @@ public:
     // Main Function for node expansion- Executes extract_node_information and expand_node_information_according_to_number_of_nodes to
     // return expanded_cube_indices_ptr and expanded_depth_per_cube_ptr for further computation
     GridComputationWrapper generate_and_linearize_nodes(const int total_number_of_cubes, const int maximum_depth,
-                                                        const std::vector<Node* > &node_package) const;
+                                                        const std::vector<Node*> &node_package) const;
 
     // Further (simpler functions for generating grid computation wrapper from other resources
 
@@ -50,7 +50,7 @@ public:
     GridComputationWrapper project_coordinates_on_expanded_cube_and_depth_per_cube_indices(odesolver::DevDatC coordinates, bool coordinates_on_grid=false, int depth=-1) const; // no reference since coordinates is changed within this function
 
     // Compute expanded cube indices and expanded depth per cube from leaves
-    GridComputationWrapper project_leaves_on_expanded_cube_and_depth_per_cube_indices(std::vector<Leaf* > &leaves, int depth=-1) const;
+    GridComputationWrapper project_leaves_on_expanded_cube_and_depth_per_cube_indices(std::vector<Leaf*> &leaves, int depth=-1) const;
 
     // Cuda code - Compute vertices based on expanded cube index vectors
     void compute_vertices(GridComputationWrapper &grcompwrap);

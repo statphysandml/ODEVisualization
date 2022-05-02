@@ -2,35 +2,35 @@
 
 
 LambdaRangeGenerator::LambdaRangeGenerator(
-        const std::vector<int> &n_branches_,
-        const std::vector <std::pair<cudaT, cudaT> > &partial_lambda_ranges_,
-        const std::vector <std::vector <cudaT> > &fix_lambdas_
+        const std::vector<int> &n_branches,
+        const std::vector<std::pair<cudaT, cudaT>> &partial_lambda_ranges,
+        const std::vector<std::vector<cudaT>> &fix_lambdas
 ) :
-        n_branches(n_branches_), partial_lambda_ranges(partial_lambda_ranges_), fix_lambdas(fix_lambdas_)
+        n_branches_(n_branches), partial_lambda_ranges_(partial_lambda_ranges), fix_lambdas_(fix_lambdas)
 {
-    for(auto &fix_lambd: fix_lambdas)
-        fix_lambdas_iterators.push_back(fix_lambd.begin());
-    reached_end = false;
+    for(auto &fix_lambd: fix_lambdas_)
+        fix_lambdas_iterators_.push_back(fix_lambd.begin());
+    reached_end_ = false;
 }
 
-const std::vector < std::pair<cudaT, cudaT> > LambdaRangeGenerator::next()
+const std::vector<std::pair<cudaT, cudaT>> LambdaRangeGenerator::next()
 {
-    std::vector < std::pair<cudaT, cudaT > > lambda_ranges;
-    lambda_ranges.reserve(n_branches.size());
+    std::vector<std::pair<cudaT, cudaT>> lambda_ranges;
+    lambda_ranges.reserve(n_branches_.size());
 
-    auto partial_lambda_ranges_iterator = partial_lambda_ranges.begin();
-    auto fix_lambdas_iterators_iter = fix_lambdas_iterators.begin();
+    auto partial_lambda_ranges_iterator = partial_lambda_ranges_.begin();
+    auto fix_lambdas_iterators_iter = fix_lambdas_iterators_.begin();
     auto fix_lambdas_index = 0;
 
-    for(auto &n_branch : n_branches)
+    for(auto &n_branch : n_branches_)
     {
         if(n_branch > 1) {
             lambda_ranges.push_back(*partial_lambda_ranges_iterator);
             partial_lambda_ranges_iterator++;
 
-            if(fix_lambdas_index == 0 && fix_lambdas.size() == 0)
+            if(fix_lambdas_index == 0 && fix_lambdas_.size() == 0)
             {
-                reached_end = true;
+                reached_end_ = true;
                 // Allow further filling of lambda ranges for n_branches > 1
                 continue;
             }
@@ -40,13 +40,13 @@ const std::vector < std::pair<cudaT, cudaT> > LambdaRangeGenerator::next()
             lambda_ranges.push_back(std::pair<cudaT, cudaT> {*(*fix_lambdas_iterators_iter), *(*fix_lambdas_iterators_iter) +  0.1});
 
             // Iterator of last fix lambda is incremented
-            if(fix_lambdas_iterators_iter + 1 == fix_lambdas_iterators.end())
+            if(fix_lambdas_iterators_iter + 1 == fix_lambdas_iterators_.end())
                 (*fix_lambdas_iterators_iter)++;
             // Current iterator is at end: increment child iterator and reset current and consecutive iterators
-            if(*(fix_lambdas_iterators_iter) == fix_lambdas[fix_lambdas_index].end()) {
+            if(*(fix_lambdas_iterators_iter) == fix_lambdas_[fix_lambdas_index].end()) {
                 // Skip iterators that are already at the end
                 int c = 1;
-                while(*(fix_lambdas_iterators_iter - c) + 1 == fix_lambdas[fix_lambdas_index - 1].end() and fix_lambdas_index > 0)
+                while(*(fix_lambdas_iterators_iter - c) + 1 == fix_lambdas_[fix_lambdas_index - 1].end() and fix_lambdas_index > 0)
                 {
                     fix_lambdas_index -= 1;
                     c += 1;
@@ -67,7 +67,7 @@ const std::vector < std::pair<cudaT, cudaT> > LambdaRangeGenerator::next()
                 // Condition for ending generator is reached
                 if(fix_lambdas_index == 0)
                 {
-                    reached_end = true;
+                    reached_end_ = true;
                     // Allow further filling of lambda ranges for n_branches > 1
                     continue;
                 }
@@ -76,8 +76,8 @@ const std::vector < std::pair<cudaT, cudaT> > LambdaRangeGenerator::next()
                 (*(fix_lambdas_iterators_iter - c))++;
 
                 // Reset all consecutive iterators to begin
-                for(auto i=fix_lambdas_index; i < fix_lambdas.size(); i++) {
-                    fix_lambdas_iterators[i] = fix_lambdas[i].begin();
+                for(auto i=fix_lambdas_index; i < fix_lambdas_.size(); i++) {
+                    fix_lambdas_iterators_[i] = fix_lambdas_[i].begin();
                 }
             }
 
@@ -97,5 +97,5 @@ const std::vector < std::pair<cudaT, cudaT> > LambdaRangeGenerator::next()
 
 bool LambdaRangeGenerator::finished() const
 {
-    return reached_end;
+    return reached_end_;
 }

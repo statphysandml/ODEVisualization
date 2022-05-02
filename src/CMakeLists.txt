@@ -1,6 +1,6 @@
 add_library(odevisualisationlib STATIC
     flow_equation_interface/flow_equation.cu
-    # flow_equation_interface/jacobian_equation.cu
+    flow_equation_interface/jacobian_equation.cu
     # executer.cu
     hypercubes/hypercubes.cu
     hypercubes/node.cu
@@ -10,11 +10,14 @@ add_library(odevisualisationlib STATIC
     util/helper_functions.cu
     util/monitor.cu
     util/dev_dat.cu
+    util/dev_dat_boost_integration.cu
     util/python_integration.cpp
     util/lambda_range_generator.cu
+    util/jacobians.cpp
+    util/json_conversion.cpp
     # extern/parameters.cu
     # extern/pathfinder.cu
-    # coordinate_operator.cu
+    coordinate_operator.cu
     # visualization.cu
     # observers/evolution.cu
     # observers/conditional_range_observer.cu
@@ -34,13 +37,17 @@ if (GPU)
     target_compile_definitions(odevisualisationlib PUBLIC -D GPU)
 endif()
 
-target_link_libraries(odevisualisationlib PUBLIC paramhelper::paramhelper)
+target_link_libraries(odevisualisationlib PUBLIC paramhelper::paramhelper Eigen3::Eigen)
 
 target_compile_options(odevisualisationlib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
 
 set_target_properties(odevisualisationlib PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_STANDARD 14)
 
+message("PATH To EIGEN")
+message(${CMAKE_SOURCE_DIR}/ext/Eigen/)
+
 target_include_directories(odevisualisationlib PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/ext/Eigen/>
   $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include/>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )

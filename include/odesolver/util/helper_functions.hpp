@@ -13,15 +13,6 @@
 #include <numeric>
 #include <fstream>
 
-template<typename T>
-int sign(const T val)
-{
-    if(val > 0)
-        return 1;
-    else
-        return -1;
-}
-
 // Both following functions are currently not used
 // Aligns device vector of size dim(=len) x n into a single dev_vec of dimension n*dim(=len) with order x, y, z, ...
 dev_vec* align_device_data(const std::vector< dev_vec*> device_data);
