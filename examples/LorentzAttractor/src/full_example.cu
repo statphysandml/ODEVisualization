@@ -32,7 +32,8 @@ void find_fixed_points()
     );
 
     // Find fixed point solutions
-    fixed_point_search.find_fixed_point_solutions();
+    // fixed_point_search.find_fixed_point_solutions();
+    fixed_point_search.find_fixed_point_solutions_with_preallocated_memory();
     NodeCounter<Node>::print_statistics();
 
     // Just for testing issues -> get solutions and print infos about these

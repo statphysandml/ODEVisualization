@@ -46,15 +46,21 @@ public:
     GridComputationWrapper project_leaves_on_expanded_cube_and_depth_per_cube_indices(std::vector<Leaf*> &leaves, int depth=-1) const;
 
     // Cuda code - Compute vertices based on expanded cube index vectors
-    void compute_vertices(GridComputationWrapper &grcompwrap);
-    void compute_reference_vertices(GridComputationWrapper &grcompwrap);
-    void compute_cube_center_vertices(GridComputationWrapper &grcompwrap);
+
+    void compute_reference_vertices(odesolver::DevDatC &reference_vertices, GridComputationWrapper &grcompwrap);
+    odesolver::DevDatC compute_reference_vertices(GridComputationWrapper &grcompwrap);
+
+    void compute_vertices(odesolver::DevDatC &vertices, GridComputationWrapper &grcompwrap, int total_number_of_cubes=0);
+    odesolver::DevDatC compute_vertices(GridComputationWrapper &grcompwrap);
+
+    void compute_cube_center_vertices(odesolver::DevDatC &center_vertices, GridComputationWrapper &grcompwrap);
+    odesolver::DevDatC compute_cube_center_vertices(GridComputationWrapper &grcompwrap);
 
     // void determine_vertex_velocities(FlowEquationsWrapper * flow_equations);
 
     thrust::host_vector<int> determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities);
 
-    const odesolver::DevDatC& get_vertices() const;
+    // const odesolver::DevDatC& get_vertices() const;
     // const odesolver::DevDatC& get_vertex_velocities() const;
 
     const std::vector<std::vector<int>>& get_n_branches_per_depth() const;
@@ -75,8 +81,7 @@ protected:
     std::vector<std::pair<cudaT, cudaT>> lambda_ranges;
 
     // Variables defined depending on your usage
-    int total_number_of_cubes;
-    odesolver::DevDatC vertices; // (total_number_of_cubes x n_cube) x dim (len = dim) OR total_number_of_cubes x dim (len = dim)
+    // odesolver::DevDatC vertices; // (total_number_of_cubes x n_cube) x dim (len = dim) OR total_number_of_cubes x dim (len = dim)
     // odesolver::DevDatC vertex_velocities; // (total_number_of_cubes x n_cube) x dim (len = dim) OR total_number_of_cubes x dim (len = dim)
 
     // Possible modes -> correspond to different possible usages of hypercubes

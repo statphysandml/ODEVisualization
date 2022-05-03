@@ -14,7 +14,7 @@ odesolver::DevDatC compute_jacobian_elements(const odesolver::DevDatC &coordinat
 }
 
 
-void compute_jacobian_elements(const odesolver::DevDatC &coordinates, const odesolver::DevDatC &jacobian_elements, JacobianEquationWrapper * jacobian_equations)
+void compute_jacobian_elements(const odesolver::DevDatC &coordinates, odesolver::DevDatC &jacobian_elements, JacobianEquationWrapper * jacobian_equations)
 {
     // Evaluate jacobian for each element separately
     for(auto matrix_idx = 0; matrix_idx < pow(coordinates.dim_size(), 2); matrix_idx ++) {

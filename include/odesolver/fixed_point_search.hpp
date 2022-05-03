@@ -71,7 +71,9 @@ public:
 
     // Main function
 
-    void find_fixed_point_solutions();
+    void find_fixed_points_dynamic_memory();
+
+    void find_fixed_points_preallocated_memory();
 
     void cluster_solutions_to_fixed_points(const uint maximum_expected_number_of_clusters,
                            const double upper_bound_for_min_distance,

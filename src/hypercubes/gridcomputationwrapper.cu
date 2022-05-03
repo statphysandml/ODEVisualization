@@ -12,7 +12,7 @@ GridComputationWrapper::GridComputationWrapper(
     expanded_depth_per_cube_(expanded_depth_per_cube_wrapper_[0])
 {}
 
-void GridComputationWrapper::generate_and_linearise_nodes(const std::vector<Node*> &node_package)
+void GridComputationWrapper::linearise_nodes(const std::vector<Node*> &node_package)
 {
     NodesExpander nodesexpander(maximum_depth_, node_package.size());
 
@@ -20,7 +20,7 @@ void GridComputationWrapper::generate_and_linearise_nodes(const std::vector<Node
     nodesexpander.extract_node_information(node_package);
     // Fill vectors of length total number of cubes
 
-    nodesexpander.expand_node_information_according_to_number_of_nodes(
+    nodesexpander.expand_node_information(
         node_package,
         expanded_cube_indices_,
         expanded_depth_per_cube_

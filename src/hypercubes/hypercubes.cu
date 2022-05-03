@@ -359,38 +359,43 @@ GridComputationWrapper HyperCubes::project_leaves_on_expanded_cube_and_depth_per
     return grcompwrap;
 }
 
-void HyperCubes::compute_reference_vertices(GridComputationWrapper &grcompwrap)
+void HyperCubes::compute_reference_vertices(odesolver::DevDatC &reference_vertices, GridComputationWrapper &grcompwrap)
 {
-    total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
-
-    vertices = odesolver::DevDatC (dim, total_number_of_cubes);
-
     for(auto dim_index = 0; dim_index < dim; dim_index++) {
-        // Initialize vertices
-        compute_reference_vertex_in_dim(vertices[dim_index], grcompwrap, dim_index);
+        compute_reference_vertex_in_dim(reference_vertices[dim_index], grcompwrap, dim_index);
 
         // Compute delta range
         cudaT lambda_dim_range = (lambda_ranges[dim_index].second - lambda_ranges[dim_index].first);
         cudaT lambda_offset = lambda_ranges[dim_index].first;
 
         // Finalize computation of the device reference vertex
-        thrust::transform(vertices[dim_index].begin(), vertices[dim_index].end(), grcompwrap.expanded_depth_per_cube_.begin(), vertices[dim_index].begin(),
+        thrust::transform(reference_vertices[dim_index].begin(), reference_vertices[dim_index].end(), grcompwrap.expanded_depth_per_cube_.begin(), reference_vertices[dim_index].begin(),
                           finalize_reference_vertex_computation(lambda_dim_range, lambda_offset, accum_n_branches_per_dim[dim_index]));
     }
     vertex_mode = ReferenceVertices;;
 }
 
-void HyperCubes::compute_vertices(GridComputationWrapper &grcompwrap)
+odesolver::DevDatC HyperCubes::compute_reference_vertices(GridComputationWrapper &grcompwrap)
 {
-    total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
+    // Initialize reference_vertices
+    auto total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
+    auto reference_vertices = odesolver::DevDatC (dim, total_number_of_cubes);
+    
+    // Compute reference_vertices
+    compute_reference_vertices(reference_vertices, grcompwrap);
 
-    // Initialize vertices
-    vertices = odesolver::DevDatC(dim, total_number_of_cubes * pow(2, dim));
+    return std::move(reference_vertices);
+}
+
+void HyperCubes::compute_vertices(odesolver::DevDatC &vertices, GridComputationWrapper &grcompwrap, int total_number_of_cubes)
+{
+    if(total_number_of_nodes == 0)
+        total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
 
     for(auto dim_index = 0; dim_index < dim; dim_index++)
     {
         // Generate device vector of reference vertices for each vector
-        odesolver::DevDatC reference_vertices_wrapper(1, total_number_of_cubes);
+        odesolver::DevDatC reference_vertices_wrapper(1, total_number_of_cubes, 0.0);
         odesolver::DimensionIteratorC& reference_vertices_ = reference_vertices_wrapper[0];
         compute_reference_vertex_in_dim(reference_vertices_, grcompwrap, dim_index);
 
@@ -405,10 +410,17 @@ void HyperCubes::compute_vertices(GridComputationWrapper &grcompwrap)
         // Preparations for the expansion to vertices
 
         // Repeat reference vertex according to the number of vertices per cube
-        repeated_range<dev_iterator> rep_ref_vertex_iterator(reference_vertices_.begin(), reference_vertices_.end(), pow(2, dim));
+        repeated_range<dev_iterator> rep_ref_vertex_iterator(
+            reference_vertices_.begin(),
+            reference_vertices_.end(),
+            pow(2, dim));
 
         // Repeat maximum depth values according to the number of vertices per cube
-        repeated_range<dev_iterator_int> rep_ref_depth_per_cube_iterator(grcompwrap.expanded_depth_per_cube_.begin(), grcompwrap.expanded_depth_per_cube_.end(), pow(2, dim));
+        repeated_range<dev_iterator_int> rep_ref_depth_per_cube_iterator(
+            grcompwrap.expanded_depth_per_cube_.begin(),
+            grcompwrap.expanded_depth_per_cube_.begin() + total_number_of_cubes,
+            pow(2, dim)
+        );
 
         // Compute inner cube offset
         dev_vec_bool inner_vertex_coors(pow(2, dim)); // Computation can be shifted to global function (-> apropriate??)
@@ -426,7 +438,7 @@ void HyperCubes::compute_vertices(GridComputationWrapper &grcompwrap)
 
         // Finalize computation of device vertex
         thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(rep_ref_vertex_iterator.begin(), rep_ref_depth_per_cube_iterator.begin(), rep_inner_vertex_coors.begin(), vertices[dim_index].begin())),
-                         thrust::make_zip_iterator(thrust::make_tuple(rep_ref_vertex_iterator.end(), rep_ref_depth_per_cube_iterator.end(), rep_inner_vertex_coors.end(), vertices[dim_index].end())),
+                         thrust::make_zip_iterator(thrust::make_tuple(rep_ref_vertex_iterator.end(), rep_ref_depth_per_cube_iterator.end(), rep_inner_vertex_coors.end(), vertices[dim_index].begin() + total_number_of_cubes * pow(2, dim))),
                          finalize_vertex_computation(lambda_dim_range, lambda_offset, accum_n_branches_per_dim[dim_index]));
 
         // Testing
@@ -437,14 +449,23 @@ void HyperCubes::compute_vertices(GridComputationWrapper &grcompwrap)
     vertex_mode = CubeVertices;
 }
 
-void HyperCubes::compute_cube_center_vertices(GridComputationWrapper &grcompwrap) {
-    total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
+odesolver::DevDatC HyperCubes::compute_vertices(GridComputationWrapper &grcompwrap)
+{
+    // Initialize vertices
+    auto total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
+    auto vertices = odesolver::DevDatC(dim, total_number_of_cubes * pow(2, dim));
+    
+    // Compute vertices
+    compute_vertices(vertices, grcompwrap);
 
-    vertices = odesolver::DevDatC(dim, total_number_of_cubes);
+    return std::move(vertices);
+}
 
+void HyperCubes::compute_cube_center_vertices(odesolver::DevDatC &center_vertices, GridComputationWrapper &grcompwrap)
+{
     for (auto dim_index = 0; dim_index < dim; dim_index++) {
         // Generate device vector of reference vertices for each vector
-        compute_reference_vertex_in_dim(vertices[dim_index], grcompwrap, dim_index);
+        compute_reference_vertex_in_dim(center_vertices[dim_index], grcompwrap, dim_index);
 
         // Finalize
 
@@ -453,18 +474,30 @@ void HyperCubes::compute_cube_center_vertices(GridComputationWrapper &grcompwrap
         cudaT lambda_range_left = lambda_ranges[dim_index].first;
 
         // Finalize computation of device center vertex
-        thrust::transform(vertices[dim_index].begin(), vertices[dim_index].end(),
-                          grcompwrap.expanded_depth_per_cube_.begin(), vertices[dim_index].begin(),
+        thrust::transform(center_vertices[dim_index].begin(), center_vertices[dim_index].end(),
+                          grcompwrap.expanded_depth_per_cube_.begin(), center_vertices[dim_index].begin(),
                           finalize_center_vertex_computation(lambda_dim_range, lambda_range_left,
                                                              accum_n_branches_per_dim[dim_index]));
 
         // Testing
         if (monitor)
             print_range("Cube center vertices in dimension " + std::to_string(dim_index + 1),
-                        vertices[dim_index].begin(), vertices[dim_index].end());
+                        center_vertices[dim_index].begin(), center_vertices[dim_index].end());
     }
 
     vertex_mode = CenterVertices;
+}
+
+odesolver::DevDatC HyperCubes::compute_cube_center_vertices(GridComputationWrapper &grcompwrap)
+{
+    // Initialize center_vertices
+    auto total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
+    auto center_vertices = odesolver::DevDatC(dim, total_number_of_cubes);
+        
+    // Compute center_vertices
+    compute_cube_center_vertices(center_vertices, grcompwrap);
+
+    return std::move(center_vertices);
 }
 
 /* void HyperCubes::determine_vertex_velocities(FlowEquationsWrapper * flow_equations)
@@ -543,11 +576,6 @@ thrust::host_vector<int> HyperCubes::determine_potential_fixed_points(odesolver:
 }
 
 // Getter functions
-
-const odesolver::DevDatC& HyperCubes::get_vertices() const
-{
-    return vertices;
-}
 
 /* const odesolver::DevDatC& HyperCubes::get_vertex_velocities() const
 {
@@ -641,15 +669,20 @@ void HyperCubes::test_projection()
 
 // Private functions
 
-void HyperCubes::compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grcompwrap, int dim_index) const
+void HyperCubes::compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grcompwrap, int dim_index, int total_number_of_cubes=0, int maximum_depth=0) const
 {
-    for(auto depth_index = 0; depth_index < grcompwrap.expanded_cube_indices_.dim_size(); depth_index++)
+    if(total_number_of_cubes == 0)
+        total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
+    if(maximum_depth == 0)
+        maximum_depth = grcompwrap.expanded_cube_indices_.dim_size()
+
+    for(auto depth_index = 0; depth_index < maximum_depth; depth_index++)
     {
         int accum_n_branch_per_depth = accum_n_branches_per_depth[depth_index][dim_index];
         int n_branch_per_depth = n_branches_per_depth[depth_index][dim_index];
         int depth_weight_divisor = accum_n_branches_per_dim[dim_index][depth_index + 1];
         thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(grcompwrap.expanded_cube_indices_[depth_index].begin(), grcompwrap.expanded_depth_per_cube_.begin(), reference_vertices_.begin())),
-                         thrust::make_zip_iterator(thrust::make_tuple(grcompwrap.expanded_cube_indices_[depth_index].end(), grcompwrap.expanded_depth_per_cube_.end(), reference_vertices_.end())),
+                         thrust::make_zip_iterator(thrust::make_tuple(grcompwrap.expanded_cube_indices_[depth_index].begin() + total_number_of_cubes, grcompwrap.expanded_depth_per_cube_.begin() + total_number_of_cubes, reference_vertices_.end())),
                          compute_depth_vertex_coor_weight(n_branch_per_depth, accum_n_branch_per_depth, depth_weight_divisor, accum_n_branches_per_dim[dim_index]));
     }
 }

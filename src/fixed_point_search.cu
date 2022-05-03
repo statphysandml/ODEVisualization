@@ -12,22 +12,18 @@ FixedPointSearch::FixedPointSearch(
     maximum_recursion_depth_(get_entry<int>("maximum_recursion_depth"))
 {
     std::vector<std::vector<int>> n_branches_per_depth = json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth"));
-    
-    auto lambda_ranges_json = get_entry<json>("lambda_ranges");
-    std::vector<std::pair<cudaT, cudaT>> lambda_ranges;
-    std::transform(lambda_ranges_json.begin(), lambda_ranges_json.end(), std::back_inserter(lambda_ranges),
-                   [] (json &dat) { return dat.get<std::pair<cudaT, cudaT>>(); });
-
+    std::vector<std::pair<double, double>> = json_to_vec_pair(get_entry<json>("lambda_ranges"));
     hypercubes_ = HyperCubes(n_branches_per_depth, lambda_ranges);
 
     std::shared_ptr<Node> root_node_ptr = std::make_shared<Node>(0, compute_internal_end_index(hypercubes_.get_n_branches_per_depth()[0]), std::vector< int >{});
+
     buffer_ = Buffer(std::move(root_node_ptr));
 
     // Tests
     if (hypercubes_.get_n_branches_per_depth().size() < maximum_recursion_depth_)
     {
         std::cout << "\nERROR: Maximum recursion depth " << maximum_recursion_depth_
-                  << " is smaller than the available number of branches per depth " << hypercubes_.get_n_branches_per_depth().size()
+                  << " is higher than the available number of branches per depth " << hypercubes_.get_n_branches_per_depth().size()
                   << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -108,17 +104,6 @@ FixedPointSearch::ClusterParameters::ClusterParameters(
 
 // Main functions
 
-void FixedPointSearch::find_fixed_point_solutions()
-{
-    auto c = 0;
-    while(c < computation_parameters_.maximum_number_of_gpu_calls_ and buffer_.len() > 0)
-    {
-        std::cout << "\n\n######### New computation round: " << c <<  " #########" << std::endl;
-        run_gpu_computing_task();
-        c++;
-    }
-}
-
 void FixedPointSearch::cluster_solutions_to_fixed_points(const uint maximum_expected_number_of_clusters,
         const double upper_bound_for_min_distance,
         const uint maximum_number_of_iterations)
@@ -129,10 +114,9 @@ void FixedPointSearch::cluster_solutions_to_fixed_points(const uint maximum_expe
         return leaf_ptr.get();
     });
     GridComputationWrapper grcompwrap = hypercubes_.project_leaves_on_expanded_cube_and_depth_per_cube_indices(solutions);
-    hypercubes_.compute_cube_center_vertices(grcompwrap);
-
+    
     // Get center vertices
-    const odesolver::DevDatC potential_fixed_points = hypercubes_.get_vertices();
+    const odesolver::DevDatC potential_fixed_points = hypercubes_.compute_cube_center_vertices(grcompwrap);
 
     // Cluster center vertices
     fixed_points_ = cluster_device_data(
@@ -268,50 +252,111 @@ void FixedPointSearch::generate_new_nodes_and_leaves(const thrust::host_vector<i
     } */
 }
 
-void FixedPointSearch::run_gpu_computing_task()
+void FixedPointSearch::find_fixed_points_dynamic_memory()
 {
+    auto c = 0;
+
     std::vector<Node*> node_package;
     int expected_number_of_cubes = 0;
     int maximum_depth = 0;
 
-    // Get nodes for the gpu from buffer
-    std::tie(node_package, expected_number_of_cubes, maximum_depth) = buffer_.pop_node_package(computation_parameters_.number_of_cubes_per_gpu_call_);
-
-    if(monitor) {
-        std::cout << "\n### Nodes for the qpu: " << node_package.size() << ", total number of cubes: "
-                  << expected_number_of_cubes << std::endl;
-        buffer_.get_nodes_info(node_package);
-    }
-
-    GridComputationWrapper grid_computation_wrapper(expected_number_of_cubes, maximum_depth + 1);
-
-    // Use helper class to perform gpu tasks on nodes
-    grid_computation_wrapper.generate_and_linearise_nodes(node_package);
-
-    // Compute the actual vertices by first expanding each cube according to the number of vertices to
-    // a vector of reference vertices of length expected_number_of_cubes*dim and then computing the indices
-    hypercubes_.compute_vertices(grid_computation_wrapper);
-
-    // hypercubes.test_projection();
-
-    // Compute vertex velocities
-    auto vertex_velocities = compute_vertex_velocities(hypercubes_.get_vertices(), flow_equations_ptr_.get());
-    // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
-
-    // Determine potential fixed points
-    thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities);
-
-    // Generate new nodes and derive solutions based on nodes and indices of potential fixed points
-    generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, node_package);
-
-    // Delete evaluated nodes
-    /* for(auto &node : node_package)
+    while(c < computation_parameters_.maximum_number_of_gpu_calls_ and buffer_.len() > 0)
     {
-        --NodeCounter<Node>::objects_alive[node->get_depth()];
-        delete node;
-    } */
+        std::cout << "\n\n######### New computation round: " << c <<  " #########" << std::endl;
+    
+        // Get nodes for the gpu from buffer
+        std::tie(node_package, expected_number_of_cubes, maximum_depth) = buffer_.pop_node_package(computation_parameters_.number_of_cubes_per_gpu_call_);
+    
+        if(monitor) {
+            std::cout << "\n### Nodes for the qpu: " << node_package.size() << ", total number of cubes: "
+                      << expected_number_of_cubes << std::endl;
+            buffer_.get_nodes_info(node_package);
+        }
+    
+        GridComputationWrapper grid_computation_wrapper(expected_number_of_cubes, maximum_depth + 1);
+    
+        // Use helper class to perform gpu tasks on nodes
+        grid_computation_wrapper.linearise_nodes(node_package);
+    
+        // Compute the actual vertices by first expanding each cube according to the number of vertices to
+        // a vector of reference vertices of length expected_number_of_cubes*dim and then computing the indices
+        auto vertices = hypercubes_.compute_vertices(grid_computation_wrapper);
+    
+        // hypercubes.test_projection();
+    
+        // Compute vertex velocities
+        auto vertex_velocities = compute_vertex_velocities(vertices, flow_equations_ptr_.get());
+        // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
+    
+        // Determine potential fixed points
+        thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities);
+    
+        // Generate new nodes and derive solutions based on nodes and indices of potential fixed points
+        generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, node_package);
+
+        c++;
+    }
 }
 
+// ToDo: Recheck recusrion depth.... by rerunning the simple commented test functions
+// ToDo:
+- Take into account maximum depth at ALL stages
+- Fix total_number_of_cubes dependence in hypercubes
+- Take into account finite number of actual vertices in the computation of vertex_velocities (and maybe also in determine potential fixed points!)
+void FixedPointSearch::find_fixed_points_preallocated_memory()
+{
+    // Initialize grid computation wrapper
+    GridComputationWrapper grid_computation_wrapper(computation_parameters_.number_of_cubes_per_gpu_call_, maximum_recursion_depth_);
+
+    // Initialize vertices
+    odesolver::DevDatC vertices(dim_, computation_parameters_.number_of_cubes_per_gpu_call_ * pow(2, dim_));
+
+    // Initialize vertex velocities
+    odesolver::DevDatC vertex_velocities(dim_, computation_parameters_.number_of_cubes_per_gpu_call_ * pow(2, dim_));
+
+    auto c = 0;
+    while(c < computation_parameters_.maximum_number_of_gpu_calls_ and buffer_.len() > 0)
+    {
+        std::cout << "\n\n######### New computation round: " << c <<  " #########" << std::endl;
+        
+        std::vector<Node*> node_package;
+        int expected_number_of_cubes = 0;
+        int maximum_depth = 0;
+    
+        // Get nodes for the gpu from buffer
+        std::tie(node_package, expected_number_of_cubes, maximum_depth) = buffer_.pop_node_package(computation_parameters_.number_of_cubes_per_gpu_call_);
+    
+        if(monitor) {
+            std::cout << "\n### Nodes for the qpu: " << node_package.size() << ", total number of cubes: "
+                      << expected_number_of_cubes << std::endl;
+            buffer_.get_nodes_info(node_package);
+        }
+    
+        // Use helper class to perform gpu tasks on nodes
+        // Note that in this case no preallocation is performed due to the small number of generally expected nodes.
+        
+        // ToDo: Expected depth not taken into account!
+        grid_computation_wrapper.linearise_nodes(node_package);
+    
+        // Compute the actual vertices by first expanding each cube according to the number of vertices to
+        // a vector of reference vertices of length expected_number_of_cubes*dim and then computing the indices
+        hypercubes_.compute_vertices(vertices, grid_computation_wrapper, expected_number_of_cubes);
+    
+        // hypercubes.test_projection();
+    
+        // Compute vertex velocities
+        compute_vertex_velocities(vertices, vertex_velocities, flow_equations_ptr_.get());
+        // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
+    
+        // Determine potential fixed points
+        thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities);
+    
+        // Generate new nodes and derive solutions based on nodes and indices of potential fixed points
+        generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, node_package);
+
+        c++;
+    }
+}
 
 std::vector<std::vector<double>> load_fixed_points(std::string rel_dir)
 {

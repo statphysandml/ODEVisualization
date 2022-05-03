@@ -24,12 +24,18 @@ json vec_vec_to_json(const std::vector<std::vector<T>> data)
 {
     json j;
     for(const auto &dat : data)
-    {
-/*         std::vector<double> vec(dat.size());
-        std::copy(dat.begin(), dat.end(), vec.begin()); */
         j.push_back(dat);
-    }
     return j;
+}
+
+template<typename T=double>
+std::vector<std::pair<T, T>> json_to_vec_pair(const json j)
+{
+    std::vector<std::pair<T, T>> data;
+    data.reserve(j.size());
+    std::transform(j.begin(), j.end(), std::back_inserter(data),
+        [] (const json &dat) { return dat.get<std::pair<T, T>>(); });
+    return data;
 }
 
 #endif //PROGRAM_JSON_CONVERSION_HPP

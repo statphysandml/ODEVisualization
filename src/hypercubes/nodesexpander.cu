@@ -2,16 +2,16 @@
 
 NodesExpander::NodesExpander(
     const int maximum_depth,
-    const size_t maximum_number_of_nodes
+    const int number_of_nodes
 ):
     maximum_depth_(maximum_depth),
-    maximum_number_of_nodes_(maximum_number_of_nodes),
+    number_of_nodes_(number_of_nodes),
     collected_parent_cube_indices_(thrust::host_vector<dev_vec_int>(maximum_depth)),
-    number_of_cubes_per_node_(dev_vec_int(maximum_number_of_nodes)),
-    depth_per_node_(dev_vec_int(maximum_number_of_nodes))
+    number_of_cubes_per_node_(dev_vec_int(number_of_nodes)),
+    depth_per_node_(dev_vec_int(number_of_nodes))
 {
     // Initialize collected parent cube indices
-    auto number_of_nodes = maximum_number_of_nodes_; // to avoid passing "this" within the lambda capture
+    auto number_of_nodes = number_of_nodes_; // to avoid passing "this" within the lambda capture
     thrust::generate(collected_parent_cube_indices_.begin(), collected_parent_cube_indices_.end(), [number_of_nodes]() { return dev_vec_int(number_of_nodes, 0); });
 
     expected_number_of_cubes_ = 0;
@@ -25,7 +25,7 @@ void NodesExpander::extract_node_information(const std::vector<Node*> &node_pack
     expected_number_of_cubes_ = 0;
     expected_depth_ = 0;
 
-    for(auto node_index = 0; node_index < maximum_number_of_nodes_; node_index++)
+    for(auto node_index = 0; node_index < number_of_nodes_; node_index++)
     {
         // Collect cube indices for each dimension
         const std::vector<int> &parent_cube_indices = node_package[node_index]->get_parent_cube_indices();
@@ -67,7 +67,7 @@ void NodesExpander::extract_node_information(const std::vector<Node*> &node_pack
 }
 
 
-void NodesExpander::expand_node_information_according_to_number_of_nodes(
+void NodesExpander::expand_node_information(
     const std::vector<Node*> &node_package,
     odesolver::DevDatInt& expanded_cube_indices,
     odesolver::DimensionIteratorInt& expanded_depth_per_cube
@@ -93,8 +93,8 @@ void NodesExpander::expand_node_information_according_to_number_of_nodes(
     // Expand depth
     expand(number_of_cubes_per_node_.begin(), number_of_cubes_per_node_.end(), depth_per_node_.begin(), expanded_depth_per_cube.begin());
 
-    // Fill expanded cube indices with individual cube indices - fills last row of expanded cube indices
-    // -> Adds to each node an individual cube indiex in the deepest recursion step
+    // [ Fill expanded cube indices with individual cube indices - fills last row of expanded cube indices
+    
     // Generate iterators for each depth
     dev_iter_vec_int depth_iterator(maximum_depth_ + 1);
     for(auto depth_index = 0; depth_index < maximum_depth_ + 1; depth_index++)
@@ -103,19 +103,20 @@ void NodesExpander::expand_node_information_according_to_number_of_nodes(
     // Fill remaining cube indices
     auto node_index = 0;
     for(auto &node : node_package) {
-        int depth = depth_per_node_[node_index];//node->get_depth();
-        // Copy into correct depth
+        int depth = depth_per_node_[node_index]; //Equivalent to node->get_depth();
+        // Extract individual cube index and copy into correct depth
         *depth_iterator[depth] = thrust::copy(thrust::make_counting_iterator(node->get_internal_start_index()),
                                               thrust::make_counting_iterator(node->get_internal_end_index()),
                                               *depth_iterator[depth]);
-        // Increment all other iterators by the amount of vertices for all cubes per node
+        // Increment all other depth iterators by the amount of vertices according to the number of cubes in the considered node
         for (auto depth_index = 0; depth_index < maximum_depth_ + 1; depth_index++) {
             if (depth_index != depth)
-                *depth_iterator[depth_index] = *depth_iterator[depth_index] + number_of_cubes_per_node_[node_index]; // node->get_n_cubes();
+                *depth_iterator[depth_index] = *depth_iterator[depth_index] + number_of_cubes_per_node_[node_index]; // Equivalent to node->get_n_cubes();
         }
         node_index++;
     }
 
     for(auto depth_index = 0; depth_index < maximum_depth_ + 1; depth_index++)
         delete depth_iterator[depth_index];
+    // ]
 }

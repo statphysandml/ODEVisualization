@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     // fixed_point_search();
     // fixed_points_search();
     find_fixed_points();
-    evaluate_fixed_points();
+    // evaluate_fixed_points();
 
     // Finalization
 #ifdef PYTHON_BACKEND

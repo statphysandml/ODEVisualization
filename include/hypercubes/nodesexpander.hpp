@@ -25,11 +25,11 @@ public:
      * respective hypercubes in the recursive search tree.
      *
      * @param maximum_depth: Maximum recursive depth of the provided nodes
-     * @param maximum_number_of_nodes: Maximum number of provided nodes
+     * @param number_of_nodes: Expected number of provided nodes
      */
     NodesExpander(
         const int maximum_depth,
-        const size_t maximum_number_of_nodes
+        const int number_of_nodes
     );
 
     /** @brief Extracts based on the provided nodes information about the cube
@@ -65,7 +65,7 @@ public:
      * Expanded cube indices after filling with individual cube indices in depth 5: 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
      * Expanded depth per node: 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
      */
-    void expand_node_information_according_to_number_of_nodes(
+    void expand_node_information(
         const std::vector<Node*> &node_package,
         odesolver::DevDatInt& expanded_cube_indices,
         odesolver::DimensionIteratorInt& expanded_depth_per_cube
@@ -73,19 +73,19 @@ public:
 
 private:
     const int maximum_depth_;
-    const size_t maximum_number_of_nodes_;
+    const int number_of_nodes_;
 
     int expected_number_of_cubes_;
     int expected_depth_;
 
-    /** @brief List of vectors of size maximum_number_of_nodes containing the parent
+    /** @brief List of vectors of size number_of_nodes containing the parent
      * cube indices for each node and depth. Each vector refers to a different
      * recursive depth. */
     thrust::host_vector<dev_vec_int> collected_parent_cube_indices_;
-    /** @brief Vector of length maximum_number_of_nodes refering to the number of cubes
+    /** @brief Vector of length number_of_nodes refering to the number of cubes
      * of each node */
     dev_vec_int number_of_cubes_per_node_;
-    /** @brief Vector of length maximum_number_of_nodes containing the final depth for
+    /** @brief Vector of length number_of_nodes containing the final depth for
      * each node */
     dev_vec_int depth_per_node_;
 };

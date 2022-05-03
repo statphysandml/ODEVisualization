@@ -21,7 +21,7 @@ struct GridComputationWrapper
     );
 
     // Note that it is important that the actually contained number of cubes and maximum depth of the node package doesn't exceed the defined one in this class!
-    void generate_and_linearise_nodes(const std::vector<Node*> &node_package);
+    void linearise_nodes(const std::vector<Node*> &node_package);
 
     void print_expanded_vectors();
 

@@ -171,7 +171,7 @@ void find_fixed_points()
     );
 
     // Setting gpu specfic computation parameters (optional) - parameters are already set default
-    const int number_of_cubes_per_gpu_call = 400000;
+    const int number_of_cubes_per_gpu_call = 40000;
     const int maximum_number_of_gpu_calls = 1000;
     fixed_point_search.set_computation_parameters(
             number_of_cubes_per_gpu_call,
@@ -179,6 +179,7 @@ void find_fixed_points()
 
     // Find fixed point solutions
     fixed_point_search.find_fixed_point_solutions();
+    // fixed_point_search.find_fixed_point_solutions_with_preallocated_memory();
     NodeCounter<Node>::print_statistics();
 
     // Just for testing issues -> get solutions and print infos about these
@@ -188,7 +189,7 @@ void find_fixed_points()
 
     // Explicit use of parameters for clustering
     // const std::string dir = "fixed_point_search_interface";
-    const uint maximum_expected_number_of_clusters = 80;
+    const uint maximum_expected_number_of_clusters = 10;
     const double upper_bound_for_min_distance = 0.01;
     const uint maximum_number_of_iterations = 1000;
 
