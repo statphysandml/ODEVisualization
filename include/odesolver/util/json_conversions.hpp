@@ -9,8 +9,27 @@
 using json = nlohmann::json;
 
 
-std::vector<std::vector<double>> json_to_vec_vec(const json j);
+template<typename T=double>
+std::vector<std::vector<T>> json_to_vec_vec(const json j)
+{
+    std::vector< std::vector<T> > data;
+    data.reserve(j.size());
+    std::transform(j.begin(), j.end(), std::back_inserter(data),
+        [] (const json &dat) { return dat.get<std::vector<T>>(); });
+    return data;
+}
 
-json vec_vec_to_json(const std::vector <std::vector<double>> data);
+template<typename T>
+json vec_vec_to_json(const std::vector<std::vector<T>> data)
+{
+    json j;
+    for(const auto &dat : data)
+    {
+/*         std::vector<double> vec(dat.size());
+        std::copy(dat.begin(), dat.end(), vec.begin()); */
+        j.push_back(dat);
+    }
+    return j;
+}
 
 #endif //PROGRAM_JSON_CONVERSION_HPP

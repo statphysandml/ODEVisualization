@@ -45,4 +45,6 @@ std::shared_ptr<FlowEquationsWrapper> generate_flow_equations(Args... args)
 
 odesolver::DevDatC compute_vertex_velocities(const odesolver::DevDatC &coordinates, FlowEquationsWrapper * flow_equations);
 
+void compute_vertex_velocities(const odesolver::DevDatC &coordinates, odesolver::DevDatC &vertex_velocities, FlowEquationsWrapper * flow_equations);
+
 #endif //PROJECT_FLOW_EQUATION_HPP

@@ -28,23 +28,16 @@ class HyperCubes
 {
 public:
     // Base constructor
-    HyperCubes(const std::vector< std::vector<int> > n_branches_per_depth_,
-               const std::vector <std::pair<cudaT, cudaT> > lambda_ranges_);
+    HyperCubes(const std::vector<std::vector<int>> n_branches_per_depth_={},
+               const std::vector<std::pair<cudaT, cudaT>> lambda_ranges_={});
 
-    // ToDo: Add rule of five
+    static thrust::host_vector<thrust::host_vector<int>> compute_accum_n_branches_per_dim(const std::vector<std::vector<int>> &n_branches_per_depth_, const uint dim_);
 
-    static thrust::host_vector< thrust::host_vector<int> > compute_accum_n_branches_per_dim(const std::vector< std::vector<int> > &n_branches_per_depth_, const uint dim_);
-
-    static thrust::host_vector< thrust::host_vector<int> > compute_accum_n_branches_per_depth(const std::vector< std::vector<int> > &n_branches_per_depth_, const uint dim_);
+    static thrust::host_vector<thrust::host_vector<int>> compute_accum_n_branches_per_depth(const std::vector<std::vector<int>> &n_branches_per_depth_, const uint dim_);
 
     static void compute_summed_positive_signs_per_cube(dev_vec_bool &velocity_sign_properties_in_dim, dev_vec_int &summed_positive_signs);
 
-    // Main Function for node expansion- Executes extract_node_information and expand_node_information_according_to_number_of_nodes to
-    // return expanded_cube_indices_ptr and expanded_depth_per_cube_ptr for further computation
-    GridComputationWrapper generate_and_linearize_nodes(const int total_number_of_cubes, const int maximum_depth,
-                                                        const std::vector<Node*> &node_package) const;
-
-    // Further (simpler functions for generating grid computation wrapper from other resources
+    // Further (simpler functions for generating grid computation wrapper from other resources)
 
     // Compute expanded cube indices and expanded depth per cube from coordinates -> result can be used in the next instance to compute vertices on the given grid
     GridComputationWrapper project_coordinates_on_expanded_cube_and_depth_per_cube_indices(odesolver::DevDatC coordinates, bool coordinates_on_grid=false, int depth=-1) const; // no reference since coordinates is changed within this function
@@ -64,19 +57,23 @@ public:
     const odesolver::DevDatC& get_vertices() const;
     // const odesolver::DevDatC& get_vertex_velocities() const;
 
+    const std::vector<std::vector<int>>& get_n_branches_per_depth() const;
+
+    const std::vector<std::pair<cudaT, cudaT>>& get_lambda_ranges() const;
+
     // Function for testing if project_coordinates_on_expanded_cube_and_depth_per_cube_indices works
     // Todo: To be implemented
     void test_projection();
 
 protected:
     // Constants
-    const uint8_t dim;
+    size_t dim;
 
-    const std::vector<std::vector<int>> n_branches_per_depth;
-    const thrust::host_vector<thrust::host_vector<int>> accum_n_branches_per_dim;
-    const thrust::host_vector<thrust::host_vector<int>> accum_n_branches_per_depth;
-    const std::vector<std::pair<cudaT, cudaT>> lambda_ranges;
-    
+    std::vector<std::vector<int>> n_branches_per_depth;
+    thrust::host_vector<thrust::host_vector<int>> accum_n_branches_per_dim;
+    thrust::host_vector<thrust::host_vector<int>> accum_n_branches_per_depth;
+    std::vector<std::pair<cudaT, cudaT>> lambda_ranges;
+
     // Variables defined depending on your usage
     int total_number_of_cubes;
     odesolver::DevDatC vertices; // (total_number_of_cubes x n_cube) x dim (len = dim) OR total_number_of_cubes x dim (len = dim)

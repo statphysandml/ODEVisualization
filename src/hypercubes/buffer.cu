@@ -1,6 +1,6 @@
 #include "../../include/hypercubes/buffer.hpp"
 
-std::tuple< std::vector<Node*>, int, int > Buffer::pop_node_package(const int number_of_cubes)
+std::tuple<std::vector<Node*>, int, int> Buffer::pop_node_package(const int number_of_cubes)
 {
     int total_number_of_cubes = 0;
     int maximum_depth = 0;

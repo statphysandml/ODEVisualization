@@ -1,39 +1,49 @@
 #include "../../include/hypercubes/nodesexpander.hpp"
 
-NodesExpander::NodesExpander(const int total_number_of_cubes, const int maximum_depth,
-    const std::vector<Node*> &nodes) :
-    total_number_of_cubes_(total_number_of_cubes),
+NodesExpander::NodesExpander(
+    const int maximum_depth,
+    const size_t maximum_number_of_nodes
+):
     maximum_depth_(maximum_depth),
-    number_of_nodes_(nodes.size()),
-    nodes_(nodes),
+    maximum_number_of_nodes_(maximum_number_of_nodes),
     collected_parent_cube_indices_(thrust::host_vector<dev_vec_int>(maximum_depth)),
-    number_of_cubes_per_node_(dev_vec_int(number_of_nodes_)),
-    depth_per_node_(dev_vec_int(number_of_nodes_))
-{}
-
-
-void NodesExpander::extract_node_information()
+    number_of_cubes_per_node_(dev_vec_int(maximum_number_of_nodes)),
+    depth_per_node_(dev_vec_int(maximum_number_of_nodes))
 {
     // Initialize collected parent cube indices
-    auto number_of_nodes = number_of_nodes_; // to avoid passing "this" within the lambda capture
+    auto number_of_nodes = maximum_number_of_nodes_; // to avoid passing "this" within the lambda capture
     thrust::generate(collected_parent_cube_indices_.begin(), collected_parent_cube_indices_.end(), [number_of_nodes]() { return dev_vec_int(number_of_nodes, 0); });
 
+    expected_number_of_cubes_ = 0;
+    expected_depth_ = 0;
+}
+
+
+void NodesExpander::extract_node_information(const std::vector<Node*> &node_package)
+{
     // Collect counts and values for the expansion
-    for(auto node_index = 0; node_index < number_of_nodes_; node_index++)
+    expected_number_of_cubes_ = 0;
+    expected_depth_ = 0;
+
+    for(auto node_index = 0; node_index < maximum_number_of_nodes_; node_index++)
     {
         // Collect cube indices for each dimension
-        const std::vector<int> &parent_cube_indices = nodes_[node_index]->get_parent_cube_indices();
+        const std::vector<int> &parent_cube_indices = node_package[node_index]->get_parent_cube_indices();
         // print_range("Parent cube indices", parent_cube_indices.begin(), parent_cube_indices.end());
-        int depth = nodes_[node_index]->get_depth();
+        int depth = node_package[node_index]->get_depth();
         for(auto depth_index = 0; depth_index < depth; depth_index++)
             collected_parent_cube_indices_[depth_index][node_index] = parent_cube_indices[depth_index];
 
         // Derive depths
         depth_per_node_[node_index] = depth;
+        if(depth > expected_depth_)
+            expected_depth_ = depth;
 
         // Counter for latter expansion
-        number_of_cubes_per_node_[node_index] = nodes_[node_index]->get_n_cubes();
+        number_of_cubes_per_node_[node_index] = node_package[node_index]->get_n_cubes();
     }
+
+    expected_number_of_cubes_ = thrust::reduce(number_of_cubes_per_node_.begin(), number_of_cubes_per_node_.end());
 
     // Testing
     /*auto i = 0;
@@ -57,28 +67,42 @@ void NodesExpander::extract_node_information()
 }
 
 
-GridComputationWrapper NodesExpander::expand_node_information_according_to_number_of_nodes()
+void NodesExpander::expand_node_information_according_to_number_of_nodes(
+    const std::vector<Node*> &node_package,
+    odesolver::DevDatInt& expanded_cube_indices,
+    odesolver::DimensionIteratorInt& expanded_depth_per_cube
+)
 {
-    GridComputationWrapper grcompwrap(total_number_of_cubes_, maximum_depth_ + 1);
+    if(expected_number_of_cubes_ > expanded_cube_indices.n_elems())
+    {
+        std::cerr << "Number of elements in expanded_cube_indices is too small in comparison to the expected number of cubes." << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    if(expected_depth_ + 1 > expanded_cube_indices.dim_size())
+    {
+        std::cerr << "Provided maximum depth in expanded_cube_indices is too small in comparison to the expected maximum recursive depth." << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
 
     // Expand parent cube indices
     for(auto depth_index = 0; depth_index < maximum_depth_; depth_index++) {
-        expand(number_of_cubes_per_node_.begin(), number_of_cubes_per_node_.end(), collected_parent_cube_indices_[depth_index].begin(), grcompwrap.expanded_cube_indices[depth_index].begin());
+        expand(number_of_cubes_per_node_.begin(), number_of_cubes_per_node_.end(), collected_parent_cube_indices_[depth_index].begin(), expanded_cube_indices[depth_index].begin());
     }
 
     // Expand depth
-    expand(number_of_cubes_per_node_.begin(), number_of_cubes_per_node_.end(), depth_per_node_.begin(), grcompwrap.expanded_depth_per_cube.begin());
+    expand(number_of_cubes_per_node_.begin(), number_of_cubes_per_node_.end(), depth_per_node_.begin(), expanded_depth_per_cube.begin());
 
     // Fill expanded cube indices with individual cube indices - fills last row of expanded cube indices
     // -> Adds to each node an individual cube indiex in the deepest recursion step
     // Generate iterators for each depth
     dev_iter_vec_int depth_iterator(maximum_depth_ + 1);
     for(auto depth_index = 0; depth_index < maximum_depth_ + 1; depth_index++)
-        depth_iterator[depth_index] = new dev_iterator_int(grcompwrap.expanded_cube_indices[depth_index].begin());
+        depth_iterator[depth_index] = new dev_iterator_int(expanded_cube_indices[depth_index].begin());
 
     // Fill remaining cube indices
     auto node_index = 0;
-    for(auto &node : nodes_) {
+    for(auto &node : node_package) {
         int depth = depth_per_node_[node_index];//node->get_depth();
         // Copy into correct depth
         *depth_iterator[depth] = thrust::copy(thrust::make_counting_iterator(node->get_internal_start_index()),
@@ -94,23 +118,4 @@ GridComputationWrapper NodesExpander::expand_node_information_according_to_numbe
 
     for(auto depth_index = 0; depth_index < maximum_depth_ + 1; depth_index++)
         delete depth_iterator[depth_index];
-
-
-    // Testing
-    if(monitor)
-    {
-        grcompwrap.print_expanded_vectors();
-    }
-
-    /* Example output
-     * Expanded cube indices after filling with individual cube indices in depth 0: 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
-     * Expanded cube indices after filling with individual cube indices in depth 1: 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-     * Expanded cube indices after filling with individual cube indices in depth 2: 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-     * Expanded cube indices after filling with individual cube indices in depth 3: 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-     * Expanded cube indices after filling with individual cube indices in depth 4: 3 3 3 3 5 5 5 5 5 5 5 5 7 7 7 7 7 7 7 7
-     * Expanded cube indices after filling with individual cube indices in depth 5: 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
-     * Expanded depth per node: 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5
-     */
-
-    return grcompwrap;
 }

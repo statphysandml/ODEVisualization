@@ -96,8 +96,7 @@ private:
     uint dim_;
     int maximum_recursion_depth_;
 
-    std::vector<std::vector<int>> n_branches_per_depth_;
-    std::vector<std::pair<cudaT, cudaT>> lambda_ranges_;
+    HyperCubes hypercubes_;
 
     Buffer buffer_;
     std::vector<std::shared_ptr<Leaf>> solutions_;

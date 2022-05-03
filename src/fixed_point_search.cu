@@ -11,27 +11,28 @@ FixedPointSearch::FixedPointSearch(
     dim_(get_entry<json>("flow_equation")["dim"].get<cudaT>()),
     maximum_recursion_depth_(get_entry<int>("maximum_recursion_depth"))
 {
-    auto n_branches_per_depth = get_entry<json>("n_branches_per_depth");
-    auto lambda_ranges = get_entry<json>("lambda_ranges");
+    std::vector<std::vector<int>> n_branches_per_depth = json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth"));
+    
+    auto lambda_ranges_json = get_entry<json>("lambda_ranges");
+    std::vector<std::pair<cudaT, cudaT>> lambda_ranges;
+    std::transform(lambda_ranges_json.begin(), lambda_ranges_json.end(), std::back_inserter(lambda_ranges),
+                   [] (json &dat) { return dat.get<std::pair<cudaT, cudaT>>(); });
 
-    std::transform(n_branches_per_depth.begin(), n_branches_per_depth.end(), std::back_inserter(n_branches_per_depth_),
-                   [] (json &dat) { return dat.get< std::vector<int> >(); });
-    std::transform(lambda_ranges.begin(), lambda_ranges.end(), std::back_inserter(lambda_ranges_),
-                   [] (json &dat) { return dat.get< std::pair<cudaT, cudaT> >(); });
+    hypercubes_ = HyperCubes(n_branches_per_depth, lambda_ranges);
 
-    std::shared_ptr<Node> root_node_ptr = std::make_shared<Node>(0, compute_internal_end_index(n_branches_per_depth_[0]), std::vector< int >{});
+    std::shared_ptr<Node> root_node_ptr = std::make_shared<Node>(0, compute_internal_end_index(hypercubes_.get_n_branches_per_depth()[0]), std::vector< int >{});
     buffer_ = Buffer(std::move(root_node_ptr));
 
     // Tests
-    if (n_branches_per_depth_.size() < maximum_recursion_depth_)
+    if (hypercubes_.get_n_branches_per_depth().size() < maximum_recursion_depth_)
     {
         std::cout << "\nERROR: Maximum recursion depth " << maximum_recursion_depth_
-                  << " is smaller than the available number of branches per depth " << n_branches_per_depth_.size()
+                  << " is smaller than the available number of branches per depth " << hypercubes_.get_n_branches_per_depth().size()
                   << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
-    for (const auto &n_branches : n_branches_per_depth_)
+    for (const auto &n_branches : hypercubes_.get_n_branches_per_depth())
     {
         if (n_branches.size() != dim_) {
             std::cout << "\nERROR: Number of branches per depth " << n_branches.size() << " do not coincide with dimension " << dim_ <<  std::endl;
@@ -39,9 +40,9 @@ FixedPointSearch::FixedPointSearch(
         }
     }
 
-    if(lambda_ranges_.size() != dim_)
+    if(hypercubes_.get_lambda_ranges().size() != dim_)
     {
-        std::cout << "\nERROR: Number of lambda ranges " << lambda_ranges_.size() << " do not coincide with dimension" << dim_ << std::endl;
+        std::cout << "\nERROR: Number of lambda ranges " << hypercubes_.get_lambda_ranges().size() << " do not coincide with dimension" << dim_ << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -123,17 +124,15 @@ void FixedPointSearch::cluster_solutions_to_fixed_points(const uint maximum_expe
         const uint maximum_number_of_iterations)
 {
     // Compute vertices of solutions
-    HyperCubes solution_cubes(n_branches_per_depth_, lambda_ranges_);
-
     std::vector<Leaf*> solutions;
     std::transform(solutions_.begin(), solutions_.end(), std::back_inserter(solutions), [](const std::shared_ptr<Leaf>& leaf_ptr) {
         return leaf_ptr.get();
     });
-    GridComputationWrapper grcompwrap = solution_cubes.project_leaves_on_expanded_cube_and_depth_per_cube_indices(solutions);
-    solution_cubes.compute_cube_center_vertices(grcompwrap);
+    GridComputationWrapper grcompwrap = hypercubes_.project_leaves_on_expanded_cube_and_depth_per_cube_indices(solutions);
+    hypercubes_.compute_cube_center_vertices(grcompwrap);
 
     // Get center vertices
-    const odesolver::DevDatC potential_fixed_points = solution_cubes.get_vertices();
+    const odesolver::DevDatC potential_fixed_points = hypercubes_.get_vertices();
 
     // Cluster center vertices
     fixed_points_ = cluster_device_data(
@@ -239,7 +238,7 @@ void FixedPointSearch::generate_new_nodes_and_leaves(const thrust::host_vector<i
 
                     // Generate new nodes
                     if(node->get_depth() + 1 < maximum_recursion_depth_) {
-                        buffer_.append_node(0, compute_internal_end_index(n_branches_per_depth_[node->get_depth() + 1]), parent_cube_indices);
+                        buffer_.append_node(0, compute_internal_end_index(hypercubes_.get_n_branches_per_depth()[node->get_depth() + 1]), parent_cube_indices);
                         n_new_nodes++;
                     }
                     else // Found solution -> Generate new leaf
@@ -272,35 +271,35 @@ void FixedPointSearch::generate_new_nodes_and_leaves(const thrust::host_vector<i
 void FixedPointSearch::run_gpu_computing_task()
 {
     std::vector<Node*> node_package;
-    int total_number_of_cubes = 0;
+    int expected_number_of_cubes = 0;
     int maximum_depth = 0;
 
     // Get nodes for the gpu from buffer
-    std::tie(node_package, total_number_of_cubes, maximum_depth) = buffer_.pop_node_package(computation_parameters_.number_of_cubes_per_gpu_call_);
+    std::tie(node_package, expected_number_of_cubes, maximum_depth) = buffer_.pop_node_package(computation_parameters_.number_of_cubes_per_gpu_call_);
 
     if(monitor) {
         std::cout << "\n### Nodes for the qpu: " << node_package.size() << ", total number of cubes: "
-                  << total_number_of_cubes << std::endl;
+                  << expected_number_of_cubes << std::endl;
         buffer_.get_nodes_info(node_package);
     }
 
-    HyperCubes hypercubes(n_branches_per_depth_, lambda_ranges_);
+    GridComputationWrapper grid_computation_wrapper(expected_number_of_cubes, maximum_depth + 1);
 
     // Use helper class to perform gpu tasks on nodes
-    GridComputationWrapper grcompwrap = hypercubes.generate_and_linearize_nodes(total_number_of_cubes, maximum_depth, node_package);
+    grid_computation_wrapper.generate_and_linearise_nodes(node_package);
 
     // Compute the actual vertices by first expanding each cube according to the number of vertices to
-    // a vector of reference vertices of length total_number_of_cubes*dim and then computing the indices
-    hypercubes.compute_vertices(grcompwrap);
+    // a vector of reference vertices of length expected_number_of_cubes*dim and then computing the indices
+    hypercubes_.compute_vertices(grid_computation_wrapper);
 
     // hypercubes.test_projection();
 
     // Compute vertex velocities
-    auto vertex_velocities = compute_vertex_velocities(hypercubes.get_vertices(), flow_equations_ptr_.get());
+    auto vertex_velocities = compute_vertex_velocities(hypercubes_.get_vertices(), flow_equations_ptr_.get());
     // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
 
-    // Determine potential fix points
-    thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes.determine_potential_fixed_points(vertex_velocities);
+    // Determine potential fixed points
+    thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities);
 
     // Generate new nodes and derive solutions based on nodes and indices of potential fixed points
     generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, node_package);

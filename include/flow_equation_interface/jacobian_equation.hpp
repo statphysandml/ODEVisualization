@@ -43,4 +43,6 @@ std::shared_ptr<JacobianEquationWrapper> generate_jacobian_equations(Args... arg
 
 odesolver::DevDatC compute_jacobian_elements(const odesolver::DevDatC &coordinates, JacobianEquationWrapper * jacobian_equations);
 
+void compute_jacobian_elements(const odesolver::DevDatC &coordinates, const odesolver::DevDatC &jacobian_elements, JacobianEquationWrapper * jacobian_equations);
+
 #endif //PROJECT_JACOBIAN_EQUATION_HPP
