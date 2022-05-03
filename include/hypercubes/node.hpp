@@ -23,7 +23,7 @@ class Node : NodeCounter<Node>
 public:
     Node(const int internal_start_index, int internal_end_index, const std::vector< int > parent_cube_indices) :
     NodeCounter(parent_cube_indices.size()),
-    level_node_index_(NodeCounter<Node>::objects_created[parent_cube_indices.size()]),
+    level_node_index_(NodeCounter<Node>::objects_created_[parent_cube_indices.size()]),
     depth_(parent_cube_indices.size()),
     internal_start_index_(internal_start_index),
     internal_end_index_(internal_end_index), parent_cube_indices_(parent_cube_indices)
@@ -31,7 +31,7 @@ public:
 
     ~Node()
     {
-        --NodeCounter::objects_alive[get_depth()];
+        --NodeCounter::objects_alive_[get_depth()];
     }
 
     // Generate a new node and adapt the end index of the current node
@@ -73,8 +73,6 @@ public:
             std::cout << " " << parent_cube_index;
         std::cout << std::endl;
     }
-
-    // if max depth -> node is undiviadble??
 
 private:
     const int level_node_index_; // corresponds to the i-th generated node in that depth
