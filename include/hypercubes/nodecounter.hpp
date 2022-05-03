@@ -9,6 +9,8 @@
 #include <iostream>
 
 // https://stackoverflow.com/questions/1926605/how-to-count-the-number-of-objects-created-in-c
+
+/** @brief Class allowing for an inspection of the number of generated and deleted nodes. */
 template <typename T>
 struct NodeCounter
 {

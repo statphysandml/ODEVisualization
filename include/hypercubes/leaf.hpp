@@ -9,6 +9,7 @@
 
 using json = nlohmann::json;
 
+/** @brief Encoding of hypercubes at the end of the recursive search tree. The cube indices allow for a computation of the vertices of the respective hypercubes based on the knowledge of the different search ranges and number of branches per dimension. */
 class Leaf
 {
 public:

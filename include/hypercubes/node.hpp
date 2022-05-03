@@ -15,6 +15,9 @@
 int compute_internal_end_index(const std::vector<int> &n_branches);
 
 
+/** @brief Class for tracking and generating nodes describing packages of
+ * hypercubes for later computations. The packages refer to hypercubes on the
+ * recursive search tree of the fixed point search. */
 class Node : NodeCounter<Node>
 {
 public:
