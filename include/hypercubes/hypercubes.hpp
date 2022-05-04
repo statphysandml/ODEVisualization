@@ -89,7 +89,7 @@ protected:
     VertexMode vertex_mode;
 
     // Helper functions
-    void compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grid_computation_wrapper, int dim_index) const;
+    void compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grcompwrap, int dim_index, int total_number_of_cubes=0, int maximum_depth=0) const;
 };
 
 #endif //MAIN_HYPERCUBES_HPP

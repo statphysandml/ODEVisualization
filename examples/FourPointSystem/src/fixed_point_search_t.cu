@@ -75,7 +75,7 @@ void run_fixed_point_search_from_file()
     // Load existing fixed_point_search parameter file
     auto fixed_point_search = FixedPointSearch::from_file(rel_dir, generate_flow_equations<FourPointSystemFlowEquations>(0));
 
-    fixed_point_search.find_fixed_point_solutions();
+    fixed_point_search.find_fixed_points_dynamic_memory();
     const std::string mode = "fixed_point_search"; // -> ToDo: Allow for adding a mode to the config file <-> allows for the computation with executer
     fixed_point_search.write_solutions_to_file(rel_dir);
 
@@ -119,7 +119,7 @@ void fixed_points_search()
     FixedPointSearch fixed_point_search = build_fixed_point_search_parameters();
 
     // Find fixed point solutions
-    fixed_point_search.find_fixed_point_solutions();
+    fixed_point_search.find_fixed_points_dynamic_memory();
     NodeCounter<Node>::print_statistics();
 
     // Just for testing issues -> get solutions and print infos about these
@@ -178,8 +178,8 @@ void find_fixed_points()
             maximum_number_of_gpu_calls);
 
     // Find fixed point solutions
-    fixed_point_search.find_fixed_point_solutions();
-    // fixed_point_search.find_fixed_point_solutions_with_preallocated_memory();
+    fixed_point_search.find_fixed_points_dynamic_memory();
+    // fixed_point_search.find_fixed_points_preallocated_memory();
     NodeCounter<Node>::print_statistics();
 
     // Just for testing issues -> get solutions and print infos about these

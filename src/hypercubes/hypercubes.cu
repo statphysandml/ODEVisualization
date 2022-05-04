@@ -389,7 +389,7 @@ odesolver::DevDatC HyperCubes::compute_reference_vertices(GridComputationWrapper
 
 void HyperCubes::compute_vertices(odesolver::DevDatC &vertices, GridComputationWrapper &grcompwrap, int total_number_of_cubes)
 {
-    if(total_number_of_nodes == 0)
+    if(total_number_of_cubes == 0)
         total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
 
     for(auto dim_index = 0; dim_index < dim; dim_index++)
@@ -516,6 +516,7 @@ thrust::host_vector<int> HyperCubes::determine_potential_fixed_points(odesolver:
         std::cout << "\nERROR: Wrong vertex mode for computation of potential fix points" << std::endl;
         std::exit(EXIT_FAILURE);
     }
+    auto total_number_of_cubes = int(vertex_velocities.size() / pow(2, dim));
     auto number_of_vertices_ = vertex_velocities[0].size(); // to avoid a pass of this within the lambda capture
     thrust::host_vector<dev_vec_bool> velocity_sign_properties(dim);
     thrust::generate(velocity_sign_properties.begin(), velocity_sign_properties.end(), [number_of_vertices_]() { return dev_vec_bool (number_of_vertices_, false); });
@@ -527,7 +528,7 @@ thrust::host_vector<int> HyperCubes::determine_potential_fixed_points(odesolver:
         // Turn vertex_velocities into an array with 1.0 and 0.0 for change in sign
         thrust::transform(vertex_velocities[dim_index].begin(), vertex_velocities[dim_index].end(), velocity_sign_properties[dim_index].begin(), greater_than_zero());
 
-        // Initialize a vectors for sign checks
+        // Initialize a vector for sign checks
         dev_vec_int summed_positive_signs(total_number_of_cubes, 0); // Contains the sum of positive signs within each cube
         HyperCubes::compute_summed_positive_signs_per_cube(velocity_sign_properties[dim_index], summed_positive_signs);
 
@@ -669,12 +670,12 @@ void HyperCubes::test_projection()
 
 // Private functions
 
-void HyperCubes::compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grcompwrap, int dim_index, int total_number_of_cubes=0, int maximum_depth=0) const
+void HyperCubes::compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grcompwrap, int dim_index, int total_number_of_cubes, int maximum_depth) const
 {
     if(total_number_of_cubes == 0)
         total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
     if(maximum_depth == 0)
-        maximum_depth = grcompwrap.expanded_cube_indices_.dim_size()
+        maximum_depth = grcompwrap.expanded_cube_indices_.dim_size();
 
     for(auto depth_index = 0; depth_index < maximum_depth; depth_index++)
     {

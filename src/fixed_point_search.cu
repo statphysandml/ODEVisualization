@@ -11,9 +11,9 @@ FixedPointSearch::FixedPointSearch(
     dim_(get_entry<json>("flow_equation")["dim"].get<cudaT>()),
     maximum_recursion_depth_(get_entry<int>("maximum_recursion_depth"))
 {
-    std::vector<std::vector<int>> n_branches_per_depth = json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth"));
-    std::vector<std::pair<double, double>> = json_to_vec_pair(get_entry<json>("lambda_ranges"));
-    hypercubes_ = HyperCubes(n_branches_per_depth, lambda_ranges);
+    hypercubes_ = HyperCubes(
+        json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth")), json_to_vec_pair<double>(get_entry<json>("lambda_ranges"))
+    );
 
     std::shared_ptr<Node> root_node_ptr = std::make_shared<Node>(0, compute_internal_end_index(hypercubes_.get_n_branches_per_depth()[0]), std::vector< int >{});
 
@@ -300,9 +300,9 @@ void FixedPointSearch::find_fixed_points_dynamic_memory()
 
 // ToDo: Recheck recusrion depth.... by rerunning the simple commented test functions
 // ToDo:
-- Take into account maximum depth at ALL stages
-- Fix total_number_of_cubes dependence in hypercubes
-- Take into account finite number of actual vertices in the computation of vertex_velocities (and maybe also in determine potential fixed points!)
+// - Take into account maximum depth at ALL stages
+// - Fix total_number_of_cubes dependence in hypercubes
+// - Take into account finite number of actual vertices in the computation of vertex_velocities (and maybe also in determine potential fixed points!)
 void FixedPointSearch::find_fixed_points_preallocated_memory()
 {
     // Initialize grid computation wrapper
