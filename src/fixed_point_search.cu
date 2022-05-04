@@ -301,8 +301,6 @@ void FixedPointSearch::find_fixed_points_dynamic_memory()
 // ToDo: Recheck recusrion depth.... by rerunning the simple commented test functions
 // ToDo:
 // - Take into account maximum depth at ALL stages
-// - Fix total_number_of_cubes dependence in hypercubes
-// - Take into account finite number of actual vertices in the computation of vertex_velocities (and maybe also in determine potential fixed points!)
 void FixedPointSearch::find_fixed_points_preallocated_memory()
 {
     // Initialize grid computation wrapper
@@ -321,10 +319,10 @@ void FixedPointSearch::find_fixed_points_preallocated_memory()
         
         std::vector<Node*> node_package;
         int expected_number_of_cubes = 0;
-        int maximum_depth = 0;
+        int expected_maximum_depth = 0;
     
         // Get nodes for the gpu from buffer
-        std::tie(node_package, expected_number_of_cubes, maximum_depth) = buffer_.pop_node_package(computation_parameters_.number_of_cubes_per_gpu_call_);
+        std::tie(node_package, expected_number_of_cubes, expected_maximum_depth) = buffer_.pop_node_package(computation_parameters_.number_of_cubes_per_gpu_call_);
     
         if(monitor) {
             std::cout << "\n### Nodes for the qpu: " << node_package.size() << ", total number of cubes: "
@@ -336,20 +334,22 @@ void FixedPointSearch::find_fixed_points_preallocated_memory()
         // Note that in this case no preallocation is performed due to the small number of generally expected nodes.
         
         // ToDo: Expected depth not taken into account!
-        grid_computation_wrapper.linearise_nodes(node_package);
+        grid_computation_wrapper.linearise_nodes(node_package, expected_number_of_cubes, expected_maximum_depth + 1);
     
         // Compute the actual vertices by first expanding each cube according to the number of vertices to
         // a vector of reference vertices of length expected_number_of_cubes*dim and then computing the indices
-        hypercubes_.compute_vertices(vertices, grid_computation_wrapper, expected_number_of_cubes);
+        vertices.set_N(expected_number_of_cubes * pow(2, dim_));
+        hypercubes_.compute_vertices(vertices, grid_computation_wrapper, expected_maximum_depth + 1);
     
         // hypercubes.test_projection();
     
         // Compute vertex velocities
+        vertex_velocities.set_N(expected_number_of_cubes * pow(2, dim_));
         compute_vertex_velocities(vertices, vertex_velocities, flow_equations_ptr_.get());
         // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
     
         // Determine potential fixed points
-        thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities, expected_number_of_cubes);
+        thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities);
     
         // Generate new nodes and derive solutions based on nodes and indices of potential fixed points
         generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, node_package);

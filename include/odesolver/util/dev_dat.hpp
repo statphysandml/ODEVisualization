@@ -18,8 +18,8 @@ namespace odesolver {
     class DimensionIterator
     {
     public:
-        DimensionIterator(const Iterator begin_iterator, const Iterator end_iterator):
-            begin_iterator_(begin_iterator), end_iterator_(end_iterator), N_(end_iterator - begin_iterator)
+        DimensionIterator(const Iterator begin_iterator, size_t N):
+            begin_iterator_(begin_iterator), N_(N)
         {}
 
         const Iterator begin() const
@@ -29,7 +29,7 @@ namespace odesolver {
 
         const Iterator end() const
         {
-            return end_iterator_;
+            return begin_iterator_ + N_;
         }
 
         size_t size() const
@@ -37,9 +37,13 @@ namespace odesolver {
             return N_;
         }
 
+        void set_N(const size_t N)
+        {
+            N_ = N;
+        }
+
     private:
         Iterator begin_iterator_;
-        Iterator end_iterator_;
         size_t N_;
     };
 
@@ -188,6 +192,11 @@ namespace odesolver {
         void set_N(const size_t N)
         {
             N_ = N;
+            for(auto i = 0; i < dim_; i++)
+            {
+                dimension_iterators_[i].set_N(N);
+                const_dimension_iterators_[i].set_N(N);
+            }
         }
 
         void initialize_dimension_iterators()
@@ -201,8 +210,8 @@ namespace odesolver {
             dimension_iterators_.reserve(dim_);
             for(auto i = 0; i < dim_; i++)
             {
-                dimension_iterators_.push_back(DimensionIterator<VecIterator> (begin, end));
-                const_dimension_iterators_.push_back(DimensionIterator<ConstVecIterator> (begin, end));
+                dimension_iterators_.push_back(DimensionIterator<VecIterator> (begin, N_));
+                const_dimension_iterators_.push_back(DimensionIterator<ConstVecIterator> (begin, N_));
                 thrust::advance(begin, N_);
                 thrust::advance(end, N_);
             }

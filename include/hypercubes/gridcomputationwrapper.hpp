@@ -21,7 +21,7 @@ struct GridComputationWrapper
     );
 
     // Note that it is important that the actually contained number of cubes and maximum depth of the node package doesn't exceed the defined one in this class!
-    void linearise_nodes(const std::vector<Node*> &node_package);
+    void linearise_nodes(const std::vector<Node*> &node_package, int expected_number_of_cubes=0, int expected_maximum_depth=0);
 
     void print_expanded_vectors();
 
@@ -32,7 +32,7 @@ struct GridComputationWrapper
     odesolver::DevDatInt expanded_cube_indices_;
     // For depths
     odesolver::DevDatInt expanded_depth_per_cube_wrapper_;
-    odesolver::DimensionIteratorInt expanded_depth_per_cube_;
+    odesolver::DimensionIteratorInt& expanded_depth_per_cube_;
 };
 
 #endif //PROGRAM_GRIDCOMPUTATIONWRAPPER_HPP

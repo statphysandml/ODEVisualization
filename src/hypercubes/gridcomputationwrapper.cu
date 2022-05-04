@@ -12,9 +12,19 @@ GridComputationWrapper::GridComputationWrapper(
     expanded_depth_per_cube_(expanded_depth_per_cube_wrapper_[0])
 {}
 
-void GridComputationWrapper::linearise_nodes(const std::vector<Node*> &node_package)
+void GridComputationWrapper::linearise_nodes(const std::vector<Node*> &node_package, int expected_number_of_cubes, int expected_maximum_depth)
 {
-    NodesExpander nodesexpander(maximum_depth_, node_package.size());
+    if(expected_number_of_cubes != 0)
+    {
+        expanded_cube_indices_.set_N(expected_number_of_cubes);
+        expanded_depth_per_cube_wrapper_.set_N(expected_number_of_cubes);
+    }
+    auto maximum_depth = maximum_depth_;
+    if(expected_maximum_depth != 0)
+        maximum_depth = expected_maximum_depth;
+
+
+    NodesExpander nodesexpander(maximum_depth, node_package.size());
 
     // Fill vectors of length number of nodes
     nodesexpander.extract_node_information(node_package);

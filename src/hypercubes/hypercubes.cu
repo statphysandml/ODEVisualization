@@ -387,17 +387,16 @@ odesolver::DevDatC HyperCubes::compute_reference_vertices(GridComputationWrapper
     return std::move(reference_vertices);
 }
 
-void HyperCubes::compute_vertices(odesolver::DevDatC &vertices, GridComputationWrapper &grcompwrap, int total_number_of_cubes)
+void HyperCubes::compute_vertices(odesolver::DevDatC &vertices, GridComputationWrapper &grcompwrap, int maximum_depth)
 {
-    if(total_number_of_cubes == 0)
-        total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
+    auto total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
 
     for(auto dim_index = 0; dim_index < dim; dim_index++)
     {
         // Generate device vector of reference vertices for each vector
         odesolver::DevDatC reference_vertices_wrapper(1, total_number_of_cubes, 0.0);
         odesolver::DimensionIteratorC& reference_vertices_ = reference_vertices_wrapper[0];
-        compute_reference_vertex_in_dim(reference_vertices_, grcompwrap, dim_index);
+        compute_reference_vertex_in_dim(reference_vertices_, grcompwrap, dim_index, maximum_depth);
 
         // Testing -> Can be used as test without regarding the correct reference vertices
         // print_range("Reference vertices in dimension " + std::to_string(dim_index + 1), reference_vertices_.begin(), reference_vertices_.end());
@@ -418,7 +417,7 @@ void HyperCubes::compute_vertices(odesolver::DevDatC &vertices, GridComputationW
         // Repeat maximum depth values according to the number of vertices per cube
         repeated_range<dev_iterator_int> rep_ref_depth_per_cube_iterator(
             grcompwrap.expanded_depth_per_cube_.begin(),
-            grcompwrap.expanded_depth_per_cube_.begin() + total_number_of_cubes,
+            grcompwrap.expanded_depth_per_cube_.end(),
             pow(2, dim)
         );
 
@@ -438,7 +437,7 @@ void HyperCubes::compute_vertices(odesolver::DevDatC &vertices, GridComputationW
 
         // Finalize computation of device vertex
         thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(rep_ref_vertex_iterator.begin(), rep_ref_depth_per_cube_iterator.begin(), rep_inner_vertex_coors.begin(), vertices[dim_index].begin())),
-                         thrust::make_zip_iterator(thrust::make_tuple(rep_ref_vertex_iterator.end(), rep_ref_depth_per_cube_iterator.end(), rep_inner_vertex_coors.end(), vertices[dim_index].begin() + total_number_of_cubes * pow(2, dim))),
+                         thrust::make_zip_iterator(thrust::make_tuple(rep_ref_vertex_iterator.end(), rep_ref_depth_per_cube_iterator.end(), rep_inner_vertex_coors.end(), vertices[dim_index].end())),
                          finalize_vertex_computation(lambda_dim_range, lambda_offset, accum_n_branches_per_dim[dim_index]));
 
         // Testing
@@ -509,7 +508,7 @@ odesolver::DevDatC HyperCubes::compute_cube_center_vertices(GridComputationWrapp
             print_range("Vertex velocities in dimension " + std::to_string(dim_index + 1), vertex_velocities[dim_index].begin(), vertex_velocities[dim_index].end()); */
 // }
 
-thrust::host_vector<int> HyperCubes::determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities, int total_number_of_cubes)
+thrust::host_vector<int> HyperCubes::determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities)
 {
     if (vertex_mode != CubeVertices and vertex_mode != CenterVertices)
     {
@@ -517,8 +516,7 @@ thrust::host_vector<int> HyperCubes::determine_potential_fixed_points(odesolver:
         std::exit(EXIT_FAILURE);
     }
 
-    if(total_number_of_cubes == 0)
-        total_number_of_cubes = int(vertex_velocities.n_elems() / pow(2, dim));
+    auto total_number_of_cubes = int(vertex_velocities.n_elems() / pow(2, dim));
 
     auto number_of_vertices_ = vertex_velocities.n_elems(); // to avoid a pass of this within the lambda capture
     thrust::host_vector<dev_vec_bool> velocity_sign_properties(dim);
@@ -673,10 +671,8 @@ void HyperCubes::test_projection()
 
 // Private functions
 
-void HyperCubes::compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grcompwrap, int dim_index, int total_number_of_cubes, int maximum_depth) const
+void HyperCubes::compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grcompwrap, int dim_index, int maximum_depth) const
 {
-    if(total_number_of_cubes == 0)
-        total_number_of_cubes = grcompwrap.expanded_depth_per_cube_.size();
     if(maximum_depth == 0)
         maximum_depth = grcompwrap.expanded_cube_indices_.dim_size();
 
@@ -686,7 +682,7 @@ void HyperCubes::compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &
         int n_branch_per_depth = n_branches_per_depth[depth_index][dim_index];
         int depth_weight_divisor = accum_n_branches_per_dim[dim_index][depth_index + 1];
         thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(grcompwrap.expanded_cube_indices_[depth_index].begin(), grcompwrap.expanded_depth_per_cube_.begin(), reference_vertices_.begin())),
-                         thrust::make_zip_iterator(thrust::make_tuple(grcompwrap.expanded_cube_indices_[depth_index].begin() + total_number_of_cubes, grcompwrap.expanded_depth_per_cube_.begin() + total_number_of_cubes, reference_vertices_.end())),
+                         thrust::make_zip_iterator(thrust::make_tuple(grcompwrap.expanded_cube_indices_[depth_index].end(), grcompwrap.expanded_depth_per_cube_.end(), reference_vertices_.end())),
                          compute_depth_vertex_coor_weight(n_branch_per_depth, accum_n_branch_per_depth, depth_weight_divisor, accum_n_branches_per_dim[dim_index]));
     }
 }

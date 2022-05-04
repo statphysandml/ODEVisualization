@@ -171,15 +171,15 @@ void find_fixed_points()
     );
 
     // Setting gpu specfic computation parameters (optional) - parameters are already set default
-    const int number_of_cubes_per_gpu_call = 40000;
+    const int number_of_cubes_per_gpu_call = 400000;
     const int maximum_number_of_gpu_calls = 1000;
     fixed_point_search.set_computation_parameters(
             number_of_cubes_per_gpu_call,
             maximum_number_of_gpu_calls);
 
     // Find fixed point solutions
-    // fixed_point_search.find_fixed_points_dynamic_memory();
-    fixed_point_search.find_fixed_points_preallocated_memory();
+    fixed_point_search.find_fixed_points_dynamic_memory();
+    // fixed_point_search.find_fixed_points_preallocated_memory();
     NodeCounter<Node>::print_statistics();
 
     // Just for testing issues -> get solutions and print infos about these

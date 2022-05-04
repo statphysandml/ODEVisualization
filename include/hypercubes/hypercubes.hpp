@@ -50,7 +50,7 @@ public:
     void compute_reference_vertices(odesolver::DevDatC &reference_vertices, GridComputationWrapper &grcompwrap);
     odesolver::DevDatC compute_reference_vertices(GridComputationWrapper &grcompwrap);
 
-    void compute_vertices(odesolver::DevDatC &vertices, GridComputationWrapper &grcompwrap, int total_number_of_cubes=0);
+    void compute_vertices(odesolver::DevDatC &vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
     odesolver::DevDatC compute_vertices(GridComputationWrapper &grcompwrap);
 
     void compute_cube_center_vertices(odesolver::DevDatC &center_vertices, GridComputationWrapper &grcompwrap);
@@ -58,7 +58,7 @@ public:
 
     // void determine_vertex_velocities(FlowEquationsWrapper * flow_equations);
 
-    thrust::host_vector<int> determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities, int total_number_of_cubes=0);
+    thrust::host_vector<int> determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities);
 
     // const odesolver::DevDatC& get_vertices() const;
     // const odesolver::DevDatC& get_vertex_velocities() const;
@@ -89,7 +89,7 @@ protected:
     VertexMode vertex_mode;
 
     // Helper functions
-    void compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grcompwrap, int dim_index, int total_number_of_cubes=0, int maximum_depth=0) const;
+    void compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grcompwrap, int dim_index, int maximum_depth=0) const;
 };
 
 #endif //MAIN_HYPERCUBES_HPP
