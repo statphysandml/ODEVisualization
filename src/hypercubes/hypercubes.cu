@@ -285,7 +285,7 @@ GridComputationWrapper HyperCubes::project_coordinates_on_expanded_cube_and_dept
         std::exit(EXIT_FAILURE);
     }
 
-    int tnoc = coordinates[0].size(); // total number of cubes
+    int tnoc = coordinates.n_elems(); // total number of cubes
     GridComputationWrapper grcompwrap(tnoc, depth + 1, depth);
 
     for(auto dim_index = 0; dim_index < dim; dim_index++)
@@ -509,15 +509,18 @@ odesolver::DevDatC HyperCubes::compute_cube_center_vertices(GridComputationWrapp
             print_range("Vertex velocities in dimension " + std::to_string(dim_index + 1), vertex_velocities[dim_index].begin(), vertex_velocities[dim_index].end()); */
 // }
 
-thrust::host_vector<int> HyperCubes::determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities)
+thrust::host_vector<int> HyperCubes::determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities, int total_number_of_cubes)
 {
     if (vertex_mode != CubeVertices and vertex_mode != CenterVertices)
     {
         std::cout << "\nERROR: Wrong vertex mode for computation of potential fix points" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    auto total_number_of_cubes = int(vertex_velocities.size() / pow(2, dim));
-    auto number_of_vertices_ = vertex_velocities[0].size(); // to avoid a pass of this within the lambda capture
+
+    if(total_number_of_cubes == 0)
+        total_number_of_cubes = int(vertex_velocities.n_elems() / pow(2, dim));
+
+    auto number_of_vertices_ = vertex_velocities.n_elems(); // to avoid a pass of this within the lambda capture
     thrust::host_vector<dev_vec_bool> velocity_sign_properties(dim);
     thrust::generate(velocity_sign_properties.begin(), velocity_sign_properties.end(), [number_of_vertices_]() { return dev_vec_bool (number_of_vertices_, false); });
 

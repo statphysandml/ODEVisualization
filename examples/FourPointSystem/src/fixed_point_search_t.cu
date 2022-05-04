@@ -178,8 +178,8 @@ void find_fixed_points()
             maximum_number_of_gpu_calls);
 
     // Find fixed point solutions
-    fixed_point_search.find_fixed_points_dynamic_memory();
-    // fixed_point_search.find_fixed_points_preallocated_memory();
+    // fixed_point_search.find_fixed_points_dynamic_memory();
+    fixed_point_search.find_fixed_points_preallocated_memory();
     NodeCounter<Node>::print_statistics();
 
     // Just for testing issues -> get solutions and print infos about these

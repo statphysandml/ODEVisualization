@@ -4,7 +4,7 @@
 odesolver::DevDatC compute_vertex_velocities(const odesolver::DevDatC &coordinates, FlowEquationsWrapper * flow_equations)
 {
     const uint dim = coordinates.dim_size();
-    auto number_of_coordinates = coordinates[0].size();
+    auto number_of_coordinates = coordinates.n_elems();
     odesolver::DevDatC vertex_velocities(dim, number_of_coordinates);
     // Evaluate flow equation for each lambda_{dim_index} separately
     for(auto dim_index = 0; dim_index < dim; dim_index ++) {

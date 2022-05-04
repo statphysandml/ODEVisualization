@@ -11,7 +11,7 @@ namespace odesolver {
                 data_iterators.push_back(data[i].begin());
         }
 
-        auto data_num = data[0].size();
+        auto data_num = data.n_elems();
         if(end_iterators.size() > 0)
             data_num = end_iterators[0] - data[0].begin();
 

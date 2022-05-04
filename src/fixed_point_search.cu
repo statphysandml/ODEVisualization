@@ -349,7 +349,7 @@ void FixedPointSearch::find_fixed_points_preallocated_memory()
         // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
     
         // Determine potential fixed points
-        thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities);
+        thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities, expected_number_of_cubes);
     
         // Generate new nodes and derive solutions based on nodes and indices of potential fixed points
         generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, node_package);

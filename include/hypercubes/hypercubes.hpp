@@ -58,7 +58,7 @@ public:
 
     // void determine_vertex_velocities(FlowEquationsWrapper * flow_equations);
 
-    thrust::host_vector<int> determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities);
+    thrust::host_vector<int> determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities, int total_number_of_cubes=0);
 
     // const odesolver::DevDatC& get_vertices() const;
     // const odesolver::DevDatC& get_vertex_velocities() const;
