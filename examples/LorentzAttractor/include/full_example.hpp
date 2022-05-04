@@ -1,6 +1,8 @@
 #ifndef LORENTZ_ATTRACTOR_FIXED_POINT_SEARCH_T_HPP
 #define LORENTZ_ATTRACTOR_FIXED_POINT_SEARCH_T_HPP
 
+#include <chrono>
+
 #include <odesolver/fixed_point_search.hpp>
 #include <odesolver/coordinate_operator.hpp>
 

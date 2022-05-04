@@ -5,7 +5,7 @@ void find_fixed_points()
 {
     const int maximum_recursion_depth = 18;
     const std::vector< std::vector<int> > n_branches_per_depth = std::vector< std::vector<int> > {
-        std::vector<int> {4, 4, 4}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
+        std::vector<int> {100, 100, 100}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
         std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
         std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
         std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
@@ -25,16 +25,28 @@ void find_fixed_points()
 
     // Setting gpu specfic computation parameters (optional) - parameters are already set default
     const int number_of_cubes_per_gpu_call = 100;
-    const int maximum_number_of_gpu_calls = 1000;
+    const int maximum_number_of_gpu_calls = 100000;
     fixed_point_search.set_computation_parameters(
         number_of_cubes_per_gpu_call,
         maximum_number_of_gpu_calls
     );
 
     // Find fixed point solutions
-    // fixed_point_search.find_fixed_point_solutions();
-    fixed_point_search.find_fixed_point_solutions_with_preallocated_memory();
+    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::milliseconds ms;
+    typedef std::chrono::duration<float> fsec;
+    auto t0 = Time::now();
+
+    // fixed_point_search.find_fixed_points_dynamic_memory();
+    fixed_point_search.find_fixed_points_preallocated_memory();
     NodeCounter<Node>::print_statistics();
+
+    auto t1 = Time::now();
+    fsec fs = t1 - t0;
+    ms d = std::chrono::duration_cast<ms>(fs);
+    std::cout << fs.count() << "s\n";
+    std::cout << d.count() << "ms\n";
+
 
     // Just for testing issues -> get solutions and print infos about these
     std::vector<std::shared_ptr<Leaf>> solutions = fixed_point_search.get_solutions();
