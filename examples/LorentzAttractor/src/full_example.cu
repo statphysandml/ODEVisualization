@@ -37,9 +37,8 @@ void find_fixed_points()
     typedef std::chrono::duration<float> fsec;
     auto t0 = Time::now();
 
-    // fixed_point_search.find_fixed_points_dynamic_memory();
-    fixed_point_search.find_fixed_points_preallocated_memory();
-    NodeCounter<Node>::print_statistics();
+    fixed_point_search.find_fixed_points_dynamic_memory();
+    // fixed_point_search.find_fixed_points_preallocated_memory();
 
     auto t1 = Time::now();
     fsec fs = t1 - t0;
@@ -47,6 +46,7 @@ void find_fixed_points()
     std::cout << fs.count() << "s\n";
     std::cout << d.count() << "ms\n";
 
+    NodeCounter<Node>::print_statistics();
 
     // Just for testing issues -> get solutions and print infos about these
     std::vector<std::shared_ptr<Leaf>> solutions = fixed_point_search.get_solutions();
