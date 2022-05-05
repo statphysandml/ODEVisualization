@@ -24,7 +24,7 @@ void find_fixed_points()
     );
 
     // Setting gpu specfic computation parameters (optional) - parameters are already set default
-    const int number_of_cubes_per_gpu_call = 100;
+    const int number_of_cubes_per_gpu_call = 10000;
     const int maximum_number_of_gpu_calls = 100000;
     fixed_point_search.set_computation_parameters(
         number_of_cubes_per_gpu_call,
@@ -37,8 +37,8 @@ void find_fixed_points()
     typedef std::chrono::duration<float> fsec;
     auto t0 = Time::now();
 
-    fixed_point_search.find_fixed_points_dynamic_memory();
-    // fixed_point_search.find_fixed_points_preallocated_memory();
+    // fixed_point_search.find_fixed_points_dynamic_memory();
+    fixed_point_search.find_fixed_points_preallocated_memory();
 
     auto t1 = Time::now();
     fsec fs = t1 - t0;

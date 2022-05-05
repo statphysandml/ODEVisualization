@@ -24,6 +24,7 @@
 #include "gridcomputationwrapper.hpp"
 #include "nodesexpander.hpp"
 
+
 class HyperCubes
 {
 public:
