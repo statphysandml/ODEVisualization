@@ -579,11 +579,6 @@ thrust::host_vector<int> HyperCubes::determine_potential_fixed_points(odesolver:
 
 // Getter functions
 
-/* const odesolver::DevDatC& HyperCubes::get_vertex_velocities() const
-{
-    return vertex_velocities;
-} */
-
 const std::vector<std::vector<int>>& HyperCubes::get_n_branches_per_depth() const
 {
     return n_branches_per_depth;

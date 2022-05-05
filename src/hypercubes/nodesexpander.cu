@@ -11,7 +11,8 @@ NodesExpander::NodesExpander(
     depth_per_node_(dev_vec_int(number_of_nodes))
 {
     // Initialize collected parent cube indices
-    thrust::generate(collected_parent_cube_indices_.begin(), collected_parent_cube_indices_.end(), [this]() { return dev_vec_int(this->number_of_nodes_, 0); });
+    auto n_nodes = number_of_nodes; // to avoid passing "this" within the lambda capture
+    thrust::generate(collected_parent_cube_indices_.begin(), collected_parent_cube_indices_.end(), [n_nodes]() { return dev_vec_int(n_nodes, 0); });
 
     expected_number_of_cubes_ = 0;
     expected_depth_ = 0;

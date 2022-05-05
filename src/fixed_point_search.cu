@@ -255,15 +255,19 @@ void FixedPointSearch::generate_new_nodes_and_leaves(const thrust::host_vector<i
 void FixedPointSearch::find_fixed_points_dynamic_memory()
 {
     auto c = 0;
-
     std::vector<Node*> node_package;
     int expected_number_of_cubes = 0;
     int maximum_depth = 0;
 
+    odesolver::DevDatC vertices;
+    odesolver::DevDatC vertex_velocities;
+
+    thrust::host_vector<int> host_indices_of_pot_fixed_points;
+
     while(c < computation_parameters_.maximum_number_of_gpu_calls_ and buffer_.len() > 0)
     {
         std::cout << "\n\n######### New computation round: " << c <<  " #########" << std::endl;
-    
+
         // Get nodes for the gpu from buffer
         std::tie(node_package, expected_number_of_cubes, maximum_depth) = buffer_.pop_node_package(computation_parameters_.number_of_cubes_per_gpu_call_);
     
@@ -280,19 +284,23 @@ void FixedPointSearch::find_fixed_points_dynamic_memory()
     
         // Compute the actual vertices by first expanding each cube according to the number of vertices to
         // a vector of reference vertices of length expected_number_of_cubes*dim and then computing the indices
-        auto vertices = hypercubes_.compute_vertices(grid_computation_wrapper);
+        vertices = odesolver::DevDatC(dim_, expected_number_of_cubes * pow(2, dim_));
+        hypercubes_.compute_vertices(vertices, grid_computation_wrapper);
     
         // hypercubes.test_projection();
     
         // Compute vertex velocities
-        auto vertex_velocities = compute_vertex_velocities(vertices, flow_equations_ptr_.get());
+        vertex_velocities = odesolver::DevDatC(dim_, expected_number_of_cubes * pow(2, dim_));
+        compute_vertex_velocities(vertices, vertex_velocities, flow_equations_ptr_.get());
         // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
     
         // Determine potential fixed points
-        thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities);
+        host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities);
     
         // Generate new nodes and derive solutions based on nodes and indices of potential fixed points
         generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, node_package);
+
+        // node_package.clear(); // Necessary?
 
         c++;
     }
@@ -303,6 +311,10 @@ void FixedPointSearch::find_fixed_points_dynamic_memory()
 // - Take into account maximum depth at ALL stages
 void FixedPointSearch::find_fixed_points_preallocated_memory()
 {
+    std::vector<Node*> node_package;
+    int expected_number_of_cubes = 0;
+    int expected_maximum_depth = 0;
+
     // Initialize grid computation wrapper
     GridComputationWrapper grid_computation_wrapper(computation_parameters_.number_of_cubes_per_gpu_call_, maximum_recursion_depth_);
 
@@ -312,14 +324,12 @@ void FixedPointSearch::find_fixed_points_preallocated_memory()
     // Initialize vertex velocities
     odesolver::DevDatC vertex_velocities(dim_, computation_parameters_.number_of_cubes_per_gpu_call_ * pow(2, dim_));
 
+    thrust::host_vector<int> host_indices_of_pot_fixed_points;
+
     auto c = 0;
     while(c < computation_parameters_.maximum_number_of_gpu_calls_ and buffer_.len() > 0)
     {
         std::cout << "\n\n######### New computation round: " << c <<  " #########" << std::endl;
-        
-        std::vector<Node*> node_package;
-        int expected_number_of_cubes = 0;
-        int expected_maximum_depth = 0;
     
         // Get nodes for the gpu from buffer
         std::tie(node_package, expected_number_of_cubes, expected_maximum_depth) = buffer_.pop_node_package(computation_parameters_.number_of_cubes_per_gpu_call_);
@@ -349,7 +359,7 @@ void FixedPointSearch::find_fixed_points_preallocated_memory()
         // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
     
         // Determine potential fixed points
-        thrust::host_vector<int> host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities);
+        host_indices_of_pot_fixed_points = hypercubes_.determine_potential_fixed_points(vertex_velocities);
     
         // Generate new nodes and derive solutions based on nodes and indices of potential fixed points
         generate_new_nodes_and_leaves(host_indices_of_pot_fixed_points, node_package);

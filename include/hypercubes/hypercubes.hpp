@@ -56,12 +56,7 @@ public:
     void compute_cube_center_vertices(odesolver::DevDatC &center_vertices, GridComputationWrapper &grcompwrap);
     odesolver::DevDatC compute_cube_center_vertices(GridComputationWrapper &grcompwrap);
 
-    // void determine_vertex_velocities(FlowEquationsWrapper * flow_equations);
-
     thrust::host_vector<int> determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities);
-
-    // const odesolver::DevDatC& get_vertices() const;
-    // const odesolver::DevDatC& get_vertex_velocities() const;
 
     const std::vector<std::vector<int>>& get_n_branches_per_depth() const;
 
@@ -81,12 +76,12 @@ protected:
     std::vector<std::pair<cudaT, cudaT>> lambda_ranges;
 
     // Variables defined depending on your usage
-    // odesolver::DevDatC vertices; // (total_number_of_cubes x n_cube) x dim (len = dim) OR total_number_of_cubes x dim (len = dim)
+    // odesolver::DevDatC vertices_; // (total_number_of_cubes x n_cube) x dim (len = dim) OR total_number_of_cubes x dim (len = dim)
     // odesolver::DevDatC vertex_velocities; // (total_number_of_cubes x n_cube) x dim (len = dim) OR total_number_of_cubes x dim (len = dim)
 
     // Possible modes -> correspond to different possible usages of hypercubes
     enum VertexMode { CubeVertices, ReferenceVertices, CenterVertices};
-    VertexMode vertex_mode;
+    VertexMode vertex_mode; // -> Still needed?
 
     // Helper functions
     void compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices_, GridComputationWrapper &grcompwrap, int dim_index, int maximum_depth=0) const;
