@@ -8,9 +8,10 @@
 #include "util/monitor.hpp"
 #include "hypercubes/node.hpp"
 #include "hypercubes/buffer.hpp"
-#include "hypercubes/nodesexpander.hpp"
 #include "hypercubes/hypercubes.hpp"
 #include "hypercubes/leaf.hpp"
+#include "hypercubes/dynamic_recursive_grid_computation.hpp"
+#include "hypercubes/static_recursive_grid_computation.hpp"
 #include "util/helper_functions.hpp"
 #include "util/ode_visualisation.hpp"
 #include "util/json_conversions.hpp"
@@ -69,6 +70,8 @@ public:
         const uint maximum_number_of_iterations_;
     };
 
+    static void compute_summed_positive_signs_per_cube(dev_vec_bool &velocity_sign_properties_in_dim, dev_vec_int &summed_positive_signs);
+
     // Main function
 
     void find_fixed_points_dynamic_memory();
@@ -98,16 +101,16 @@ private:
     uint dim_;
     int maximum_recursion_depth_;
 
-    HyperCubes hypercubes_;
+    std::vector<std::vector<int>> n_branches_per_depth_;
+    std::vector<std::pair<cudaT, cudaT>> lambda_ranges_;
 
-    Buffer buffer_;
     std::vector<std::shared_ptr<Leaf>> solutions_;
     odesolver::DevDatC fixed_points_;
 
     // Iterate over nodes and generate new nodes based on the indices of pot fixed points
-    void generate_new_nodes_and_leaves(const thrust::host_vector<int> &host_indices_of_pot_fixed_points, const std::vector<Node*> &nodes);
+    void generate_new_nodes_and_leaves(const thrust::host_vector<int> &host_indices_of_pot_fixed_points, const std::vector<Node*> &nodes, Buffer &buffer);
 
-    void run_gpu_computing_task();
+    thrust::host_vector<int> determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities);
 };
 
 std::vector<std::vector<double>> load_fixed_points(std::string rel_dir);

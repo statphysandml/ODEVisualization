@@ -8,6 +8,8 @@
 
 #include "../include/evaluate_t.hpp"
 
+#include "../include/partial_ranges_t.hpp"
+
 int main(int argc, char **argv) {
     // Initialize project dependent parameters
     param_helper::proj::set_relative_path_to_project_root_dir("../");
@@ -34,7 +36,8 @@ int main(int argc, char **argv) {
 
     // evaluate_velocities_and_jacobians();
     find_fixed_points();
-    evaluate_fixed_points();
+    /* evaluate_fixed_points(); */
+    // partial_ranges_t();
 
 
     // Finalization

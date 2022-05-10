@@ -72,9 +72,6 @@ public:
     );
 
 private:
-    const int maximum_depth_;
-    const int number_of_nodes_;
-
     int expected_number_of_cubes_;
     int expected_depth_;
 

@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Compilation options
-### set(BUILD_PYTHON_BINDINGS ON CACHE BOOL "Enable building of Python bindings")
+set(BUILD_PYTHON_BINDINGS ON CACHE BOOL "Enable building of Python bindings")
 set(RUN_WITH_PYTHON_BACKEND ON CACHE BOOL "Use Python backend to compute expectation values, etc.")
 set(BUILD_DOCS ON CACHE BOOL "Enable building of documentation")
 
@@ -50,21 +50,20 @@ add_subdirectory(ext/ParamHelper)
 include_directories(ext/eigen/Eigen)
 add_subdirectory(ext/eigen)
 
-### if(BUILD_PYTHON_BINDINGS)
-###     message("Integrate python for python_bindings")
-###     # Add Python bindings
-###     add_subdirectory(ext/pybind11)
-###     # Python wrapper
-###     add_subdirectory(python)
-### else
-if(RUN_WITH_PYTHON_BACKEND)
-###     message("Load pybind11 module")
-###     # Add Python bindings for correct binding of pybind11 without usage of pybind11_modules
+if(BUILD_PYTHON_BINDINGS)
+    message("Integrate python for python_bindings")
+    # Add Python bindings
     add_subdirectory(ext/pybind11)
-###     # Or without pybind11:
-###     # set(Python3_FIND_VIRTUALENV "FIRST")
-###     # find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
-###     # include_directories(${Python3_INCLUDE_DIRS})
+    # Python wrapper
+    add_subdirectory(python)
+elseif(RUN_WITH_PYTHON_BACKEND)
+    message("Load pybind11 module")
+    # Add Python bindings for correct binding of pybind11 without usage of pybind11_modules
+    add_subdirectory(ext/pybind11)
+    # Or without pybind11:
+    # set(Python3_FIND_VIRTUALENV "FIRST")
+    # find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+    # include_directories(${Python3_INCLUDE_DIRS})
 endif()
 
 if(RUN_WITH_PYTHON_BACKEND)
@@ -94,21 +93,21 @@ endif()
 
 
 # Add an alias target for use if this project is included as a subproject in another project
-add_library(odevisualisationlib::odevisualisationlib ALIAS odevisualisationlib)
+add_library(odevisualisation::odevisualisation ALIAS odevisualisation)
 
 # Install targets and configuration
 install(
-  TARGETS odevisualisationlib
-  EXPORT odevisualisationlib-config
+  TARGETS odevisualisation
+  EXPORT odevisualisation-config
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 install(
-  EXPORT odevisualisationlib-config
-  NAMESPACE odevisualisationlib::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/odevisualisationlib
+  EXPORT odevisualisation-config
+  NAMESPACE odevisualisation::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/odevisualisation
 )
 
 install(

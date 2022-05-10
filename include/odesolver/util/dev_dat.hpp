@@ -170,18 +170,34 @@ namespace odesolver {
         /** @brief Returns the n-th elem of the DevDat */
         std::vector<double> get_nth_element(const int n) const
         {
-            std::vector<double> ith_element(dim_, 0);
+            std::vector<double> nth_element(dim_, 0);
             auto iterator = this->begin();
-            // Jump to ith element in zeroth dimension
+            // Jump to nth element in zeroth dimension
             thrust::advance(iterator, n);
-            ith_element[0] = *iterator;
+            nth_element[0] = *iterator;
             // Fill further dimensions
             for(auto j = 1; j < dim_; j++)
             {
                 thrust::advance(iterator, N_);
-                ith_element[j] = *iterator;
+                nth_element[j] = *iterator;
             }
-            return ith_element;
+            return nth_element;
+        }
+
+        /** @brief Sets the n-th elem of the DevDat */
+        void set_nth_element(const int n, std::vector<double> nth_element)
+        {
+            std::vector<double> nth_element(dim_, 0);
+            auto iterator = this->begin();
+            // Jump to nth element in zeroth dimension
+            thrust::advance(iterator, n);
+            *iterator = nth_element[0];
+            // Fill further dimensions
+            for(auto j = 1; j < dim_; j++)
+            {
+                thrust::advance(iterator, N_);
+                *iterator = nth_element[j];
+            }
         }
 
         void set_dim(const size_t dim)

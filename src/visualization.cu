@@ -1,20 +1,20 @@
-#include "../include/visualization.hpp"
+#include "../include/odesolver/visualization.hpp"
 
 
 struct finalize_sample_around_saddle_point
 {
-    finalize_sample_around_saddle_point(const cudaT coordinate_val_, const cudaT shift_) :
-        coordinate_val(coordinate_val_), shift(shift_)
+    finalize_sample_around_saddle_point(const cudaT coordinate_val, const cudaT shift) :
+        coordinate_val_(coordinate_val), shift_(shift)
     {}
     __host__ __device__
-    cudaT operator()(const cudaT & sampled_val)
+    cudaT operator()(const cudaT &sampled_val)
     {
 
-        return coordinate_val +  shift * sampled_val;
+        return coordinate_val_ +  shift_ * sampled_val;
     }
 
-    const cudaT coordinate_val;
-    const cudaT shift;
+    const cudaT coordinate_val_;
+    const cudaT shift_;
 };
 
 
@@ -37,67 +37,102 @@ struct sum_square
 
 struct sum_manifold_eigenvector
 {
-    sum_manifold_eigenvector(const cudaT vector_elem_) : vector_elem(vector_elem_)
+    sum_manifold_eigenvector(const cudaT vector_elem) : vector_elem_(vector_elem)
     {}
 
     __host__ __device__
     cudaT operator() (const cudaT &previous_val, const cudaT random_number) {
-        return previous_val + random_number * vector_elem;
+        return previous_val + random_number * vector_elem_;
     }
 
-    const cudaT vector_elem;
+    const cudaT vector_elem_;
 };
 
 
-VisualizationParameters::VisualizationParameters(const json params_, const PathParameters path_parameters_) : FRGVisualizationParameters(params_, path_parameters_),
-                                                                       dim(get_value_by_key<int>("dim")),
-                                                                       k(get_value_by_key<cudaT>("k"))
+Visualization::Visualization(
+    const json params,
+    std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr,
+    std::shared_ptr<JacobianEquationWrapper> jacobians_ptr,
+    const std::string computation_parameters_path
+) : ODEVisualisation(params, flow_equations_ptr, jacobians_ptr, computation_parameters_path),
+    dim_(get_entry<json>("flow_equation")["dim"].get<cudaT>()),
+    n_branches_(get_entry<std::vector<int>>("n_branches")),
+    partial_lambda_ranges_(json_to_vec_pair<double>(get_entry<json>("lambda_ranges"))),
+    fixed_lambdas_(json_to_vec_vec<double>(get_entry<json>("fixed_lambdas")))
 {
-    auto n_branches_ = get_value_by_key<json>("n_branches");
-    auto partial_lambda_ranges_ = get_value_by_key<json>("partial_lambda_ranges");
-    auto fix_lambdas_ = get_value_by_key<json>("fix_lambdas");
+    if (n_branches_.size() != dim_) {
+        std::cout << "\nERROR: Number of branches per depth " << n_branches_.size() << " do not coincide with dimension " << dim_ <<  std::endl;
+        std::exit(EXIT_FAILURE);
+    }
 
-    n_branches = n_branches_.get< std::vector<int> >();
-    std::transform(partial_lambda_ranges_.begin(), partial_lambda_ranges_.end(), std::back_inserter(partial_lambda_ranges),
-                   [] (json &dat) { return dat.get< std::pair<cudaT, cudaT> >(); });
-    std::transform(fix_lambdas_.begin(), fix_lambdas_.end(), std::back_inserter(fix_lambdas),
-                   [] (json &dat) { return dat.get< std::vector<cudaT> >(); });
+    if(partial_lambda_ranges_.size() + fixed_lambdas_.size() != dim_)
+    {
+        std::cout << "\nERROR: Number of lambda ranges and fix lambdas " << partial_lambda_ranges_.size() << ", " << fixed_lambdas_.size() << " do not coincide with dimension " << dim_ << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
 
-    std::string theory = path_parameters.theory;
-    flow_equations = FlowEquationsWrapper::make_flow_equation(theory);
+    if(flow_equations_ptr_->get_dim() != dim_)
+    {
+        std::cout << "\nERROR: Dimensions and number of flow equation do not coincide" << dim_ << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    // Check consistent definition of n_branches, lambda_ranges and fixed_lambdas
+    auto number_of_ones = 0;
+    for(auto &n_branch: n_branches_)
+    {
+        if(n_branch == 1)
+            number_of_ones += 1;
+    }
+    if(number_of_ones != fixed_lambdas_.size())
+    {
+        std::cout << "\nERROR: Inconsistent definition of n_branches and fixed_lambdas -> cannot expand lambda range for n_branch=1" << dim_ << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    for(auto n_branch_index = 0; n_branch_index < n_branches_.size(); n_branch_index++)
+    {
+        if(n_branches_[n_branch_index] == 1)
+            indices_of_fixed_lambdas_.push_back(n_branch_index);
+    }
 }
 
-
-VisualizationParameters::VisualizationParameters(const std::string theory,
-                                                 const std::string mode_type,
-                                                 const std::string results_dir,
-                                                 const std::string root_dir,
-                                                 const bool relative_path) : VisualizationParameters(
-        Parameters::read_parameter_file(
-                root_dir + "/" + theory + "/" + results_dir + "/", "config", relative_path),
-        PathParameters(theory, mode_type, root_dir, relative_path))
-{}
-
-
-VisualizationParameters::VisualizationParameters(
-        const std::string theory,
-        const std::vector<int> n_branches_,
-        const std::vector <std::pair<cudaT, cudaT> > lambda_ranges_,
-        const std::vector <std::vector <cudaT> > fix_lambdas_,
-        const std::string mode_,
-        const std::string root_dir,
-        const bool relative_path
-) : VisualizationParameters(
-        json {{"n_branches", n_branches_},
-              {"partial_lambda_ranges", lambda_ranges_},
-              {"fix_lambdas", fix_lambdas_},
-              {"mode", mode_}},
-        PathParameters(theory, mode_, root_dir, relative_path)
+Visualization Visualization::from_file(
+    const std::string rel_config_dir,
+    std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr,
+    std::shared_ptr<JacobianEquationWrapper> jacobians_ptr,
+    const std::string computation_parameters_path
 )
-{}
+{
+    return Visualization(
+        param_helper::fs::read_parameter_file(
+            param_helper::proj::project_root() + rel_config_dir + "/", "config", false),
+        flow_equations_ptr,
+        jacobians_ptr,
+        computation_parameters_path
+    );
+}
 
+Visualization Visualization::from_parameters(
+    const std::vector<int> n_branches,
+    const std::vector<std::pair<cudaT, cudaT>> lambda_ranges,
+    const std::vector<std::vector<cudaT>> fixed_lambdas,
+    std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr,
+    std::shared_ptr<JacobianEquationWrapper> jacobians_ptr,
+    const std::string computation_parameters_path
+)
+{
+    return Visualization(
+        json {{"n_branches", n_branches},
+              {"partial_lambda_ranges", lambda_ranges},
+              {"fixed_lambdas", fixed_lambdas}},
+        flow_equations_ptr,
+        jacobians_ptr,
+        computation_parameters_path
+    );
+}
 
-void VisualizationParameters::append_explicit_points_parameters(
+/* void Visualization::append_explicit_points_parameters(
         std::vector< std::vector<cudaT> > explicit_points,
         std::string source_root_dir,
         bool source_relative_path,
@@ -118,167 +153,110 @@ void VisualizationParameters::append_explicit_points_parameters(
             j.push_back(fixed_point);
         params["explicit_points"] = json {{"number_of_explicit_points", explicit_points.size()}, {"explicit_points", j}};
     }
-}
+} */
 
 
-VisualizationParameters::ComputeVertexVelocitiesParameters::ComputeVertexVelocitiesParameters(const json params_) : Parameters(params_),
-                                                        skip_fix_lambdas(get_value_by_key<bool>("skip_fix_lambdas")),
-                                                        with_vertices(get_value_by_key<bool>("with_vertices"))
+Visualization::ComputeVertexVelocitiesParameters::ComputeVertexVelocitiesParameters(const json params) : Parameters(params),
+    skip_fixed_lambdas_(get_entry<bool>("skip_fixed_lambdas")),
+    with_vertices_(get_entry<bool>("with_vertices"))
 {}
 
-VisualizationParameters::ComputeVertexVelocitiesParameters::ComputeVertexVelocitiesParameters(
-        const bool skip_fix_lambdas_, const bool with_vertices_
+Visualization::ComputeVertexVelocitiesParameters::ComputeVertexVelocitiesParameters(
+    const bool skip_fixed_lambdas, const bool with_vertices
 ) : ComputeVertexVelocitiesParameters(
-        json {{"skip_fix_lambdas", skip_fix_lambdas_},
-              {"with_vertices", with_vertices_}}
+        json {{"skip_fixed_lambdas", skip_fixed_lambdas},
+              {"with_vertices", with_vertices}}
 )
 {}
 
 
-VisualizationParameters::ComputeSeparatrizesParameters::ComputeSeparatrizesParameters(const json params_) : Parameters(params_),
-                                                    N_per_eigen_dim(get_value_by_key<uint>("N_per_eigen_dim")),
-                                                    shift_per_dim(get_value_by_key<std::vector<double>>("shift_per_dim"))
+Visualization::ComputeSeparatrizesParameters::ComputeSeparatrizesParameters(const json params) : Parameters(params),
+    N_per_eigen_dim_(get_entry<uint>("N_per_eigen_dim")),
+    shift_per_dim_(get_entry<std::vector<double>>("shift_per_dim"))
 {}
 
-VisualizationParameters::ComputeSeparatrizesParameters::ComputeSeparatrizesParameters(
-        const uint N_per_eigen_dim_,
-        const std::vector<double> shift_per_dim_
+Visualization::ComputeSeparatrizesParameters::ComputeSeparatrizesParameters(
+        const uint N_per_eigen_dim,
+        const std::vector<double> shift_per_dim
 ) : ComputeSeparatrizesParameters(
-        json {{"N_per_eigen_dim", N_per_eigen_dim_},
-              {"shift_per_dim", shift_per_dim_}}
+        json {{"N_per_eigen_dim", N_per_eigen_dim},
+              {"shift_per_dim", shift_per_dim}}
 )
 {}
 
-
-std::vector< std::vector<cudaT> > VisualizationParameters::get_fixed_points() const
+std::vector<std::vector<cudaT>> Visualization::get_fixed_points() const
 {
-    auto fixed_points_ = get_value_by_key<json>("fixed_points")["fixed_points"];
-    std::vector < std::vector<cudaT> > fixed_points;
-    std::transform(fixed_points_.begin(), fixed_points_.end(), std::back_inserter(fixed_points),
-                   [] (json &dat) { return dat.get< std::vector<cudaT> >(); });
-    return fixed_points;
+    return json_to_vec_vec<double>(get_entry<json>("fixed_points")["fixed_points"]);
 }
 
-
-Visualization::Visualization(const VisualizationParameters &vp_) : vp(vp_)
-{
-    std::cout << vp.dim << std::endl;        // Tests
-    if (vp.n_branches.size() != vp.dim) {
-        std::cout << "\nERROR: Number of branches per depth " << vp.n_branches.size() << " do not coincide with dimension " << vp.dim <<  std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    if(vp.partial_lambda_ranges.size() + vp.fix_lambdas.size() != vp.dim)
-    {
-        std::cout << "\nERROR: Number of lambda ranges and fix lambdas " << vp.partial_lambda_ranges.size() << ", " << vp.fix_lambdas.size() << " do not coincide with dimension " << vp.dim << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    if(vp.flow_equations->get_dim() != vp.dim)
-    {
-        std::cout << "\nERROR: Dimensions and number of flow equation do not coincide" << vp.dim << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    // Check consistent definition of n_branches, lambda_ranges and fix_lambdas
-    auto number_of_ones = 0;
-    for(auto &n_branch: vp.n_branches)
-    {
-        if(n_branch == 1)
-            number_of_ones += 1;
-    }
-    if(number_of_ones != vp.fix_lambdas.size())
-    {
-        std::cout << "\nERROR: Inconsistent definition of n_branches and fix_lambdas -> cannot expand lambda range for n_branch=1" << vp.dim << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    for(auto n_branch_index = 0; n_branch_index < vp.n_branches.size(); n_branch_index++)
-    {
-        if(vp.n_branches[n_branch_index] == 1)
-            indices_of_fixed_lambdas.push_back(n_branch_index);
-    }
-}
-
-void Visualization::compute_vertex_velocities(std::string dir, bool skip_fix_lambdas, bool with_vertices)
+void Visualization::evaluate_vertices(std::string rel_dir, bool skip_fixed_lambdas, bool with_vertices)
 {
     std::ofstream os, os_vertices;
-    std::string path = vp.get_absolute_path(vp.path_parameters.get_base_path() + "/" + dir + "/", vp.path_parameters.relative_path);
-    os.open(path + "velocities" + ".dat");
+    os.open(param_helper::proj::project_root() + rel_dir + "/" + "velocities" + ".dat");
 
     if(with_vertices)
-        os_vertices.open(path + "vertices" + ".dat");
+        os_vertices.open(param_helper::proj::project_root() + rel_dir + "/" + "vertices" + ".dat");
 
     std::vector<int> skip_iterators_in_dimensions {};
-    for(auto i = 0; i < vp.n_branches.size(); i++)
+    for(auto i = 0; i < n_branches_.size(); i++)
     {
-        if(vp.n_branches[i] == 1)
+        if(n_branches_[i] == 1)
             skip_iterators_in_dimensions.push_back(i);
     }
 
+    DynamicRecursiveGridComputation dynamic_recursive_grid_computation(
+        computation_parameters_.number_of_cubes_per_gpu_call_,
+        computation_parameters_.maximum_number_of_gpu_calls_
+    );
 
-    LambdaRangeGenerator lambda_range_generator(vp.n_branches, vp.partial_lambda_ranges, vp.fix_lambdas);
-    auto c = 0;
-    while(!lambda_range_generator.finished())
+    odesolver::DevDatC reference_vertices;
+    odesolver::DevDatC reference_vertex_velocities;
+
+    PartialRanges partial_ranges(n_branches_, partial_lambda_ranges_, fixed_lambdas_);
+
+    for(auto i = 0; i < partial_ranges.size(); i++)
     {
-        auto lambda_ranges = lambda_range_generator.next();
-        auto *root_node_ptr = new Node(0, compute_internal_end_index(vp.n_branches), std::vector < int > {});
-        auto *buffer_ptr = new Buffer(root_node_ptr);
-        while(buffer_ptr->len() > 0) {
-            auto *hypercubes = compute_vertex_velocities_of_sub_problem(vp.computation_parameters.number_of_cubes_per_gpu_call,
-                                                                        buffer_ptr,
-                                                                        lambda_ranges);
+        auto lambda_ranges = partial_ranges[i];
 
-            const odesolver::DevDatC vertices = hypercubes->get_vertices();
-            const odesolver::DevDatC vertex_velocities = hypercubes->get_vertex_velocities();
-
-            if (!skip_fix_lambdas) {
-                write_data_to_ofstream(vertex_velocities, os);
+        dynamic_recursive_grid_computation.initialize(
+            std::vector<std::vector<int>> {n_branches_},
+            lambda_ranges,
+            DynamicRecursiveGridComputation::ReferenceVertices
+        );
+    
+        while(!dynamic_recursive_grid_computation.finished())
+        {
+            // Compute vertices
+            dynamic_recursive_grid_computation.next(reference_vertices);
+        
+            // Compute vertex velocities
+            reference_vertex_velocities = odesolver::DevDatC(reference_vertices.dim_size(), reference_vertices.n_elems());
+            compute_vertex_velocities(reference_vertices, reference_vertex_velocities, flow_equations_ptr_.get());
+    
+            if (!skip_fixed_lambdas) {
+                write_data_to_ofstream(reference_vertex_velocities, os);
                 if (with_vertices)
-                    write_data_to_ofstream(vertices, os_vertices);
+                    write_data_to_ofstream(reference_vertices, os_vertices);
             } else {
-                write_data_to_ofstream(vertex_velocities, os, skip_iterators_in_dimensions);
+                write_data_to_ofstream(reference_vertex_velocities, os, skip_iterators_in_dimensions);
                 if (with_vertices)
-                    write_data_to_ofstream(vertices, os_vertices, skip_iterators_in_dimensions);
+                    write_data_to_ofstream(reference_vertices, os_vertices, skip_iterators_in_dimensions);
             }
-
-            /* for(auto dim_index = 0; dim_index < dim; dim_index++)
-            {
-                // print_range("Vertices in dimension " + std::to_string(dim_index + 1), vertices[dim_index]->begin(), vertices[dim_index]->end());
-                // print_range("Vertex velocities in dimension " + std::to_string(dim_index + 1), vertex_velocities[dim_index]->begin(), vertex_velocities[dim_index]->end());
-            }*/
-
-            delete hypercubes;
         }
-
-        delete buffer_ptr;
-        delete root_node_ptr;
-
-        c++;
     }
     os.close();
     if(with_vertices)
         os_vertices.close();
-
-    // Consistency check
-    auto total_number_of_generated_lambdas = 1;
-    for(auto &fix_lambd : vp.fix_lambdas)
-        total_number_of_generated_lambdas *= fix_lambd.size();
-    if(total_number_of_generated_lambdas != c)
-    {
-        std::cout << "\nERROR: Something went wrong during the generation of the lambda ranges (possibility for duplicates, etc.)" << vp.dim << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
 }
 
-void Visualization::compute_vertex_velocities_from_parameters(std::string dir)
+/* void Visualization::compute_vertex_velocities_from_parameters(std::string rel_dir)
 {
-    auto compute_vertex_velocities_parameters = vp.get_value_by_key<json>("compute_vertex_velocities");
-    auto params1 = VisualizationParameters::ComputeVertexVelocitiesParameters(compute_vertex_velocities_parameters);
-    compute_vertex_velocities(dir, params1.skip_fix_lambdas, params1.with_vertices);
-}
+    auto compute_vertex_velocities_parameters = vp.get_entry<json>("compute_vertex_velocities");
+    auto params1 = Visualization::ComputeVertexVelocitiesParameters(compute_vertex_velocities_parameters);
+    compute_vertex_velocities(dir, params1.skip_fixed_lambdas, params1.with_vertices);
+} */
 
-void Visualization::compute_separatrizes(const std::string dir,
+/* void Visualization::compute_separatrizes(const std::string rel_dir,
                           const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges,
                           const std::vector <cudaT> minimum_change_of_state,
                           const cudaT minimum_delta_t, const cudaT maximum_flow_val,
@@ -300,15 +278,15 @@ void Visualization::compute_separatrizes(const std::string dir,
 
     CoordinateOperatorParameters coordinate_operator_parameters = CoordinateOperatorParameters::from_parameters(vp.path_parameters.theory, potential_saddle_points);
     CoordinateOperator saddle_point_evaluator(coordinate_operator_parameters);
-    saddle_point_evaluator.compute_jacobians_and_eigendata();
+    saddle_point_evaluator.compute_jacobians_and_eigendata(); */
     /* auto eigenvectors_real_part = saddle_point_evaluator.get_real_parts_of_eigenvectors();
     auto eigenvectors_imag_part = saddle_point_evaluator.get_imag_parts_of_eigenvectors();
     auto eigenvalues = saddle_point_evaluator.get_real_parts_of_eigenvalues(); */
 
-    const std::vector<int> saddle_point_indices = saddle_point_evaluator.get_indices_with_saddle_point_characteristics();
+/*     const std::vector<int> saddle_point_indices = saddle_point_evaluator.get_indices_with_saddle_point_characteristics();
 
     // Iterator through emerging lambda ranges from given fixed lambdas
-    LambdaRangeGenerator lambda_range_generator(vp.n_branches, vp.partial_lambda_ranges, vp.fix_lambdas);
+    PartialRanges lambda_range_generator(n_branches_, partial_lambda_ranges_, fixed_lambdas_);
     auto c = 0;
     while(!lambda_range_generator.finished())
     {
@@ -325,12 +303,12 @@ void Visualization::compute_separatrizes(const std::string dir,
         // Iterate over all saddle points
         for(auto saddle_point_index = 0; saddle_point_index < saddle_point_indices.size(); saddle_point_index++)
         {
-            std::cout << "Performing for saddle point with x = " << potential_saddle_points[saddle_point_index][0] << std::endl;
+            std::cout << "Performing for saddle point with x = " << potential_saddle_points[saddle_point_index][0] << std::endl; */
             /* std::vector<std::vector<cudaT>> eigenvector_real_part = eigenvectors_real_part[saddle_point_index];
             std::vector<std::vector<cudaT>> eigenvector_imag_part = eigenvectors_imag_part[saddle_point_index];
             std::vector<cudaT> eigenvalue = eigenvalues[saddle_point_index]; */
 
-            auto eigenvector = saddle_point_evaluator.get_eigenvector(saddle_point_index);
+/*             auto eigenvector = saddle_point_evaluator.get_eigenvector(saddle_point_index);
             auto eigenvalue = saddle_point_evaluator.get_eigenvalue(saddle_point_index);
 
             std::vector<int> stable_manifold_indices {};
@@ -377,25 +355,25 @@ void Visualization::compute_separatrizes(const std::string dir,
 
     // Consistency check
     auto total_number_of_generated_lambdas = 1;
-    for(auto &fix_lambd : vp.fix_lambdas)
+    for(auto &fix_lambd : fixed_lambdas_)
         total_number_of_generated_lambdas *= fix_lambd.size();
     if(total_number_of_generated_lambdas != c) {
         std::cout
                 << "\nERROR: Something went wrong during the generation of the lambda ranges (possibility for duplicates, etc.)"
-                << vp.dim << std::endl;
+                << dim_ << std::endl;
         std::exit(EXIT_FAILURE);
     }
-}
+} */
 
-void Visualization::compute_separatrizes_from_parameters(const std::string dir)
-{
+/* void Visualization::compute_separatrizes_from_parameters(const std::string rel_dir)
+{ */
     // ToDo: Reactivate
-    /* auto evolve_on_condition_parameters = vp.get_value_by_key<json>("evolve_on_condition");
-    auto compute_separatrizes_parameters = vp.get_value_by_key<json>("compute_separatrizes");
-    auto params3 = VisualizationParameters::ComputeSeparatrizesParameters(compute_separatrizes_parameters);
-    if(vp.fix_lambdas.size() > 0)
+    /* auto evolve_on_condition_parameters = vp.get_entry<json>("evolve_on_condition");
+    auto compute_separatrizes_parameters = vp.get_entry<json>("compute_separatrizes");
+    auto params3 = Visualization::ComputeSeparatrizesParameters(compute_separatrizes_parameters);
+    if(fixed_lambdas_.size() > 0)
     {
-        auto conditional_observer_parameters = vp.get_value_by_key<json>("conditional_intersection_observer");
+        auto conditional_observer_parameters = vp.get_entry<json>("conditional_intersection_observer");
         auto params1 = ConditionalIntersectionObserverParameters(conditional_observer_parameters);
         auto params2 = CoordinateOperatorParameters::EvolveOnConditionParameters<ConditionalIntersectionObserverParameters>(evolve_on_condition_parameters);
         compute_separatrizes(dir, params1.boundary_lambda_ranges, params1.minimum_change_of_state,
@@ -405,7 +383,7 @@ void Visualization::compute_separatrizes_from_parameters(const std::string dir)
     }
     else
     {
-        auto conditional_observer_parameters = vp.get_value_by_key<json>("conditional_range_observer");
+        auto conditional_observer_parameters = vp.get_entry<json>("conditional_range_observer");
         auto params1 = ConditionalRangeObserverParameters(conditional_observer_parameters);
         auto params2 = CoordinateOperatorParameters::EvolveOnConditionParameters<ConditionalRangeObserverParameters>(evolve_on_condition_parameters);
         compute_separatrizes(dir, params1.boundary_lambda_ranges, params1.minimum_change_of_state,
@@ -413,45 +391,9 @@ void Visualization::compute_separatrizes_from_parameters(const std::string dir)
                              params2.observe_every_nth_step, params2.maximum_total_number_of_steps,
                              params3.N_per_eigen_dim, params3.shift_per_dim);
     } */
-}
+// }
 
-
-// Function is very similar to main function of fixed_point_search -> integrate them somehow??
-HyperCubes * Visualization::compute_vertex_velocities_of_sub_problem(
-        const int number_of_cubes_per_gpu_call,
-        Buffer * buffer_ptr,
-        const std::vector <std::pair<cudaT, cudaT> > lambda_ranges)
-{
-    std::vector< Node* > node_package;
-    int total_number_of_cubes = 0;
-    int maximum_depth = 0;
-
-    // Get nodes for the gpu from buffer
-    std::tie(node_package, total_number_of_cubes, maximum_depth) = buffer_ptr->pop_node_package(number_of_cubes_per_gpu_call);
-
-    if(monitor) {
-        std::cout << "\n### Nodes for the qpu: " << node_package.size() << ", total number of cubes: "
-                  << total_number_of_cubes << std::endl;
-        buffer_ptr->get_nodes_info(node_package);
-    }
-
-    auto * hypercubes_ptr = new HyperCubes(vp.k, std::vector< std::vector<int> > {vp.n_branches}, lambda_ranges);
-
-    // Use helper class to perform gpu tasks on nodes
-    GridComputationWrapper grcompwrap = hypercubes_ptr->generate_and_linearize_nodes(total_number_of_cubes, maximum_depth, node_package);
-
-    // Compute the actual vertices by first expanding each cube according to the number of vertices to
-    // a vector of reference vertices of length total_number_of_cubes*dim and then computing the indices
-    hypercubes_ptr->compute_reference_vertices(grcompwrap);
-
-    // hypercubes.test_projection();
-    // Compute vertex velocities
-    hypercubes_ptr->determine_vertex_velocities(vp.flow_equations);
-
-    return hypercubes_ptr;
-}
-
-odesolver::DevDatC Visualization::sample_around_saddle_point(const std::vector<double> coordinate, const std::vector<int> manifold_indices,
+/* odesolver::DevDatC Visualization::sample_around_saddle_point(const std::vector<double> coordinate, const std::vector<int> manifold_indices,
                                                   const std::vector<std::vector<cudaT>> manifold_eigenvectors, const std::vector<double> shift_per_dim, const uint N_per_eigen_dim)
 {
     const uint eigen_dim = manifold_indices.size();
@@ -561,10 +503,10 @@ void Visualization::extract_stable_and_unstable_manifolds(
                 manifold_eigenvectors[i].push_back(eigen_vec[j].real());
         }
     }
-}
+} */
 
 
-void Visualization::compute_separatrizes_of_manifold(
+/* void Visualization::compute_separatrizes_of_manifold(
         const std::vector<double> saddle_point,
         const std::vector<int> manifold_indices,
         const std::vector<std::vector<cudaT>> manifold_eigenvectors,
@@ -578,7 +520,7 @@ void Visualization::compute_separatrizes_of_manifold(
         const std::vector<double> shift_per_dim,
         std::ofstream &os,
         std::vector< cudaT > fixed_lambdas
-        ) {
+        ) { */
     // ToDo: Reactivate
     // Perform computation of separatrix for stable manifold
     /* odesolver::DevDatC sampled_coordinates;
@@ -597,16 +539,16 @@ void Visualization::compute_separatrizes_of_manifold(
                                                          shift_per_dim, N_per_eigen_dim);
     }
 
-    if(vp.fix_lambdas.size() > 0)
+    if(fixed_lambdas_.size() > 0)
     {
-        auto observer = new ConditionalIntersectionObserver(vp.flow_equations, sampled_coordinates.size(), os,
+        auto observer = new ConditionalIntersectionObserver(flow_equations_ptr_, sampled_coordinates.size(), os,
                                                             boundary_lambda_ranges, minimum_change_of_state, minimum_delta_t, maximum_flow_val, vicinity_distances,
                                                             fixed_lambdas, indices_of_fixed_lambdas);
         observer->initalize_side_counter(sampled_coordinates);
 
         // for(auto dim_index = 0; dim_index < sampled_coordinates.dim_size(); dim_index++)
         //     print_range("Vertex in dim " + std::to_string(dim_index) + ": ", sampled_coordinates[dim_index].begin(), sampled_coordinates[dim_index].end());
-        Evolution<ConditionalIntersectionObserver> evaluator(vp.flow_equations, observer, observe_every_nth_step, maximum_total_number_of_steps);
+        Evolution<ConditionalIntersectionObserver> evaluator(flow_equations_ptr_, observer, observe_every_nth_step, maximum_total_number_of_steps);
 
         print_range("Initial point", sampled_coordinates.begin(), sampled_coordinates.end());
         evaluator.evolve_observer_based(sampled_coordinates, delta_t);
@@ -614,14 +556,14 @@ void Visualization::compute_separatrizes_of_manifold(
     }
     else
     {
-        auto observer = new ConditionalRangeObserver(vp.flow_equations, sampled_coordinates.size(), os,
+        auto observer = new ConditionalRangeObserver(flow_equations_ptr_, sampled_coordinates.size(), os,
                                                      boundary_lambda_ranges, minimum_change_of_state, minimum_delta_t, maximum_flow_val);
         // for(auto dim_index = 0; dim_index < sampled_coordinates.dim_size(); dim_index++)
         //     print_range("Vertex in dim " + std::to_string(dim_index) + ": ", sampled_coordinates[dim_index].begin(), sampled_coordinates[dim_index].end());
-        Evolution<ConditionalRangeObserver> evaluator(vp.flow_equations, observer, observe_every_nth_step, maximum_total_number_of_steps);
+        Evolution<ConditionalRangeObserver> evaluator(flow_equations_ptr_, observer, observe_every_nth_step, maximum_total_number_of_steps);
 
         print_range("Initial point", sampled_coordinates.begin(), sampled_coordinates.end());
         evaluator.evolve_observer_based(sampled_coordinates, delta_t);
         print_range("End point", sampled_coordinates.begin(), sampled_coordinates.end());
     } */
-}
+// }

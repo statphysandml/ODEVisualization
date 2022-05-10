@@ -12,6 +12,8 @@
 #include "../odesolver/util/monitor.hpp"
 #include "node.hpp"
 
+/** @brief Class managing a vector nodes allowing for a step-wise computation of
+ * hypercubes on the GPU */
 
 class Buffer
 {

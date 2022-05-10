@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # General compilation options
-### set(BUILD_PYTHON_BINDINGS ON CACHE BOOL "Enable building of Python bindings")
+set(BUILD_PYTHON_BINDINGS ON CACHE BOOL "Enable building of Python bindings")
 set(RUN_WITH_PYTHON_BACKEND ON CACHE BOOL "Use Python backend to compute expectation values, etc.")
 
 # Project specific compliation options (used by config.h.in)
@@ -62,13 +62,13 @@ if((BUILD_PYTHON_BINDINGS OR RUN_WITH_PYTHON_BACKEND) AND NOT EXISTS "${CMAKE_CU
     endif()
 endif()
 
-### if(BUILD_PYTHON_BINDINGS)
-###     message("Integrate python for python_bindings")
-###     add_subdirectory(ext/pybind11)
-###     # Python wrapper
-###     # add_subdirectory(python_pybind)
+if(BUILD_PYTHON_BINDINGS)
+    message("Integrate python for python_bindings")
+    add_subdirectory(ext/pybind11)
+    # Python wrapper
+    add_subdirectory(python_pybind)
 if(RUN_WITH_PYTHON_BACKEND)
-###     message("Load pybind11 module")
+    message("Load pybind11 module")
     add_subdirectory(ext/pybind11)
 endif()
 
@@ -98,4 +98,4 @@ endif()
 target_compile_options(LorentzAttractor PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
 
 set_target_properties(LorentzAttractor PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_STANDARD 14)
-target_link_libraries(LorentzAttractor PUBLIC odevisualisationlib::odevisualisationlib ${target_link_libraries_python_appendix})
+target_link_libraries(LorentzAttractor PUBLIC odevisualisation::odevisualisation ${target_link_libraries_python_appendix})

@@ -1,7 +1,3 @@
-//
-// Created by kades on 7/16/19.
-//
-
 #ifndef PROJECT_VISUALIZATION_HPP
 #define PROJECT_VISUALIZATION_HPP
 
@@ -9,23 +5,24 @@
 #include <tuple>
 #include <fstream>
 
+#include "util/dev_dat.hpp"
 #include "util/monitor.hpp"
 #include "hypercubes/node.hpp"
 #include "hypercubes/buffer.hpp"
-#include "hypercubes/nodesexpander.hpp"
 #include "hypercubes/hypercubes.hpp"
+#include "hypercubes/dynamic_recursive_grid_computation.hpp"
+#include "hypercubes/static_recursive_grid_computation.hpp"
 #include "util/helper_functions.hpp"
 #include "observers/evolution.hpp"
 #include "coordinate_operator.hpp"
-#include "observers/conditional_intersection_observer.hpp"
+// #include "observers/conditional_intersection_observer.hpp"
 
-#include "param_helper/pathfinder.hpp"
-#include "util/dev_dat.hpp"
-#include "util/frgvisualization_parameters.hpp"
+#include "util/ode_visualisation.hpp"
+#include "util/json_conversions.hpp"
 #include "util/random.hpp"
-#include "util/lambda_range_generator.hpp"
-#include "param_helper/json.hpp"
-#include "param_helper/params.hpp"
+#include "util/partial_ranges.hpp"
+
+#include <param_helper/json.hpp>
 
 using json = nlohmann::json;
 
@@ -36,26 +33,35 @@ using json = nlohmann::json;
  * - Scan for fixed lambdas in two dimensions with two altering values (two fix lambdas)
  */
 
-class VisualizationParameters : public FRGVisualizationParameters {
+
+class Visualization : public ODEVisualisation
+{
 public:
-    explicit VisualizationParameters(const json params_, const PathParameters path_parameters_);
+    // From config
+    explicit Visualization(
+        const json params,
+        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr=nullptr,
+        std::shared_ptr<JacobianEquationWrapper> jacobians_ptr=nullptr,
+        const std::string computation_parameters_path=param_helper::proj::project_root()
+    );
 
     // From file
-    VisualizationParameters(const std::string theory,
-                            const std::string mode_type,
-                            const std::string results_dir,
-                            const std::string root_dir="/data/",
-                            const bool relative_path=true);
+    static Visualization from_file(
+        const std::string rel_config_dir,
+        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr=nullptr,
+        std::shared_ptr<JacobianEquationWrapper> jacobians_ptr=nullptr,
+        const std::string computation_parameters_path=param_helper::proj::project_root()
+    );
 
-    VisualizationParameters(
-        const std::string theory_,
-        const std::vector<int> n_branches_,
-        const std::vector <std::pair<cudaT, cudaT> > lambda_ranges_,
-        const std::vector <std::vector <cudaT> > fix_lambdas_ = std::vector< std::vector <cudaT> > {},
-        const std::string mode_="visualization", // default mode
-        const std::string root_dir="/data/",
-        const bool relative_path=true
-        );
+    // From parameters
+    static Visualization from_parameters(
+        const std::vector<int> n_branches,
+        const std::vector<std::pair<cudaT, cudaT>> lambda_ranges,
+        const std::vector<std::vector<cudaT>> fixed_lambdas = std::vector< std::vector<cudaT>> {},
+        std::shared_ptr<FlowEquationsWrapper> flow_equations_ptr=nullptr,
+        std::shared_ptr<JacobianEquationWrapper> jacobians_ptr=nullptr,
+        const std::string computation_parameters_path=param_helper::proj::project_root()
+    );
 
     void append_explicit_points_parameters(
             std::vector< std::vector<cudaT> > explicit_points=std::vector< std::vector<cudaT> >{},
@@ -63,82 +69,60 @@ public:
             bool source_relative_path=true,
             std::string source_file_dir="");
 
-    struct ComputeVertexVelocitiesParameters : public Parameters
+    struct ComputeVertexVelocitiesParameters : public param_helper::params::Parameters
     {
-        ComputeVertexVelocitiesParameters(const json params_);
+        ComputeVertexVelocitiesParameters(const json params);
 
         ComputeVertexVelocitiesParameters(
-                const bool skip_fix_lambdas_, const bool with_vertices_
+                const bool skip_fixed_lambdas, const bool with_vertices
         );
 
         std::string name() const {  return "compute_vertex_velocities";  }
 
-        const bool skip_fix_lambdas;
-        const bool with_vertices;
+        const bool skip_fixed_lambdas_;
+        const bool with_vertices_;
     };
 
-    struct ComputeSeparatrizesParameters : public Parameters
+    struct ComputeSeparatrizesParameters : public param_helper::params::Parameters
     {
-        ComputeSeparatrizesParameters(const json params_);
+        ComputeSeparatrizesParameters(const json params);
 
         ComputeSeparatrizesParameters(
-                const uint N_per_eigen_dim_,
-                const std::vector<double> shift_per_dim_
+                const uint N_per_eigen_dim,
+                const std::vector<double> shift_per_dim
         );
 
         std::string name() const {  return "compute_separatrizes";  }
 
-        const uint N_per_eigen_dim;
-        const std::vector<double> shift_per_dim;
+        const uint N_per_eigen_dim_;
+        const std::vector<double> shift_per_dim_;
     };
 
-private:
-    friend class Visualization;
+    void evaluate_vertices(std::string rel_dir, bool skip_fixed_lambdas, bool with_vertices);
 
-    const uint dim;
-    const cudaT k;
+    // void compute_vertex_velocities_from_parameters(std::string rel_dir);
 
-    std::vector<int> n_branches;
-    std::vector <std::pair<cudaT, cudaT> > partial_lambda_ranges;
-    std::vector <std::vector <cudaT> > fix_lambdas;
-
-    FlowEquationsWrapper * flow_equations;
-
-    std::vector< std::vector<cudaT> > get_fixed_points() const;
-};
-
-
-class Visualization
-{
-public:
-    explicit Visualization(const VisualizationParameters &vp_);
-
-    void compute_vertex_velocities(std::string dir, bool skip_fix_lambdas, bool with_vertices);
-
-    void compute_vertex_velocities_from_parameters(std::string dir);
-
-    void compute_separatrizes(const std::string dir,
-                              const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges,
-                              const std::vector <cudaT> minimum_change_of_state,
+    /* void compute_separatrizes(const std::string rel_dir,
+                              const std::vector<std::pair<cudaT, cudaT>> boundary_lambda_ranges,
+                              const std::vector<cudaT> minimum_change_of_state,
                               const cudaT minimum_delta_t, const cudaT maximum_flow_val,
-                              const std::vector <cudaT> vicinity_distances,
+                              const std::vector<cudaT> vicinity_distances,
                               const uint observe_every_nth_step, const uint maximum_total_number_of_steps,
                               const uint N_per_eigen_dim,
                               const std::vector<double> shift_per_dim);
 
-    void compute_separatrizes_from_parameters(const std::string dir);
+    void compute_separatrizes_from_parameters(const std::string rel_dir); */
 
 private:
-    const VisualizationParameters &vp;
+    const uint dim_;
 
-    std::vector<int> indices_of_fixed_lambdas;
+    std::vector<int> n_branches_;
+    std::vector<std::pair<cudaT, cudaT>> partial_lambda_ranges_;
+    std::vector<std::vector<cudaT>> fixed_lambdas_;
 
-    HyperCubes * compute_vertex_velocities_of_sub_problem(
-            const int number_of_cubes_per_gpu_call,
-            Buffer * buffer_ptr,
-            const std::vector <std::pair<cudaT, cudaT> > lambda_ranges);
+    std::vector<int> indices_of_fixed_lambdas_;
 
-    odesolver::DevDatC sample_around_saddle_point(const std::vector<double> coordinate, const std::vector<int> manifold_indices,
+    /* odesolver::DevDatC sample_around_saddle_point(const std::vector<double> coordinate, const std::vector<int> manifold_indices,
                                        const std::vector<std::vector<cudaT>> manifold_eigenvectors, const std::vector<double> shift_per_dim, const uint N_per_eigen_dim);
 
     odesolver::DevDatC get_initial_values_to_eigenvector(const std::vector<double> saddle_point, std::vector<cudaT> eigenvector, const std::vector<double> shift_per_dim);
@@ -157,16 +141,18 @@ private:
             const std::vector<int> manifold_indices,
             const std::vector<std::vector<cudaT>> manifold_eigenvectors,
             const cudaT delta_t,
-            const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges,
-            const std::vector <cudaT> minimum_change_of_state,
+            const std::vector<std::pair<cudaT, cudaT>> boundary_lambda_ranges,
+            const std::vector<cudaT> minimum_change_of_state,
             const cudaT minimum_delta_t, const cudaT maximum_flow_val,
-            const std::vector <cudaT> vicinity_distances,
+            const std::vector<cudaT> vicinity_distances,
             const uint observe_every_nth_step, const uint maximum_total_number_of_steps,
             const uint N_per_eigen_dim,
             const std::vector<double> shift_per_dim,
             std::ofstream &os,
-            std::vector< cudaT > fixed_lambdas
-    );
+            std::vector<cudaT> fixed_lambdas
+    ); */
+
+    std::vector<std::vector<cudaT>> get_fixed_points() const;
 };
 
 #endif //PROJECT_VISUALIZATION_HPP

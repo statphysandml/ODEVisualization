@@ -94,4 +94,4 @@ endif()
 
 target_compile_options(FourPointSystem PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
 set_target_properties(FourPointSystem PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_STANDARD 14)
-target_link_libraries(FourPointSystem PUBLIC odevisualisationlib::odevisualisationlib ${target_link_libraries_python_appendix})
+target_link_libraries(FourPointSystem PUBLIC odevisualisation::odevisualisation ${target_link_libraries_python_appendix})

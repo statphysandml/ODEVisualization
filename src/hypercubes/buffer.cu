@@ -58,5 +58,5 @@ std::tuple<std::vector<Node*>, int, int> Buffer::pop_node_package(const int numb
 
     node_package_size_ = node_iterator - nodes_.begin();
 
-    return std::make_tuple(node_package, total_number_of_cubes, maximum_depth);
+    return std::make_tuple(node_package, total_number_of_cubes, maximum_depth + 1);
 }
