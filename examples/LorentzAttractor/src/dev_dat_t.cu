@@ -10,7 +10,7 @@ odesolver::DevDatC gen_normal_devdat(uint dim, uint N)
                 thrust::make_counting_iterator(0 + discard),
                 thrust::make_counting_iterator(N + discard),
                 random_numbers[dim_index].begin(),
-                RandomNormalGenerator());
+                odesolver::util::RandomNormalGenerator());
         discard += N;
     }
     return std::move(random_numbers);

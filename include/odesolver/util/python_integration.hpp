@@ -40,7 +40,6 @@ namespace py = pybind11;
 
 namespace odesolver {
     namespace util {
-        
         // Project dependent variables
         /** Path to the directory containing the ``custom_modules.py`` file with
          * custom Python code for computing measures and loading MCMC simulation

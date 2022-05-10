@@ -88,7 +88,7 @@ void Executer::exec_fixed_point_search(const FixedPointSearchParameters& fixed_p
     fixed_point_search.find_fixed_point_solutions();
     fixed_point_search.write_solutions_to_file(dir);
 
-    NodeCounter<Node>::print_statistics();
+    Counter<Collection>::print_statistics();
 
     // Cluster solutions
     fixed_point_search.cluster_solutions_to_fixed_points_from_file();

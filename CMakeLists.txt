@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # Set a name and a version number for your project:
-project(ODEVisualisation VERSION 0.0.1 LANGUAGES CXX CUDA)
+project(ODEVisualization VERSION 0.0.1 LANGUAGES CXX CUDA)
 
 # Initialize some default paths
 include(GNUInstallDirs)
@@ -93,21 +93,21 @@ endif()
 
 
 # Add an alias target for use if this project is included as a subproject in another project
-add_library(odevisualisation::odevisualisation ALIAS odevisualisation)
+add_library(odevisualization::odevisualization ALIAS odevisualization)
 
 # Install targets and configuration
 install(
-  TARGETS odevisualisation
-  EXPORT odevisualisation-config
+  TARGETS odevisualization
+  EXPORT odevisualization-config
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 install(
-  EXPORT odevisualisation-config
-  NAMESPACE odevisualisation::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/odevisualisation
+  EXPORT odevisualization-config
+  NAMESPACE odevisualization::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/odevisualization
 )
 
 install(

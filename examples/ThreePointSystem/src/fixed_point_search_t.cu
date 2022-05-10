@@ -18,7 +18,7 @@ FixedPointSearch build_fixed_point_search_parameters()
             maximum_recursion_depth,
             n_branches_per_depth,
             lambda_ranges,
-            generate_flow_equations<ThreePointSystemFlowEquations>(0)
+            odesolver::flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0)
     );
 
     // Setting gpu specfic computation parameters (optional) - parameters are already set default
@@ -46,7 +46,7 @@ void add_cluster_parameters_to_fixed_point_search_to_file()
     const std::string rel_dir = "data/example_fixed_point_search/";
 
     // Load existing fixed_point_search parameter file
-    auto fixed_point_search = FixedPointSearch::from_file(rel_dir, generate_flow_equations<ThreePointSystemFlowEquations>(0));
+    auto fixed_point_search = FixedPointSearch::from_file(rel_dir, odesolver::flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0));
 
     // Parameters for clustering the resulting solutions - Represent parameters of a function
     FixedPointSearch::ClusterParameters cluster_parameters = build_cluster_parameters();
@@ -68,7 +68,7 @@ void run_fixed_point_search_from_file()
     
 
     // Load existing fixed_point_search parameter file
-    auto fixed_point_search = FixedPointSearch::from_file(rel_dir, generate_flow_equations<ThreePointSystemFlowEquations>(0));
+    auto fixed_point_search = FixedPointSearch::from_file(rel_dir, odesolver::flowequations::<ThreePointSystemFlowEquations>(0));
 
     fixed_point_search.find_fixed_point_solutions();
     const std::string mode = "fixed_point_search"; // -> ToDo: Allow for adding a mode to the config file <-> allows for the computation with executer
@@ -157,7 +157,7 @@ void find_fixed_points()
         maximum_recursion_depth,
         n_branches_per_depth,
         lambda_ranges,
-        generate_flow_equations<ThreePointSystemFlowEquations>(0)
+        odesolver::flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0)
     );
 
     // Setting gpu specfic computation parameters (optional) - parameters are already set default
@@ -198,8 +198,8 @@ void evaluate_fixed_points()
 
     CoordinateOperator evaluator = CoordinateOperator::from_vecvec(
         fixed_points,
-        generate_flow_equations<ThreePointSystemFlowEquations>(0),
-        generate_jacobian_equations<ThreePointSystemJacobianEquations>(0)
+        odesolver::flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0),
+        odesolver::flowequations::generate_jacobian_equations<ThreePointSystemJacobianEquations>(0)
     );
 
     evaluator.compute_velocities();

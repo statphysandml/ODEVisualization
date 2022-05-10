@@ -1,4 +1,4 @@
-#include "../../include/odesolver/util/dev_dat.hpp"
+#include <odesolver/dev_dat.hpp>
 
 
 namespace odesolver {

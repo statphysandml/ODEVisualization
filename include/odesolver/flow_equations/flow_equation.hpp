@@ -1,0 +1,52 @@
+#ifndef PROJECT_FLOW_EQUATION_HPP
+#define PROJECT_FLOW_EQUATION_HPP
+
+#include <vector>
+#include <string>
+
+#include <param_helper/json.hpp>
+
+#include <odesolver/header.hpp>
+#include <odesolver/dev_dat.hpp>
+
+
+using json = nlohmann::json;
+
+
+namespace odesolver {
+    namespace flowequations {
+        class FlowEquationsWrapper
+        {
+        public:
+            virtual void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables, const int dim_index) = 0;
+            
+            virtual size_t get_dim() = 0;
+
+            virtual json get_json() const {
+                return {};
+            }
+
+            static std::string name()
+            {
+                return "flow_equation";
+            }
+        };
+
+        struct FlowEquation
+        {
+            virtual void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) = 0;
+        };
+
+        template<typename FlowEquations, typename... Args>
+        std::shared_ptr<FlowEquationsWrapper> generate_flow_equations(Args... args)
+        {
+            return std::make_shared<FlowEquations>(args...);
+        }
+
+        odesolver::DevDatC compute_vertex_velocities(const odesolver::DevDatC &coordinates, FlowEquationsWrapper * flow_equations);
+
+        void compute_vertex_velocities(const odesolver::DevDatC &coordinates, odesolver::DevDatC &vertex_velocities, FlowEquationsWrapper * flow_equations);
+    }
+}
+
+#endif //PROJECT_FLOW_EQUATION_HPP

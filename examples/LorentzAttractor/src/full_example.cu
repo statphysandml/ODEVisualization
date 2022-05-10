@@ -16,11 +16,11 @@ void find_fixed_points()
     const std::vector <std::pair<cudaT, cudaT> > lambda_ranges = std::vector <std::pair<cudaT, cudaT> > {
         std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-1.0, 31.0)};
 
-    auto fixed_point_search = FixedPointSearch::from_parameters(
+    auto fixed_point_search = odesolver::modes::FixedPointSearch::from_parameters(
         maximum_recursion_depth,
         n_branches_per_depth,
         lambda_ranges,
-        generate_flow_equations<LorentzAttractorFlowEquations>(0)
+        odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0)
     );
 
     // Setting gpu specfic computation parameters (optional) - parameters are already set default
@@ -46,10 +46,10 @@ void find_fixed_points()
     std::cout << fs.count() << "s\n";
     std::cout << d.count() << "ms\n";
 
-    NodeCounter<Node>::print_statistics();
+    odesolver::collections::Counter<odesolver::collections::Collection>::print_statistics();
 
     // Just for testing issues -> get solutions and print infos about these
-    std::vector<std::shared_ptr<Leaf>> solutions = fixed_point_search.get_solutions();
+    std::vector<std::shared_ptr<odesolver::collections::Leaf>> solutions = fixed_point_search.get_solutions();
     for(auto &sol: solutions)
         sol->info();
 
@@ -71,12 +71,12 @@ void find_fixed_points()
 
 void evaluate_fixed_points()
 {
-    auto fixed_points = load_fixed_points("data/fe_fixed_point_search");
+    auto fixed_points = odesolver::modes::load_fixed_points("data/fe_fixed_point_search");
 
-    CoordinateOperator evaluator = CoordinateOperator::from_vecvec(
+    odesolver::modes::CoordinateOperator evaluator = odesolver::modes::CoordinateOperator::from_vecvec(
         fixed_points,
-        generate_flow_equations<LorentzAttractorFlowEquations>(0),
-        generate_jacobian_equations<LorentzAttractorJacobianEquations>(0)
+        odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0),
+        odesolver::flowequations::generate_jacobian_equations<LorentzAttractorJacobianEquations>(0)
     );
 
     evaluator.compute_velocities();

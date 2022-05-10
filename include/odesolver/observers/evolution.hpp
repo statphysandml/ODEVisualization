@@ -10,8 +10,8 @@
 // #include "conditional_range_observer.hpp"
 // #include "conditional_intersection_observer.hpp"
 
-#include "../util/dev_dat_boost_integration.hpp"
-#include "../util/boost_integrators.hpp"
+#include <odesolver/boost/dev_dat_boost_integration.hpp>
+#include <odesolver/boost/boost_integrators.hpp>
 
 // ToDo: Latest Changes mid of april - most of the comments were recently added - handwritten notes with respect to the
 // integrators exist, variables should already be complete for explizit implementation (i.e., the parameter class has been adpated
@@ -40,9 +40,9 @@ public:
     enum StepSizeType {constant, adpative};
     static const std::map< std::string, StepSizeType> mode_resolver;
 
-    Evolution(const json params, FlowEquationsWrapper * flow_equations_):
+    Evolution(const json params, odesolver::flowequations::FlowEquationsWrapper * flow_equations_):
         Parameters(params),
-        system(FlowEquationSystem(flow_equations_)),
+        system(odesolver::flowequations::FlowEquationSystem(flow_equations_)),
         integration_type(get_entry<std::string>("integration_type")),
         start_t(get_entry<cudaT>("start_t")),
         delta_t(get_entry<cudaT>("delta_t")),
@@ -55,7 +55,7 @@ public:
     {}
 
     // Evaluate at equidistant time steps and fixed end time
-    Evolution(FlowEquationsWrapper * flow_equations_, const cudaT start_t_, const cudaT delta_t_, const cudaT end_t_,
+    Evolution(odesolver::flowequations::FlowEquationsWrapper * flow_equations_, const cudaT start_t_, const cudaT delta_t_, const cudaT end_t_,
                      const std::string step_size_type_="constant", const std::string results_dir_="",
                      const uint max_steps_between_observations_=500) :
             Evolution(json {{"integration_type", "equidistant_time_fixed_end"}, {"start_t", start_t_}, {"delta_t", delta_t_}, {"end_t", end_t_},
@@ -65,7 +65,7 @@ public:
     {}
 
     // Evaluate at equidistant time steps and a fixed number of observations
-    Evolution(FlowEquationsWrapper * flow_equations_, const cudaT start_t_, const cudaT delta_t_, const uint number_of_observations_,
+    Evolution(odesolver::flowequations::FlowEquationsWrapper * flow_equations_, const cudaT start_t_, const cudaT delta_t_, const uint number_of_observations_,
                      const std::string step_size_type_="constant", const std::string results_dir_="",
                      const uint max_steps_between_observations_=500) :
             Evolution(json {{"integration_type", "equidistant_time_fixed_n"}, {"start_t", start_t_}, {"delta_t", delta_t_}, {"end_t", 0.0},
@@ -75,7 +75,7 @@ public:
     {}
 
     // Evaluate after at equidistant integration steps and fixed end time
-    Evolution(FlowEquationsWrapper * flow_equations_, const uint observe_every_nth_step_, const cudaT start_t_, const cudaT delta_t_,
+    Evolution(odesolver::flowequations::FlowEquationsWrapper * flow_equations_, const uint observe_every_nth_step_, const cudaT start_t_, const cudaT delta_t_,
                      const cudaT end_t_, const std::string step_size_type_="constant", const std::string results_dir_="",
                      const uint max_steps_between_observations_=500) :
             Evolution(json {{"integration_type", "equidistant_integration_steps_fixed_end"}, {"start_t", start_t_}, {"delta_t", delta_t_}, {"end_t", end_t_},
@@ -85,7 +85,7 @@ public:
     {}
 
     // Evaluate after at equidistant integration steps and a fixed number of observations
-    Evolution(FlowEquationsWrapper * flow_equations_, const uint observe_every_nth_step_, const cudaT start_t_, const cudaT delta_t_,
+    Evolution(odesolver::flowequations::FlowEquationsWrapper * flow_equations_, const uint observe_every_nth_step_, const cudaT start_t_, const cudaT delta_t_,
                      const uint number_of_observations_, const std::string step_size_type_="constant",
                      const std::string results_dir_="", const uint max_steps_between_observations_=500) :
             Evolution(json {{"integration_type", "equidistant_integration_steps_fixed_n"}, {"start_t", start_t_},
@@ -175,10 +175,10 @@ private:
     const std::string integration_type;
 
     // ToDo: The dim variable can be removed at many points since present in flow equations, etc. (see also in other files)
-    FlowEquationSystem system;
+    odesolver::flowequations::FlowEquationSystem system;
 
     template <typename StepperType, typename Observer>
-    void evolve_(StepperType stepper, Integrator<StepperType, Observer> * integrator, odesolver::DevDatC &initial_coordinates, cudaT start_t=0.0, cudaT end_t=1.0, cudaT delta_t=0.01)
+    void evolve_(StepperType stepper, odesolver::boost_integrators::Integrator<StepperType, Observer> * integrator, odesolver::DevDatC &initial_coordinates, cudaT start_t=0.0, cudaT end_t=1.0, cudaT delta_t=0.01)
     {
         /* if(observer and observe_every_nth_step > 1)
         {

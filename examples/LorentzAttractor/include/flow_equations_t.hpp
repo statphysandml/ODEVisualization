@@ -5,9 +5,7 @@
 
 #include <thrust/transform.h>
 
-#include <odesolver/util/dev_dat.hpp>
-#include <flow_equation_interface/flow_equation.hpp>
-#include <flow_equation_interface/jacobian_equation.hpp>
+#include <odesolver/dev_dat.hpp>
 
 #include "../flow_equations/lorentz_attractor/lorentz_attractor_flow_equation.hpp"
 #include "../flow_equations/lorentz_attractor/lorentz_attractor_jacobian_equation.hpp"

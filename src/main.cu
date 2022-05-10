@@ -46,7 +46,7 @@ void custom_main();
  * 3) Coordinate Operator - Perform different operations for given operators */
 
 /* Helper modules - are used by main modules to implement the different functionalities
- * 1) Hypercubes - Class that represents hypercubes
+ * 1) Leafs - Class that represents hypercubes
  * 2) Evolution - Class that enables evolution of a given odesolver::DevDatC vector
  * 3) EvolutionObserver - Class that enables observations during a transformation of a odesolver::DevDatC vector */
 

@@ -6,7 +6,6 @@
 #define PROGRAM_DEV_DAT_HPP
 
 #include "helper.hpp"
-// #include "../include/thrust_functors.hpp"
 
 #include <utility>
 

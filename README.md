@@ -1,7 +1,7 @@
-ODEVisualisation
+ODEVisualization
 ================
 
-ODEVisualisation is a C++/Thrust/Cuda library that has a focus on fast evaluation of high-dimensional sets of ordinary differential equations on a GPU.
+ODEVisualization is a C++/Thrust/Cuda library that has a focus on fast evaluation of high-dimensional sets of ordinary differential equations on a GPU.
 
 The library can be used to:
 

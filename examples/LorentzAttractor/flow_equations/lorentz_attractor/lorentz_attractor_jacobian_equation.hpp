@@ -4,10 +4,10 @@
 #include <math.h>
 #include <tuple>
 
-#include <flow_equation_interface/jacobian_equation.hpp>
+#include <odesolver/flow_equations/jacobian_equation.hpp>
 
 
-struct LorentzAttractorJacobianEquation0 : public JacobianEquation
+struct LorentzAttractorJacobianEquation0 : public odesolver::flowequations::JacobianEquation
 {
 	LorentzAttractorJacobianEquation0(const cudaT k) : k_(k)
 	{}
@@ -19,7 +19,7 @@ private:
 };
 
 
-struct LorentzAttractorJacobianEquation1 : public JacobianEquation
+struct LorentzAttractorJacobianEquation1 : public odesolver::flowequations::JacobianEquation
 {
 	LorentzAttractorJacobianEquation1(const cudaT k) : k_(k)
 	{}
@@ -31,7 +31,7 @@ private:
 };
 
 
-struct LorentzAttractorJacobianEquation2 : public JacobianEquation
+struct LorentzAttractorJacobianEquation2 : public odesolver::flowequations::JacobianEquation
 {
 	LorentzAttractorJacobianEquation2(const cudaT k) : k_(k)
 	{}
@@ -43,7 +43,7 @@ private:
 };
 
 
-struct LorentzAttractorJacobianEquation3 : public JacobianEquation
+struct LorentzAttractorJacobianEquation3 : public odesolver::flowequations::JacobianEquation
 {
 	LorentzAttractorJacobianEquation3(const cudaT k) : k_(k)
 	{}
@@ -55,7 +55,7 @@ private:
 };
 
 
-struct LorentzAttractorJacobianEquation4 : public JacobianEquation
+struct LorentzAttractorJacobianEquation4 : public odesolver::flowequations::JacobianEquation
 {
 	LorentzAttractorJacobianEquation4(const cudaT k) : k_(k)
 	{}
@@ -67,7 +67,7 @@ private:
 };
 
 
-struct LorentzAttractorJacobianEquation5 : public JacobianEquation
+struct LorentzAttractorJacobianEquation5 : public odesolver::flowequations::JacobianEquation
 {
 	LorentzAttractorJacobianEquation5(const cudaT k) : k_(k)
 	{}
@@ -79,7 +79,7 @@ private:
 };
 
 
-struct LorentzAttractorJacobianEquation6 : public JacobianEquation
+struct LorentzAttractorJacobianEquation6 : public odesolver::flowequations::JacobianEquation
 {
 	LorentzAttractorJacobianEquation6(const cudaT k) : k_(k)
 	{}
@@ -91,7 +91,7 @@ private:
 };
 
 
-struct LorentzAttractorJacobianEquation7 : public JacobianEquation
+struct LorentzAttractorJacobianEquation7 : public odesolver::flowequations::JacobianEquation
 {
 	LorentzAttractorJacobianEquation7(const cudaT k) : k_(k)
 	{}
@@ -103,7 +103,7 @@ private:
 };
 
 
-struct LorentzAttractorJacobianEquation8 : public JacobianEquation
+struct LorentzAttractorJacobianEquation8 : public odesolver::flowequations::JacobianEquation
 {
 	LorentzAttractorJacobianEquation8(const cudaT k) : k_(k),
 		const_expr0_(-8*1.0/3)
@@ -117,12 +117,12 @@ private:
 };
 
 
-class LorentzAttractorJacobianEquations : public JacobianEquationWrapper
+class LorentzAttractorJacobianEquations : public odesolver::flowequations::JacobianEquationWrapper
 {
 public:
 	LorentzAttractorJacobianEquations(const cudaT k) : k_(k)
 	{
-		jacobian_equations_ = std::vector<std::shared_ptr<JacobianEquation>> {
+		jacobian_equations_ = std::vector<std::shared_ptr<odesolver::flowequations::JacobianEquation>> {
 			std::make_shared<LorentzAttractorJacobianEquation0>(k),
 			std::make_shared<LorentzAttractorJacobianEquation1>(k),
 			std::make_shared<LorentzAttractorJacobianEquation2>(k),
@@ -155,7 +155,7 @@ public:
 
 private:
 	const cudaT k_;
-	std::vector<std::shared_ptr<JacobianEquation>> jacobian_equations_;
+	std::vector<std::shared_ptr<odesolver::flowequations::JacobianEquation>> jacobian_equations_;
 };
 
 #endif //PROJECT_LORENTZATTRACTORJACOBIAN_HPP

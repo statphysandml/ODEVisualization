@@ -1,4 +1,5 @@
-#include "../../include/odesolver/util/python_integration.hpp"
+#include <odesolver/util/python_integration.hpp>
+
 
 #ifdef PYTHON_BACKEND
 

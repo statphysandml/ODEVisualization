@@ -8,7 +8,7 @@ void func()
     odesolver::DevDatC reference_vertices;
     odesolver::DevDatC reference_vertex_velocities;
 
-    PartialRanges partial_ranges(n_branches_, partial_lambda_ranges_, fixed_lambdas_);
+    odesolver::util::PartialRanges partial_ranges(n_branches_, partial_lambda_ranges_, fixed_lambdas_);
 
     for(auto i = 0; i < partial_ranges.size(); i++)
     {

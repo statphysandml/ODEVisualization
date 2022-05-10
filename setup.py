@@ -55,16 +55,16 @@ class CMakeBuild(build_ext):
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.', '--target', 'odevisualisation_python'] + build_args, cwd=self.build_temp)
+        subprocess.check_call(['cmake', '--build', '.', '--target', 'odevisualization_python'] + build_args, cwd=self.build_temp)
 
 setup(
-    name='odevisualisation',
+    name='odevisualization',
     version='0.0.1',
     author='Lukas Kades',
     author_email='statphysandml@thphys.uni-heidelberg.de',
     description='Add description here',
     long_description='',
-    ext_modules=[CMakeExtension('odevisualisation')],
+    ext_modules=[CMakeExtension('odevisualization')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
     classifiers=[
@@ -72,7 +72,7 @@ setup(
         "Operating System :: OS Independent",
         "License :: OSI Approved :: MIT License",
     ],
-    # url='https://github.com/statphysandml/odevisualisation',
+    # url='https://github.com/statphysandml/odevisualization',
     package_dir={"odesolver": "python"},
     packages=["odesolver"]
 )

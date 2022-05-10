@@ -769,7 +769,7 @@ visualization.compute_vertex_velocities(number_of_cubes_per_gpu_call, false, tru
 
     fixed_point_search.find_fixed_point_solutions();
 
-    NodeCounter<Node>::print_statistics();
+    Counter<Collection>::print_statistics();
 
     // Just for testing issues
     std::vector<Leaf> solutions = fixed_point_search.get_solutions();

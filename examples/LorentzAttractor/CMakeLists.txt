@@ -23,7 +23,7 @@ set(PYTHON_SCRIPTS_PATH "./python_scripts" CACHE STRING "Path to the potential p
 # Include libraries
 find_package(ParamHelper CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
-find_package(ODEVisualisationLib CONFIG REQUIRED)
+find_package(ODEVisualization CONFIG REQUIRED)
 
 # SET(CudaUsage "OFF" CACHE STRING "Defines whether code is executed on GPU or CPU with thrust.")
 SET(GPU ON CACHE BOOL "Running on GPU")
@@ -67,7 +67,7 @@ if(BUILD_PYTHON_BINDINGS)
     add_subdirectory(ext/pybind11)
     # Python wrapper
     add_subdirectory(python_pybind)
-if(RUN_WITH_PYTHON_BACKEND)
+elseif(RUN_WITH_PYTHON_BACKEND)
     message("Load pybind11 module")
     add_subdirectory(ext/pybind11)
 endif()
@@ -98,4 +98,4 @@ endif()
 target_compile_options(LorentzAttractor PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
 
 set_target_properties(LorentzAttractor PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_STANDARD 14)
-target_link_libraries(LorentzAttractor PUBLIC odevisualisation::odevisualisation ${target_link_libraries_python_appendix})
+target_link_libraries(LorentzAttractor PUBLIC odevisualization::odevisualization ${target_link_libraries_python_appendix})

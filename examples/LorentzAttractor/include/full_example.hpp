@@ -3,8 +3,8 @@
 
 #include <chrono>
 
-#include <odesolver/fixed_point_search.hpp>
-#include <odesolver/coordinate_operator.hpp>
+#include <odesolver/modes/fixed_point_search.hpp>
+#include <odesolver/modes/coordinate_operator.hpp>
 
 #include "../flow_equations/lorentz_attractor/lorentz_attractor_flow_equation.hpp"
 #include "../flow_equations/lorentz_attractor/lorentz_attractor_jacobian_equation.hpp"

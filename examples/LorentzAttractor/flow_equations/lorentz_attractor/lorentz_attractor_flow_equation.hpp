@@ -4,10 +4,10 @@
 #include <math.h>
 #include <tuple>
 
-#include <flow_equation_interface/flow_equation.hpp>
+#include <odesolver/flow_equations/flow_equation.hpp>
 
 
-struct LorentzAttractorFlowEquation0 : public FlowEquation
+struct LorentzAttractorFlowEquation0 : public odesolver::flowequations::FlowEquation
 {
 	LorentzAttractorFlowEquation0(const cudaT k) : k_(k)
 	{}
@@ -19,7 +19,7 @@ private:
 };
 
 
-struct LorentzAttractorFlowEquation1 : public FlowEquation
+struct LorentzAttractorFlowEquation1 : public odesolver::flowequations::FlowEquation
 {
 	LorentzAttractorFlowEquation1(const cudaT k) : k_(k)
 	{}
@@ -31,7 +31,7 @@ private:
 };
 
 
-struct LorentzAttractorFlowEquation2 : public FlowEquation
+struct LorentzAttractorFlowEquation2 : public odesolver::flowequations::FlowEquation
 {
 	LorentzAttractorFlowEquation2(const cudaT k) : k_(k),
 		const_expr0_(-8*1.0/3)
@@ -45,12 +45,12 @@ private:
 };
 
 
-class LorentzAttractorFlowEquations : public FlowEquationsWrapper
+class LorentzAttractorFlowEquations : public odesolver::flowequations::FlowEquationsWrapper
 {
 public:
 	LorentzAttractorFlowEquations(const cudaT k) : k_(k)
 	{
-		flow_equations_ = std::vector<std::shared_ptr<FlowEquation>> {
+		flow_equations_ = std::vector<std::shared_ptr<odesolver::flowequations::FlowEquation>> {
 			std::make_shared<LorentzAttractorFlowEquation0>(k_),
 			std::make_shared<LorentzAttractorFlowEquation1>(k_),
 			std::make_shared<LorentzAttractorFlowEquation2>(k_)
@@ -84,7 +84,7 @@ public:
 
 private:
 	const cudaT k_;
-	std::vector<std::shared_ptr<FlowEquation>> flow_equations_;
+	std::vector<std::shared_ptr<odesolver::flowequations::FlowEquation>> flow_equations_;
 };
 
 #endif //PROJECT_LORENTZATTRACTORFLOWEQUATION_HPP

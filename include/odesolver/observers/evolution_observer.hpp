@@ -5,15 +5,12 @@
 #ifndef PROJECT_EVOLUTION_OBSERVER_HPP
 #define PROJECT_EVOLUTION_OBSERVER_HPP
 
-#include <param_helper/params.hpp>
-
-
-#include "../extern/thrust_functors.hpp"
-#include "../../flow_equation_interface/flow_equation_system.hpp"
-#include "../util/helper_functions.hpp"
-#include "../util/header.hpp"
-#include "../util/dev_dat.hpp"
-#include "../util/monitor.hpp"
+#include <odesolver/header.hpp>
+#include <odesolver/dev_dat.hpp>
+#include <odesolver/util/monitor.hpp>
+#include <odesolver/util/helper_functions.hpp>
+#include <odesolver/util/thrust_functors.hpp>
+#include <odesolver/flow_equations/flow_equation_system.hpp>
 
 struct EvolutionObserver
 {

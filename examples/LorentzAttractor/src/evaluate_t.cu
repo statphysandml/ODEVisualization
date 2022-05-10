@@ -1,6 +1,6 @@
 #include "../include/evaluate_t.hpp"
 
-CoordinateOperator build_coordinate_operator_parameters()
+odesolver::modes::CoordinateOperator build_coordinate_operator_parameters()
 {
     double beta = 8.0/3.0;
     double rho = 28.0;
@@ -11,17 +11,17 @@ CoordinateOperator build_coordinate_operator_parameters()
         {-std::sqrt(beta * (rho - 1)), -std::sqrt(beta * (rho - 1)), rho - 1}
     };
 
-    CoordinateOperator evaluator = CoordinateOperator::from_vecvec(
+    odesolver::modes::CoordinateOperator evaluator = odesolver::modes::CoordinateOperator::from_vecvec(
         coordinates,
-        generate_flow_equations<LorentzAttractorFlowEquations>(0),
-        generate_jacobian_equations<LorentzAttractorJacobianEquations>(0)
+        odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0),
+        odesolver::flowequations::generate_jacobian_equations<LorentzAttractorJacobianEquations>(0)
     );
     return evaluator;
 }
 
 void write_coordinate_operator_params_to_file(const std::string rel_dir)
 {
-    CoordinateOperator evaluator = build_coordinate_operator_parameters();
+    odesolver::modes::CoordinateOperator evaluator = build_coordinate_operator_parameters();
     evaluator.write_configs_to_file(rel_dir);
 }
 
@@ -31,10 +31,10 @@ void run_evaluate_velocities_and_jacobians_from_file()
     const std::string rel_dir = "data/example_evaluate_velocities_and_jacobians";
 
     // Load existing parameter file
-    CoordinateOperator evaluator = CoordinateOperator::from_file(
+    odesolver::modes::CoordinateOperator evaluator = odesolver::modes::CoordinateOperator::from_file(
         rel_dir,
-        generate_flow_equations<LorentzAttractorFlowEquations>(0),
-        generate_jacobian_equations<LorentzAttractorJacobianEquations>(0)
+        odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0),
+        odesolver::flowequations::generate_jacobian_equations<LorentzAttractorJacobianEquations>(0)
     );
 
     double beta = 8.0/3.0;

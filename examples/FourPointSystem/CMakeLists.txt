@@ -23,7 +23,7 @@ set(PYTHON_SCRIPTS_PATH "./python_scripts" CACHE STRING "Path to the potential p
 # Include libraries
 find_package(ParamHelper CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
-find_package(ODEVisualisationLib CONFIG REQUIRED)
+find_package(ODEVisualizationLib CONFIG REQUIRED)
 
 # SET(CudaUsage "OFF" CACHE STRING "Defines whether code is executed on GPU or CPU with thrust.")
 SET(GPU ON CACHE BOOL "Running on GPU")
@@ -94,4 +94,4 @@ endif()
 
 target_compile_options(FourPointSystem PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
 set_target_properties(FourPointSystem PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_STANDARD 14)
-target_link_libraries(FourPointSystem PUBLIC odevisualisation::odevisualisation ${target_link_libraries_python_appendix})
+target_link_libraries(FourPointSystem PUBLIC odevisualization::odevisualization ${target_link_libraries_python_appendix})
