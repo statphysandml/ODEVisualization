@@ -2,7 +2,7 @@
 
 
 namespace odesolver {
-    namespace grid_computation {
+    namespace gridcomputation {
         struct accumulate_n_branches
         {
             accumulate_n_branches(const int dim_index, int init) : dim_index_(dim_index), sum_(init)
@@ -22,18 +22,18 @@ namespace odesolver {
 
         struct compute_axis_index_of_coor
         {
-            compute_axis_index_of_coor(const cudaT lambda_offset, const cudaT delta_lambda, const int n_branch_per_depth_at_dim) :
-                lambda_offset_(lambda_offset), delta_lambda_(delta_lambda), n_branch_per_depth_at_dim_(n_branch_per_depth_at_dim)
+            compute_axis_index_of_coor(const cudaT variable_offset, const cudaT delta_variable, const int n_branch_per_depth_at_dim) :
+                variable_offset_(variable_offset), delta_variable_(delta_variable), n_branch_per_depth_at_dim_(n_branch_per_depth_at_dim)
             {}
 
             __host__ __device__
             int operator()(const cudaT &coordinate)
             {
-                return (int((coordinate + lambda_offset_) / delta_lambda_) % n_branch_per_depth_at_dim_);
+                return (int((coordinate + variable_offset_) / delta_variable_) % n_branch_per_depth_at_dim_);
             }
 
-            const cudaT lambda_offset_;
-            const cudaT delta_lambda_;
+            const cudaT variable_offset_;
+            const cudaT delta_variable_;
             const int n_branch_per_depth_at_dim_;
         };
 
@@ -98,9 +98,9 @@ namespace odesolver {
 
         struct finalize_vertex_computation
         {
-            finalize_vertex_computation(const cudaT lambda_range, const cudaT lambda_offset,
+            finalize_vertex_computation(const cudaT variable_range, const cudaT variable_offset,
                     dev_vec_int const& accum_n_branches_per_dim) :
-                    lambda_range_(lambda_range), lambda_offset_(lambda_offset),
+                    variable_range_(variable_range), variable_offset_(variable_offset),
                     accum_n_branches_per_dim_ptr_(thrust::raw_pointer_cast(&accum_n_branches_per_dim[0]))
             {}
 
@@ -112,20 +112,20 @@ namespace odesolver {
                 int maximum_cube_depth  = thrust::get<1>(t) + 1; // = k
                 int inner_vertex_coor = thrust::get<2>(t);
 
-                thrust::get<3>(t) = (reference_vertex + inner_vertex_coor) * lambda_range_ / accum_n_branches_per_dim_ptr_[maximum_cube_depth] + lambda_offset_;
+                thrust::get<3>(t) = (reference_vertex + inner_vertex_coor) * variable_range_ / accum_n_branches_per_dim_ptr_[maximum_cube_depth] + variable_offset_;
             }
 
-            const cudaT lambda_range_;
-            const cudaT lambda_offset_;
+            const cudaT variable_range_;
+            const cudaT variable_offset_;
             const int * accum_n_branches_per_dim_ptr_;
         };
 
 
         struct finalize_reference_vertex_computation
         {
-            finalize_reference_vertex_computation(const cudaT lambda_range, const cudaT lambda_offset,
+            finalize_reference_vertex_computation(const cudaT variable_range, const cudaT variable_offset,
                                         dev_vec_int const& accum_n_branches_per_dim) :
-                    lambda_range_(lambda_range), lambda_offset_(lambda_offset),
+                    variable_range_(variable_range), variable_offset_(variable_offset),
                     accum_n_branches_per_dim_ptr_(thrust::raw_pointer_cast(&accum_n_branches_per_dim[0]))
             {}
 
@@ -133,43 +133,43 @@ namespace odesolver {
             cudaT operator()(const int &reference_vertex, const int &maximum_cube_depth)
             {
 
-                return  reference_vertex * lambda_range_ / accum_n_branches_per_dim_ptr_[maximum_cube_depth + 1] + lambda_offset_;
+                return  reference_vertex * variable_range_ / accum_n_branches_per_dim_ptr_[maximum_cube_depth + 1] + variable_offset_;
             }
 
-            const cudaT lambda_range_;
-            const cudaT lambda_offset_;
+            const cudaT variable_range_;
+            const cudaT variable_offset_;
             const int * accum_n_branches_per_dim_ptr_;
         };
 
 
         struct finalize_center_vertex_computation
         {
-            finalize_center_vertex_computation(const cudaT lambda_range, const cudaT lambda_offset,
+            finalize_center_vertex_computation(const cudaT variable_range, const cudaT variable_offset,
                                         dev_vec_int const& accum_n_branches_per_dim) :
-                    lambda_range_(lambda_range), lambda_offset_(lambda_offset),
+                    variable_range_(variable_range), variable_offset_(variable_offset),
                     accum_n_branches_per_dim_ptr_(thrust::raw_pointer_cast(&accum_n_branches_per_dim[0]))
             {}
 
             __host__ __device__
             cudaT operator()(const int &reference_vertex, const int &maximum_cube_depth)
             {
-                return ((reference_vertex) * lambda_range_ / accum_n_branches_per_dim_ptr_[maximum_cube_depth + 1] +
-                        (reference_vertex + 1) * lambda_range_ / accum_n_branches_per_dim_ptr_[maximum_cube_depth + 1]) / 2 + lambda_offset_;
+                return ((reference_vertex) * variable_range_ / accum_n_branches_per_dim_ptr_[maximum_cube_depth + 1] +
+                        (reference_vertex + 1) * variable_range_ / accum_n_branches_per_dim_ptr_[maximum_cube_depth + 1]) / 2 + variable_offset_;
             }
 
-            const cudaT lambda_range_;
-            const cudaT lambda_offset_;
+            const cudaT variable_range_;
+            const cudaT variable_offset_;
             const int * accum_n_branches_per_dim_ptr_;
         };
 
 
         GridComputation::GridComputation(const std::vector<std::vector<int>> n_branches_per_depth,
-            const std::vector<std::pair<cudaT, cudaT>> lambda_ranges) :
-            dim_(lambda_ranges.size()),
+            const std::vector<std::pair<cudaT, cudaT>> variable_ranges) :
+            dim_(variable_ranges.size()),
             n_branches_per_depth_(n_branches_per_depth),
-            accum_n_branches_per_dim_(GridComputation::compute_accum_n_branches_per_dim(n_branches_per_depth, lambda_ranges.size())),
-            accum_n_branches_per_depth_(GridComputation::compute_accum_n_branches_per_depth(n_branches_per_depth, lambda_ranges.size())),
-            lambda_ranges_(lambda_ranges)
+            accum_n_branches_per_dim_(GridComputation::compute_accum_n_branches_per_dim(n_branches_per_depth, variable_ranges.size())),
+            accum_n_branches_per_depth_(GridComputation::compute_accum_n_branches_per_depth(n_branches_per_depth, variable_ranges.size())),
+            variable_ranges_(variable_ranges)
         {}
 
         //[ Static functions
@@ -221,39 +221,39 @@ namespace odesolver {
 
             for(auto dim_index = 0; dim_index < dim_; dim_index++)
             {
-                cudaT lambda_dim_range = (lambda_ranges_[dim_index].second - lambda_ranges_[dim_index].first);
-                cudaT lambda_range_left = lambda_ranges_[dim_index].first;
+                cudaT variable_dim_range = (variable_ranges_[dim_index].second - variable_ranges_[dim_index].first);
+                cudaT variable_range_left = variable_ranges_[dim_index].first;
 
-                cudaT lambda_offset;
+                cudaT variable_offset;
                 if(coordinates_on_grid) {
-                    lambda_offset = 0.5*lambda_dim_range/accum_n_branches_per_dim_[dim_index][depth + 1]; // For avoidance of rounding errors -> corresponds to half of the width of the smallest considered cube
+                    variable_offset = 0.5*variable_dim_range/accum_n_branches_per_dim_[dim_index][depth + 1]; // For avoidance of rounding errors -> corresponds to half of the width of the smallest considered cube
                 }
                 else  {
-                    lambda_offset = 0.0;
+                    variable_offset = 0.0;
                 }
 
                 dev_vec temp_coordinates(coordinates[dim_index].begin(), coordinates[dim_index].end());
 
                 // Shift coordinates to reference system (most left coordinate == 0)
                 thrust::transform(temp_coordinates.begin(), temp_coordinates.end(), temp_coordinates.begin(),
-                [lambda_range_left] __host__ __device__(const cudaT &coor) { return coor - lambda_range_left; });
+                [variable_range_left] __host__ __device__(const cudaT &coor) { return coor - variable_range_left; });
 
                 for(auto depth_index = 0; depth_index < grcompwrap.expanded_element_indices_.dim_size(); depth_index++)
                 {
 
-                    cudaT delta_lambda = lambda_dim_range / accum_n_branches_per_dim_[dim_index][depth_index + 1]; // corresponds to the width of the considered cube
+                    cudaT delta_variable = variable_dim_range / accum_n_branches_per_dim_[dim_index][depth_index + 1]; // corresponds to the width of the considered cube
 
                     // Compute axis indices
                     dev_vec_int axis_index(total_number_of_cubes, 0); // corresponds to the index of the considered axis
                     thrust::transform(temp_coordinates.begin(), temp_coordinates.end(), axis_index.begin(),
-                                    compute_axis_index_of_coor(lambda_offset, delta_lambda, n_branches_per_depth_[depth_index][dim_index]));
+                                    compute_axis_index_of_coor(variable_offset, delta_variable, n_branches_per_depth_[depth_index][dim_index]));
 
                     // Shift coordinates to corresponding new reference system in considered depth
                     thrust::transform(temp_coordinates.begin(), temp_coordinates.end(), axis_index.begin(),
                                     temp_coordinates.begin(),
-                    [delta_lambda] __host__ __device__ (const cudaT &coor, const cudaT &cube_index)
+                    [delta_variable] __host__ __device__ (const cudaT &coor, const cudaT &cube_index)
                     {
-                        return coor - (cube_index * delta_lambda);
+                        return coor - (cube_index * delta_variable);
                     });
 
                     // Add axis index to expanded cube indices
@@ -296,12 +296,12 @@ namespace odesolver {
                 compute_reference_vertex_in_dim(reference_vertices[dim_index], grcompwrap, dim_index, maximum_depth);
 
                 // Compute delta range
-                cudaT lambda_dim_range = (lambda_ranges_[dim_index].second - lambda_ranges_[dim_index].first);
-                cudaT lambda_offset = lambda_ranges_[dim_index].first;
+                cudaT variable_dim_range = (variable_ranges_[dim_index].second - variable_ranges_[dim_index].first);
+                cudaT variable_offset = variable_ranges_[dim_index].first;
 
                 // Finalize computation of the device reference vertex
                 thrust::transform(reference_vertices[dim_index].begin(), reference_vertices[dim_index].end(), grcompwrap.expanded_depth_per_element_.begin(), reference_vertices[dim_index].begin(),
-                                finalize_reference_vertex_computation(lambda_dim_range, lambda_offset, accum_n_branches_per_dim_[dim_index]));
+                                finalize_reference_vertex_computation(variable_dim_range, variable_offset, accum_n_branches_per_dim_[dim_index]));
             }
         }
 
@@ -317,7 +317,7 @@ namespace odesolver {
             return std::move(reference_vertices);
         }
 
-        void GridComputation::compute_vertices(odesolver::DevDatC &vertices, GridComputationWrapper &grcompwrap, int maximum_depth)
+        void GridComputation::compute_cube_vertices(odesolver::DevDatC &cube_vertices, GridComputationWrapper &grcompwrap, int maximum_depth)
         {
             auto total_number_of_cubes = grcompwrap.expanded_depth_per_element_.size();
 
@@ -331,10 +331,10 @@ namespace odesolver {
                 // Testing -> Can be used as test without regarding the correct reference vertices
                 // print_range("Reference vertices in dimension " + std::to_string(dim_index + 1), reference_vertices.begin(), reference_vertices.end());
                 /* // Compute delta ranges
-                * cudaT lambda_dim_range = (lambda_ranges[dim_index].second - lambda_ranges[dim_index].first);
-                * cudaT lambda_offset = lambda_ranges[dim_index].first;
+                * cudaT variable_dim_range = (variable_ranges[dim_index].second - variable_ranges[dim_index].first);
+                * cudaT variable_offset = variable_ranges[dim_index].first;
                 * thrust::transform(reference_vertices.begin(), reference_vertices.end(), grcompwrap.expanded_depth_per_element_.begin(), reference_vertices.begin(),
-                                finalize_reference_vertex_computation(lambda_dim_range, lambda_offset, accum_n_branches_per_dim[dim_index])) */
+                                finalize_reference_vertex_computation(variable_dim_range, variable_offset, accum_n_branches_per_dim[dim_index])) */
 
                 // Preparations for the expansion to vertices
 
@@ -362,30 +362,30 @@ namespace odesolver {
                 // Finalize
 
                 // Compute delta range
-                cudaT lambda_dim_range = (lambda_ranges_[dim_index].second - lambda_ranges_[dim_index].first);
-                cudaT lambda_offset = lambda_ranges_[dim_index].first;
+                cudaT variable_dim_range = (variable_ranges_[dim_index].second - variable_ranges_[dim_index].first);
+                cudaT variable_offset = variable_ranges_[dim_index].first;
 
                 // Finalize computation of device vertex
-                thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(rep_ref_vertex_iterator.begin(), rep_ref_depth_per_cube_iterator.begin(), rep_inner_vertex_coors.begin(), vertices[dim_index].begin())),
-                                thrust::make_zip_iterator(thrust::make_tuple(rep_ref_vertex_iterator.end(), rep_ref_depth_per_cube_iterator.end(), rep_inner_vertex_coors.end(), vertices[dim_index].end())),
-                                finalize_vertex_computation(lambda_dim_range, lambda_offset, accum_n_branches_per_dim_[dim_index]));
+                thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(rep_ref_vertex_iterator.begin(), rep_ref_depth_per_cube_iterator.begin(), rep_inner_vertex_coors.begin(), cube_vertices[dim_index].begin())),
+                                thrust::make_zip_iterator(thrust::make_tuple(rep_ref_vertex_iterator.end(), rep_ref_depth_per_cube_iterator.end(), rep_inner_vertex_coors.end(), cube_vertices[dim_index].end())),
+                                finalize_vertex_computation(variable_dim_range, variable_offset, accum_n_branches_per_dim_[dim_index]));
 
                 // Testing
                 /* if(monitor)
-                    print_range("Vertices in dimension " + std::to_string(dim_index + 1), vertices[dim_index].begin(), vertices[dim_index].end()); */
+                    print_range("Vertices in dimension " + std::to_string(dim_index + 1), cube_vertices[dim_index].begin(), cube_vertices[dim_index].end()); */
             }
         }
 
-        odesolver::DevDatC GridComputation::compute_vertices(GridComputationWrapper &grcompwrap)
+        odesolver::DevDatC GridComputation::compute_cube_vertices(GridComputationWrapper &grcompwrap)
         {
             // Initialize vertices
             auto total_number_of_cubes = grcompwrap.expanded_depth_per_element_.size();
-            auto vertices = odesolver::DevDatC(dim_, total_number_of_cubes * pow(2, dim_));
+            auto cube_vertices = odesolver::DevDatC(dim_, total_number_of_cubes * pow(2, dim_));
             
             // Compute vertices
-            compute_vertices(vertices, grcompwrap);
+            compute_cube_vertices(cube_vertices, grcompwrap);
 
-            return std::move(vertices);
+            return std::move(cube_vertices);
         }
 
         void GridComputation::compute_cube_center_vertices(odesolver::DevDatC &center_vertices, GridComputationWrapper &grcompwrap, int maximum_depth)
@@ -397,13 +397,13 @@ namespace odesolver {
                 // Finalize
 
                 // Compute delta range
-                cudaT lambda_dim_range = (lambda_ranges_[dim_index].second - lambda_ranges_[dim_index].first);
-                cudaT lambda_range_left = lambda_ranges_[dim_index].first;
+                cudaT variable_dim_range = (variable_ranges_[dim_index].second - variable_ranges_[dim_index].first);
+                cudaT variable_range_left = variable_ranges_[dim_index].first;
 
                 // Finalize computation of device center vertex
                 thrust::transform(center_vertices[dim_index].begin(), center_vertices[dim_index].end(),
                                 grcompwrap.expanded_depth_per_element_.begin(), center_vertices[dim_index].begin(),
-                                finalize_center_vertex_computation(lambda_dim_range, lambda_range_left,
+                                finalize_center_vertex_computation(variable_dim_range, variable_range_left,
                                                                     accum_n_branches_per_dim_[dim_index]));
 
                 // Testing
@@ -427,14 +427,14 @@ namespace odesolver {
 
         // Getter functions
 
-        const std::vector<std::vector<int>>& GridComputation::get_n_branches_per_depth() const
+        const std::vector<std::vector<int>> GridComputation::n_branches_per_depth() const
         {
             return n_branches_per_depth_;
         }
 
-        const std::vector<std::pair<cudaT, cudaT>>& GridComputation::get_lambda_ranges() const
+        const std::vector<std::pair<cudaT, cudaT>> GridComputation::variable_ranges() const
         {
-            return lambda_ranges_;
+            return variable_ranges_;
         }
 
         size_t GridComputation::dim() const

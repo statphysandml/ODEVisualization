@@ -2,7 +2,7 @@
 
 
 namespace odesolver {
-    namespace grid_computation {
+    namespace gridcomputation {
         DynamicRecursiveGridComputation::DynamicRecursiveGridComputation(
             const int number_of_cubes_per_gpu_call,
             const int maximum_number_of_gpu_calls) :
@@ -11,13 +11,13 @@ namespace odesolver {
         {}
 
         void DynamicRecursiveGridComputation::initialize(const std::vector<std::vector<int>> n_branches_per_depth,
-            const std::vector<std::pair<cudaT, cudaT>> lambda_ranges, VertexMode vertex_mode)
+            const std::vector<std::pair<cudaT, cudaT>> variable_ranges, VertexMode vertex_mode)
         {
             vertex_mode_ = vertex_mode;
 
-            hypercubes_ = GridComputation(n_branches_per_depth, lambda_ranges);
+            hypercubes_ = GridComputation(n_branches_per_depth, variable_ranges);
 
-            std::shared_ptr<odesolver::collections::Collection> root_collection_ptr = std::make_shared<odesolver::collections::Collection>(0, odesolver::collections::compute_internal_end_index(hypercubes_.get_n_branches_per_depth()[0]), std::vector<int>{});
+            std::shared_ptr<odesolver::collections::Collection> root_collection_ptr = std::make_shared<odesolver::collections::Collection>(0, odesolver::collections::compute_internal_end_index(hypercubes_.n_branches_per_depth()[0]), std::vector<int>{});
             buffer_ = odesolver::collections::Buffer(std::move(root_collection_ptr));
 
             c_ = 0;
@@ -62,7 +62,7 @@ namespace odesolver {
             else if(vertex_mode_ == CubeVertices)
             {
                 vertices = odesolver::DevDatC(hypercubes_.dim(), expected_number_of_cubes_ * pow(2, hypercubes_.dim()));
-                hypercubes_.compute_vertices(vertices, grid_computation_wrapper);
+                hypercubes_.compute_cube_vertices(vertices, grid_computation_wrapper);
             }
             else
             {

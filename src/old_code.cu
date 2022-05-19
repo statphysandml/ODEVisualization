@@ -192,9 +192,9 @@ void three_d_hyperbolic_system()
     //[ Visualization
     const std::vector<int> n_branches {200, 200,  1};
     const std::vector <std::pair<cudaT, cudaT> > partial_lambda_ranges = std::vector <std::pair<cudaT, cudaT> > {std::pair<cudaT, cudaT> (-2.0, 6.0), std::pair<cudaT, cudaT> (-5.0, 3.0)};
-    const std::vector <std::vector <cudaT> > fixed_lambdas = std::vector< std::vector<cudaT> > { std::vector<cudaT> {-0.01, 0.0, 0.01} };
+    const std::vector <std::vector <cudaT> > fixed_variables = std::vector< std::vector<cudaT> > { std::vector<cudaT> {-0.01, 0.0, 0.01} };
 
-    VisualizationParameters visualization_parameters(theory, n_branches, partial_lambda_ranges, fixed_lambdas);
+    VisualizationParameters visualization_parameters(theory, n_branches, partial_lambda_ranges, fixed_variables);
 
     visualization_parameters.append_fixed_point_parameters(std::vector < std::vector<cudaT> > {std::vector<cudaT> {2.99999847412109,-1.99999847412109, 0}});
     // visualization_parameters.append_fixed_point_parameters(std::vector < std::vector<cudaT> > {}, "/data/", true, "fixed_point_search");
@@ -228,9 +228,9 @@ void three_d_hyperbolic_system()
     //[ Visualization y z
     /* const std::vector<int> n_branches {1, 200, 200};
     const std::vector <std::pair<cudaT, cudaT> > partial_lambda_ranges = std::vector <std::pair<cudaT, cudaT> > {std::pair<cudaT, cudaT> (-5.0, 3.0), std::pair<cudaT, cudaT> (-3.0, 3.0)};
-    const std::vector <std::vector <cudaT> > fixed_lambdas = std::vector< std::vector<cudaT> > { std::vector<cudaT> {2.0, 3.0, 3.8} };
+    const std::vector <std::vector <cudaT> > fixed_variables = std::vector< std::vector<cudaT> > { std::vector<cudaT> {2.0, 3.0, 3.8} };
 
-    VisualizationParameters visualization_parameters(theory, n_branches, partial_lambda_ranges, fixed_lambdas);
+    VisualizationParameters visualization_parameters(theory, n_branches, partial_lambda_ranges, fixed_variables);
 
     visualization_parameters.append_fixed_point_parameters(std::vector < std::vector<cudaT> > {std::vector<cudaT> {2.99999847412109,-1.99999847412109, 0}});
     // visualization_parameters.append_fixed_point_parameters(std::vector < std::vector<cudaT> > {}, "/data/", true, "fixed_point_search");

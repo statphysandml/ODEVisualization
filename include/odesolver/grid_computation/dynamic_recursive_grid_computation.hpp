@@ -12,7 +12,7 @@
 
 
 namespace odesolver {
-    namespace grid_computation {
+    namespace gridcomputation {
         class DynamicRecursiveGridComputation
         {
         public:
@@ -26,7 +26,7 @@ namespace odesolver {
 
             void initialize(
                 const std::vector<std::vector<int>> n_branches_per_depth,
-                const std::vector<std::pair<cudaT, cudaT>> lambda_ranges,
+                const std::vector<std::pair<cudaT, cudaT>> variable_ranges,
                 VertexMode vertex_mode
             );
 

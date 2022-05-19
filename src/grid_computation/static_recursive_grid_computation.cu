@@ -2,7 +2,7 @@
 
 
 namespace odesolver {
-    namespace grid_computation {
+    namespace gridcomputation {
         StaticRecursiveGridComputation::StaticRecursiveGridComputation(
             const int maximum_recursion_depth,
             const int number_of_cubes_per_gpu_call,
@@ -46,7 +46,7 @@ namespace odesolver {
             else if(vertex_mode_ == CubeVertices)
             {
                 vertices.set_N(expected_number_of_cubes_ * pow(2, hypercubes_.dim()));
-                hypercubes_.compute_vertices(vertices, grid_computation_wrapper_, expected_maximum_depth_);
+                hypercubes_.compute_cube_vertices(vertices, grid_computation_wrapper_, expected_maximum_depth_);
             }
             else
             {

@@ -6,7 +6,6 @@
 #include <odesolver/header.hpp>
 #include <odesolver/dev_dat.hpp>
 #include <odesolver/util/monitor.hpp>
-#include <odesolver/util/helper_functions.hpp>
 #include <odesolver/util/json_conversions.hpp>
 #include <odesolver/util/thrust_functors.hpp>
 #include <odesolver/modes/ode_visualization.hpp>
@@ -22,34 +21,35 @@ namespace odesolver {
         {
         public:
             explicit CoordinateOperator(
-                const json params_={},
+                const json params={},
                 std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr=nullptr,
+                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
                 const std::string computation_parameters_path=param_helper::proj::project_root(),
                 const std::vector<std::vector<double>> vecvec_coordinates={},
                 const odesolver::DevDatC devdat_coordinates={}
+            );
+            
+            // From parameters
+            static CoordinateOperator generate(
+                const odesolver::DevDatC devdat_coordinates,
+                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
+                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
+                const std::string computation_parameters_path=param_helper::proj::project_root()
+            );
+
+            // From parameters
+            static CoordinateOperator from_vecvec(
+                const std::vector <std::vector<double> > vecvec_coordinates,
+                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
+                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
+                const std::string computation_parameters_path=param_helper::proj::project_root()
             );
 
             // From file
             static CoordinateOperator from_file(
                 const std::string rel_config_dir,
                 std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr=nullptr,
-                const std::string computation_parameters_path=param_helper::proj::project_root()
-            );
-            
-            // From parameters
-            static CoordinateOperator from_vecvec(
-                const std::vector <std::vector<double> > vecvec_coordinates,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr=nullptr,
-                const std::string computation_parameters_path=param_helper::proj::project_root()
-            );
-
-            static CoordinateOperator from_devdat(
-                const odesolver::DevDatC devdat_coordinates,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr=nullptr,
+                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
                 const std::string computation_parameters_path=param_helper::proj::project_root()
             );
 
@@ -85,7 +85,7 @@ namespace odesolver {
 
             void set_coordinates(const odesolver::DevDatC coordinates);
 
-            // Velocities
+            // Flow
             void compute_velocities();
 
             // Jacobians
@@ -233,7 +233,7 @@ namespace odesolver {
             auto params1 = ConditionalRangeObserverParameters(conditional_observer_parameters);
             auto params2 = CoordinateOperator::EvolveOnConditionParameters(evolve_on_condition_parameters);
 
-            evolve_on_condition(results_dir, params1.boundary_lambda_ranges, params1.minimum_change_of_state,
+            evolve_on_condition(results_dir, params1.boundary_variable_ranges, params1.minimum_change_of_state,
                                 params2.observe_every_nth_step,
                                 params2.maximum_total_number_of_steps,
                                 params1.minimum_delta_t, params1.maximum_flow_val); */

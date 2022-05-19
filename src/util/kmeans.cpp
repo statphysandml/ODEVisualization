@@ -3,7 +3,7 @@
 
 namespace odesolver {
     namespace util {
-        KMeans::KMeans(const uint k, const std::vector< std::vector<double> > data) :
+        KMeans::KMeans(const uint k, const std::vector<std::vector<double>> data) :
         k_(k), data_(data), n_data_(data.size()), dim_(data[0].size())
         {
             random_data_point_generator_ = std::uniform_int_distribution<int>(0, n_data_-1);
@@ -11,7 +11,7 @@ namespace odesolver {
 
         void KMeans::initialize()
         {
-            centers_ = std::vector < std::vector<double> >(k_);
+            centers_ = std::vector<std::vector<double>>(k_);
             std::vector<uint> center_ids(k_, n_data_);
             for(auto i = 0; i < k_; i++)
             {

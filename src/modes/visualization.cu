@@ -54,22 +54,22 @@ namespace odesolver {
         Visualization::Visualization(
             const json params,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr,
+            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
             const std::string computation_parameters_path
         ) : ODEVisualization(params, flow_equations_ptr, jacobians_ptr, computation_parameters_path),
             dim_(get_entry<json>("flow_equation")["dim"].get<cudaT>()),
             n_branches_(get_entry<std::vector<int>>("n_branches")),
-            partial_lambda_ranges_(odesolver::util::json_to_vec_pair<double>(get_entry<json>("lambda_ranges"))),
-            fixed_lambdas_(odesolver::util::json_to_vec_vec<double>(get_entry<json>("fixed_lambdas")))
+            partial_variable_ranges_(odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges"))),
+            fixed_variables_(odesolver::util::json_to_vec_vec<double>(get_entry<json>("fixed_variables")))
         {
             if (n_branches_.size() != dim_) {
                 std::cout << "\nERROR: Number of branches per depth " << n_branches_.size() << " do not coincide with dimension " << dim_ <<  std::endl;
                 std::exit(EXIT_FAILURE);
             }
 
-            if(partial_lambda_ranges_.size() + fixed_lambdas_.size() != dim_)
+            if(partial_variable_ranges_.size() + fixed_variables_.size() != dim_)
             {
-                std::cout << "\nERROR: Number of lambda ranges and fix lambdas " << partial_lambda_ranges_.size() << ", " << fixed_lambdas_.size() << " do not coincide with dimension " << dim_ << std::endl;
+                std::cout << "\nERROR: Number of variable ranges and fixed variables " << partial_variable_ranges_.size() << ", " << fixed_variables_.size() << " do not coincide with dimension " << dim_ << std::endl;
                 std::exit(EXIT_FAILURE);
             }
 
@@ -79,55 +79,55 @@ namespace odesolver {
                 std::exit(EXIT_FAILURE);
             }
 
-            // Check consistent definition of n_branches, lambda_ranges and fixed_lambdas
+            // Check consistent definition of n_branches, variable_ranges and fixed_variables
             auto number_of_ones = 0;
             for(auto &n_branch: n_branches_)
             {
                 if(n_branch == 1)
                     number_of_ones += 1;
             }
-            if(number_of_ones != fixed_lambdas_.size())
+            if(number_of_ones != fixed_variables_.size())
             {
-                std::cout << "\nERROR: Inconsistent definition of n_branches and fixed_lambdas -> cannot expand lambda range for n_branch=1" << dim_ << std::endl;
+                std::cout << "\nERROR: Inconsistent definition of n_branches and fixed_variables -> cannot expand variable range for n_branch=1" << dim_ << std::endl;
                 std::exit(EXIT_FAILURE);
             }
 
             for(auto n_branch_index = 0; n_branch_index < n_branches_.size(); n_branch_index++)
             {
                 if(n_branches_[n_branch_index] == 1)
-                    indices_of_fixed_lambdas_.push_back(n_branch_index);
+                    indices_of_fixed_variables_.push_back(n_branch_index);
             }
         }
 
-        Visualization Visualization::from_file(
-            const std::string rel_config_dir,
+        Visualization Visualization::generate(
+            const std::vector<int> n_branches,
+            const std::vector<std::pair<cudaT, cudaT>> variable_ranges,
+            const std::vector<std::vector<cudaT>> fixed_variables,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr,
+            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
             const std::string computation_parameters_path
         )
         {
             return Visualization(
-                param_helper::fs::read_parameter_file(
-                    param_helper::proj::project_root() + rel_config_dir + "/", "config", false),
+                json {{"n_branches", n_branches},
+                    {"partial_variable_ranges", variable_ranges},
+                    {"fixed_variables", fixed_variables}},
                 flow_equations_ptr,
                 jacobians_ptr,
                 computation_parameters_path
             );
         }
 
-        Visualization Visualization::from_parameters(
-            const std::vector<int> n_branches,
-            const std::vector<std::pair<cudaT, cudaT>> lambda_ranges,
-            const std::vector<std::vector<cudaT>> fixed_lambdas,
+        Visualization Visualization::from_file(
+            const std::string rel_config_dir,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr,
+            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
             const std::string computation_parameters_path
         )
         {
             return Visualization(
-                json {{"n_branches", n_branches},
-                    {"partial_lambda_ranges", lambda_ranges},
-                    {"fixed_lambdas", fixed_lambdas}},
+                param_helper::fs::read_parameter_file(
+                    param_helper::proj::project_root() + rel_config_dir + "/", "config", false),
                 flow_equations_ptr,
                 jacobians_ptr,
                 computation_parameters_path
@@ -159,14 +159,14 @@ namespace odesolver {
 
 
         Visualization::ComputeVertexVelocitiesParameters::ComputeVertexVelocitiesParameters(const json params) : Parameters(params),
-            skip_fixed_lambdas_(get_entry<bool>("skip_fixed_lambdas")),
+            skip_fixed_variables_(get_entry<bool>("skip_fixed_variables")),
             with_vertices_(get_entry<bool>("with_vertices"))
         {}
 
         Visualization::ComputeVertexVelocitiesParameters::ComputeVertexVelocitiesParameters(
-            const bool skip_fixed_lambdas, const bool with_vertices
+            const bool skip_fixed_variables, const bool with_vertices
         ) : ComputeVertexVelocitiesParameters(
-                json {{"skip_fixed_lambdas", skip_fixed_lambdas},
+                json {{"skip_fixed_variables", skip_fixed_variables},
                     {"with_vertices", with_vertices}}
         )
         {}
@@ -191,22 +191,22 @@ namespace odesolver {
             return odesolver::util::json_to_vec_vec<double>(get_entry<json>("fixed_points")["fixed_points"]);
         }
 
-        void Visualization::evaluate_vertices(std::string rel_dir, bool skip_fixed_lambdas, bool with_vertices)
+        void Visualization::eval(std::string rel_dir, bool skip_fixed_variables, bool with_vertices)
         {
-            std::ofstream os, os_vertices;
+            /* std::ofstream os, os_vertices;
             os.open(param_helper::proj::project_root() + rel_dir + "/" + "velocities" + ".dat");
 
             if(with_vertices)
-                os_vertices.open(param_helper::proj::project_root() + rel_dir + "/" + "vertices" + ".dat");
+                os_vertices.open(param_helper::proj::project_root() + rel_dir + "/" + "vertices" + ".dat"); */
 
-            std::vector<int> skip_iterators_in_dimensions {};
+            /* std::vector<int> skip_iterators_in_dimensions {};
             for(auto i = 0; i < n_branches_.size(); i++)
             {
                 if(n_branches_[i] == 1)
                     skip_iterators_in_dimensions.push_back(i);
-            }
+            } */
 
-            odesolver::grid_computation::DynamicRecursiveGridComputation dynamic_recursive_grid_computation(
+            odesolver::gridcomputation::DynamicRecursiveGridComputation dynamic_recursive_grid_computation(
                 computation_parameters_.number_of_cubes_per_gpu_call_,
                 computation_parameters_.maximum_number_of_gpu_calls_
             );
@@ -214,16 +214,16 @@ namespace odesolver {
             odesolver::DevDatC reference_vertices;
             odesolver::DevDatC reference_vertex_velocities;
 
-            odesolver::util::PartialRanges partial_ranges(n_branches_, partial_lambda_ranges_, fixed_lambdas_);
+            odesolver::util::PartialRanges partial_ranges(n_branches_, partial_variable_ranges_, fixed_variables_);
 
             for(auto i = 0; i < partial_ranges.size(); i++)
             {
-                auto lambda_ranges = partial_ranges[i];
+                auto variable_ranges = partial_ranges[i];
 
                 dynamic_recursive_grid_computation.initialize(
                     std::vector<std::vector<int>> {n_branches_},
-                    lambda_ranges,
-                    odesolver::grid_computation::DynamicRecursiveGridComputation::ReferenceVertices
+                    variable_ranges,
+                    odesolver::gridcomputation::DynamicRecursiveGridComputation::ReferenceVertices
                 );
             
                 while(!dynamic_recursive_grid_computation.finished())
@@ -233,9 +233,9 @@ namespace odesolver {
                 
                     // Compute vertex velocities
                     reference_vertex_velocities = odesolver::DevDatC(reference_vertices.dim_size(), reference_vertices.n_elems());
-                    compute_vertex_velocities(reference_vertices, reference_vertex_velocities, flow_equations_ptr_.get());
+                    compute_flow(reference_vertices, reference_vertex_velocities, flow_equations_ptr_.get());
             
-                    if (!skip_fixed_lambdas) {
+                    /* if (!skip_fixed_variables) {
                         write_data_to_ofstream(reference_vertex_velocities, os);
                         if (with_vertices)
                             write_data_to_ofstream(reference_vertices, os_vertices);
@@ -243,23 +243,25 @@ namespace odesolver {
                         write_data_to_ofstream(reference_vertex_velocities, os, skip_iterators_in_dimensions);
                         if (with_vertices)
                             write_data_to_ofstream(reference_vertices, os_vertices, skip_iterators_in_dimensions);
-                    }
+                    } */
                 }
             }
-            os.close();
+            
+
+/*             os.close();
             if(with_vertices)
-                os_vertices.close();
+                os_vertices.close(); */
         }
 
-        /* void Visualization::compute_vertex_velocities_from_parameters(std::string rel_dir)
+        /* void Visualization::compute_flow_from_parameters(std::string rel_dir)
         {
-            auto compute_vertex_velocities_parameters = vp.get_entry<json>("compute_vertex_velocities");
-            auto params1 = Visualization::ComputeVertexVelocitiesParameters(compute_vertex_velocities_parameters);
-            compute_vertex_velocities(dir, params1.skip_fixed_lambdas, params1.with_vertices);
+            auto compute_flow_parameters = vp.get_entry<json>("compute_flow");
+            auto params1 = Visualization::ComputeVertexVelocitiesParameters(compute_flow_parameters);
+            compute_flow(dir, params1.skip_fixed_variables, params1.with_vertices);
         } */
 
         /* void Visualization::compute_separatrizes(const std::string rel_dir,
-                                const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges,
+                                const std::vector <std::pair<cudaT, cudaT> > boundary_variable_ranges,
                                 const std::vector <cudaT> minimum_change_of_state,
                                 const cudaT minimum_delta_t, const cudaT maximum_flow_val,
                                 const std::vector <cudaT> vicinity_distances,
@@ -278,7 +280,7 @@ namespace odesolver {
             std::vector < std::vector<cudaT> > potential_saddle_points = vp.get_fixed_points();
             // std::vector < std::vector< std::vector <int> > > eigen_compositions = vp.get_eigen_compositions();
 
-            CoordinateOperatorParameters coordinate_operator_parameters = CoordinateOperatorParameters::from_parameters(vp.path_parameters.theory, potential_saddle_points);
+            CoordinateOperatorParameters coordinate_operator_parameters = CoordinateOperatorParameters::generate(vp.path_parameters.theory, potential_saddle_points);
             CoordinateOperator saddle_point_evaluator(coordinate_operator_parameters);
             saddle_point_evaluator.compute_jacobians_and_eigendata(); */
             /* auto eigenvectors_real_part = saddle_point_evaluator.get_real_parts_of_eigenvectors();
@@ -287,21 +289,21 @@ namespace odesolver {
 
         /*     const std::vector<int> saddle_point_indices = saddle_point_evaluator.get_indices_with_saddle_point_characteristics();
 
-            // Iterator through emerging lambda ranges from given fixed lambdas
-            odesolver::util::PartialRanges lambda_range_generator(n_branches_, partial_lambda_ranges_, fixed_lambdas_);
+            // Iterator through emerging variable ranges from given fixed variables
+            odesolver::util::PartialRanges variable_range_generator(n_branches_, partial_variable_ranges_, fixed_variables_);
             auto c = 0;
-            while(!lambda_range_generator.finished())
+            while(!variable_range_generator.finished())
             {
                 std::ofstream os;
                 std::string path = vp.get_absolute_path(vp.path_parameters.get_base_path() + "/" + dir + "/", vp.path_parameters.relative_path);
                 os.open(path + "separatrices_" + std::to_string(c) + ".dat");
 
-                auto lambda_ranges = lambda_range_generator.next();
+                auto variable_ranges = variable_range_generator.next();
 
-                // Retrieve currently considered fixed lambdas
-                std::vector< cudaT > fixed_lambdas {};
-                std::transform(indices_of_fixed_lambdas.begin(), indices_of_fixed_lambdas.end(), std::back_inserter(fixed_lambdas),
-                            [lambda_ranges] (const int& index) { return lambda_ranges[index].first; });
+                // Retrieve currently considered fixed variables
+                std::vector< cudaT > fixed_variables {};
+                std::transform(indices_of_fixed_variables.begin(), indices_of_fixed_variables.end(), std::back_inserter(fixed_variables),
+                            [variable_ranges] (const int& index) { return variable_ranges[index].first; });
                 // Iterate over all saddle points
                 for(auto saddle_point_index = 0; saddle_point_index < saddle_point_indices.size(); saddle_point_index++)
                 {
@@ -323,7 +325,7 @@ namespace odesolver {
                             stable_manifold_indices,
                             manifold_eigenvectors,
                             -1.0*delta_t,
-                            boundary_lambda_ranges,
+                            boundary_variable_ranges,
                             minimum_change_of_state,
                             minimum_delta_t, maximum_flow_val,
                             vicinity_distances,
@@ -331,7 +333,7 @@ namespace odesolver {
                             N_per_eigen_dim,
                             shift_per_dim,
                             os,
-                            fixed_lambdas
+                            fixed_variables
                     );
 
                     compute_separatrizes_of_manifold(
@@ -339,7 +341,7 @@ namespace odesolver {
                             unstable_manifold_indices,
                             manifold_eigenvectors,
                             delta_t,
-                            boundary_lambda_ranges,
+                            boundary_variable_ranges,
                             minimum_change_of_state,
                             minimum_delta_t, maximum_flow_val,
                             vicinity_distances,
@@ -347,7 +349,7 @@ namespace odesolver {
                             N_per_eigen_dim,
                             shift_per_dim,
                             os,
-                            fixed_lambdas
+                            fixed_variables
                     );
                 }
 
@@ -356,12 +358,12 @@ namespace odesolver {
             }
 
             // Consistency check
-            auto total_number_of_generated_lambdas = 1;
-            for(auto &fix_lambd : fixed_lambdas_)
-                total_number_of_generated_lambdas *= fix_lambd.size();
-            if(total_number_of_generated_lambdas != c) {
+            auto total_number_of_generated_variables = 1;
+            for(auto &fix_lambd : fixed_variables_)
+                total_number_of_generated_variables *= fix_lambd.size();
+            if(total_number_of_generated_variables != c) {
                 std::cout
-                        << "\nERROR: Something went wrong during the generation of the lambda ranges (possibility for duplicates, etc.)"
+                        << "\nERROR: Something went wrong during the generation of the variable ranges (possibility for duplicates, etc.)"
                         << dim_ << std::endl;
                 std::exit(EXIT_FAILURE);
             }
@@ -373,12 +375,12 @@ namespace odesolver {
             /* auto evolve_on_condition_parameters = vp.get_entry<json>("evolve_on_condition");
             auto compute_separatrizes_parameters = vp.get_entry<json>("compute_separatrizes");
             auto params3 = Visualization::ComputeSeparatrizesParameters(compute_separatrizes_parameters);
-            if(fixed_lambdas_.size() > 0)
+            if(fixed_variables_.size() > 0)
             {
                 auto conditional_observer_parameters = vp.get_entry<json>("conditional_intersection_observer");
                 auto params1 = ConditionalIntersectionObserverParameters(conditional_observer_parameters);
                 auto params2 = CoordinateOperatorParameters::EvolveOnConditionParameters<ConditionalIntersectionObserverParameters>(evolve_on_condition_parameters);
-                compute_separatrizes(dir, params1.boundary_lambda_ranges, params1.minimum_change_of_state,
+                compute_separatrizes(dir, params1.boundary_variable_ranges, params1.minimum_change_of_state,
                                     params1.minimum_delta_t, params1.maximum_flow_val, params1.vicinity_distances,
                                     params2.observe_every_nth_step, params2.maximum_total_number_of_steps,
                                     params3.N_per_eigen_dim, params3.shift_per_dim);
@@ -388,7 +390,7 @@ namespace odesolver {
                 auto conditional_observer_parameters = vp.get_entry<json>("conditional_range_observer");
                 auto params1 = ConditionalRangeObserverParameters(conditional_observer_parameters);
                 auto params2 = CoordinateOperatorParameters::EvolveOnConditionParameters<ConditionalRangeObserverParameters>(evolve_on_condition_parameters);
-                compute_separatrizes(dir, params1.boundary_lambda_ranges, params1.minimum_change_of_state,
+                compute_separatrizes(dir, params1.boundary_variable_ranges, params1.minimum_change_of_state,
                                     params1.minimum_delta_t, params1.maximum_flow_val, std::vector <cudaT> {},
                                     params2.observe_every_nth_step, params2.maximum_total_number_of_steps,
                                     params3.N_per_eigen_dim, params3.shift_per_dim);
@@ -513,7 +515,7 @@ namespace odesolver {
                 const std::vector<int> manifold_indices,
                 const std::vector<std::vector<cudaT>> manifold_eigenvectors,
                 const cudaT delta_t,
-                const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges,
+                const std::vector <std::pair<cudaT, cudaT> > boundary_variable_ranges,
                 const std::vector <cudaT> minimum_change_of_state,
                 const cudaT minimum_delta_t, const cudaT maximum_flow_val,
                 const std::vector <cudaT> vicinity_distances,
@@ -521,7 +523,7 @@ namespace odesolver {
                 const uint N_per_eigen_dim,
                 const std::vector<double> shift_per_dim,
                 std::ofstream &os,
-                std::vector< cudaT > fixed_lambdas
+                std::vector< cudaT > fixed_variables
                 ) { */
             // ToDo: Reactivate
             // Perform computation of separatrix for stable manifold
@@ -541,11 +543,11 @@ namespace odesolver {
                                                                 shift_per_dim, N_per_eigen_dim);
             }
 
-            if(fixed_lambdas_.size() > 0)
+            if(fixed_variables_.size() > 0)
             {
                 auto observer = new ConditionalIntersectionObserver(flow_equations_ptr_, sampled_coordinates.size(), os,
-                                                                    boundary_lambda_ranges, minimum_change_of_state, minimum_delta_t, maximum_flow_val, vicinity_distances,
-                                                                    fixed_lambdas, indices_of_fixed_lambdas);
+                                                                    boundary_variable_ranges, minimum_change_of_state, minimum_delta_t, maximum_flow_val, vicinity_distances,
+                                                                    fixed_variables, indices_of_fixed_variables);
                 observer->initalize_side_counter(sampled_coordinates);
 
                 // for(auto dim_index = 0; dim_index < sampled_coordinates.dim_size(); dim_index++)
@@ -559,7 +561,7 @@ namespace odesolver {
             else
             {
                 auto observer = new ConditionalRangeObserver(flow_equations_ptr_, sampled_coordinates.size(), os,
-                                                            boundary_lambda_ranges, minimum_change_of_state, minimum_delta_t, maximum_flow_val);
+                                                            boundary_variable_ranges, minimum_change_of_state, minimum_delta_t, maximum_flow_val);
                 // for(auto dim_index = 0; dim_index < sampled_coordinates.dim_size(); dim_index++)
                 //     print_range("Vertex in dim " + std::to_string(dim_index) + ": ", sampled_coordinates[dim_index].begin(), sampled_coordinates[dim_index].end());
                 Evolution<ConditionalRangeObserver> evaluator(flow_equations_ptr_, observer, observe_every_nth_step, maximum_total_number_of_steps);

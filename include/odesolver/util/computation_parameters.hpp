@@ -1,7 +1,3 @@
-//
-// Created by lukas on 31.03.20.
-//
-
 #ifndef PROGRAM_COMPUTATION_PARAMETERS_HPP
 #define PROGRAM_COMPUTATION_PARAMETERS_HPP
 
@@ -32,4 +28,5 @@ namespace odesolver {
         };
     }
 }
+
 #endif //PROGRAM_COMPUTATION_PARAMETERS_HPP

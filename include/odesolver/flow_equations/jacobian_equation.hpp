@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include <param_helper/json.hpp>
 
@@ -15,7 +16,7 @@ using json = nlohmann::json;
 
 namespace odesolver {
     namespace flowequations {
-        class JacobianEquationWrapper
+        class JacobianEquationsWrapper : public std::enable_shared_from_this<JacobianEquationsWrapper>
         {
         public:
             virtual void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables, const int row_idx, const int col_idx) = 0;
@@ -40,14 +41,14 @@ namespace odesolver {
         };
 
         template<typename JacobianEquations, typename... Args>
-        std::shared_ptr<JacobianEquationWrapper> generate_jacobian_equations(Args... args)
+        std::shared_ptr<JacobianEquationsWrapper> generate_jacobian_equations(Args... args)
         {
             return std::make_shared<JacobianEquations>(args...);
         }
 
-        odesolver::DevDatC compute_jacobian_elements(const odesolver::DevDatC &coordinates, JacobianEquationWrapper * jacobian_equations);
+        odesolver::DevDatC compute_jacobian_elements(const odesolver::DevDatC &coordinates, JacobianEquationsWrapper * jacobian_equations);
 
-        void compute_jacobian_elements(const odesolver::DevDatC &coordinates, odesolver::DevDatC &jacobian_elements, JacobianEquationWrapper * jacobian_equations);
+        void compute_jacobian_elements(const odesolver::DevDatC &coordinates, odesolver::DevDatC &jacobian_elements, JacobianEquationsWrapper * jacobian_equations);
     }
 }
 

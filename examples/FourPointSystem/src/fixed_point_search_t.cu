@@ -11,7 +11,7 @@ FixedPointSearch build_fixed_point_search_parameters()
             std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2},
             std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}};
     // mu, Lam3, Lam4, g3, g4
-    const std::vector <std::pair<cudaT, cudaT> > lambda_ranges = std::vector <std::pair<cudaT, cudaT> > {
+    const std::vector <std::pair<cudaT, cudaT> > variable_ranges = std::vector <std::pair<cudaT, cudaT> > {
         std::pair<cudaT, cudaT> (-0.3, 0.3),
         std::pair<cudaT, cudaT> (-0.1, 0.1),
         std::pair<cudaT, cudaT> (-0.2, 0.2),
@@ -19,10 +19,10 @@ FixedPointSearch build_fixed_point_search_parameters()
         std::pair<cudaT, cudaT> (0.4, 1.0)
     };
 
-    auto fixed_point_search = FixedPointSearch::from_parameters(
+    auto fixed_point_search = FixedPointSearch::generate(
             maximum_recursion_depth,
             n_branches_per_depth,
-            lambda_ranges,
+            variable_ranges,
             odesolver::flowequations::generate_flow_equations<FourPointSystemFlowEquations>(0)
     );
 
@@ -155,7 +155,7 @@ void find_fixed_points()
             std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2},
             std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}};
     // mu, Lam3, Lam4, g3, g4
-    const std::vector <std::pair<cudaT, cudaT> > lambda_ranges = std::vector <std::pair<cudaT, cudaT> > {
+    const std::vector <std::pair<cudaT, cudaT> > variable_ranges = std::vector <std::pair<cudaT, cudaT> > {
         std::pair<cudaT, cudaT> (-2.0, 2.0),
         std::pair<cudaT, cudaT> (-1.0, 1.0),
         std::pair<cudaT, cudaT> (-2.0, 2.0),
@@ -163,10 +163,10 @@ void find_fixed_points()
         std::pair<cudaT, cudaT> (0.05, 2.0)
     };
 
-    auto fixed_point_search = FixedPointSearch::from_parameters(
+    auto fixed_point_search = FixedPointSearch::generate(
         maximum_recursion_depth,
         n_branches_per_depth,
-        lambda_ranges,
+        variable_ranges,
         odesolver::flowequations::generate_flow_equations<FourPointSystemFlowEquations>(0)
     );
 

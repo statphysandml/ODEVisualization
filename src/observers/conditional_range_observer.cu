@@ -30,21 +30,21 @@ ConditionalRangeObserverParameters::ConditionalRangeObserverParameters(
     minimum_delta_t(get_entry<cudaT>("minimum_delta_t")),
     maximum_flow_val(get_entry<cudaT>("maximum_flow_val"))
 {
-    auto boundary_lambda_ranges_ = get_entry<json>("boundary_lambda_ranges");
+    auto boundary_variable_ranges_ = get_entry<json>("boundary_variable_ranges");
     auto minimum_change_of_state_ = get_entry<json>("minimum_change_of_state");
 
-    std::transform(boundary_lambda_ranges_.begin(), boundary_lambda_ranges_.end(), std::back_inserter(boundary_lambda_ranges),
+    std::transform(boundary_variable_ranges_.begin(), boundary_variable_ranges_.end(), std::back_inserter(boundary_variable_ranges),
                    [] (json &dat) { return dat.get< std::pair<cudaT, cudaT> >(); });
     minimum_change_of_state = minimum_change_of_state_.get< std::vector<cudaT> >();
 }
 
 ConditionalRangeObserverParameters::ConditionalRangeObserverParameters(
-        const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges_,
+        const std::vector <std::pair<cudaT, cudaT> > boundary_variable_ranges_,
         const std::vector < cudaT > minimum_change_of_state_,
         const cudaT minimum_delta_t_,
         const cudaT maximum_flow_val_
 ) : ConditionalRangeObserverParameters(
-        json {{"boundary_lambda_ranges", boundary_lambda_ranges_},
+        json {{"boundary_variable_ranges", boundary_variable_ranges_},
               {"minimum_change_of_state", minimum_change_of_state_},
               {"minimum_delta_t", minimum_delta_t_},
               {"maximum_flow_val", maximum_flow_val_}}
@@ -55,23 +55,23 @@ ConditionalRangeObserverParameters::ConditionalRangeObserverParameters(
 
 ConditionalRangeObserver::ConditionalRangeObserver(FlowEquationsWrapper * const flow_equations_, const uint N_total_,
         std::ofstream &os_,
-        const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges_,
+        const std::vector <std::pair<cudaT, cudaT> > boundary_variable_ranges_,
         const std::vector < cudaT > minimum_change_of_state_,
         const cudaT minimum_delta_t_,
         const cudaT maximum_flow_val_
     ) : flow_equations(flow_equations_), dim(flow_equations_->get_dim()), N_total(N_total_), N(N_total_/flow_equations_->get_dim()), os(os_),
     minimum_change_of_state(minimum_change_of_state_), minimum_delta_t(minimum_delta_t_), maximum_flow_val(maximum_flow_val_)
 {
-    upper_lambda_ranges.reserve(boundary_lambda_ranges_.size());
-    lower_lambda_ranges.reserve(boundary_lambda_ranges_.size());
-    for (auto it = std::make_move_iterator(boundary_lambda_ranges_.begin()),
-                 end = std::make_move_iterator(boundary_lambda_ranges_.end()); it != end; ++it)
+    upper_variable_ranges.reserve(boundary_variable_ranges_.size());
+    lower_variable_ranges.reserve(boundary_variable_ranges_.size());
+    for (auto it = std::make_move_iterator(boundary_variable_ranges_.begin()),
+                 end = std::make_move_iterator(boundary_variable_ranges_.end()); it != end; ++it)
     {
-        upper_lambda_ranges.push_back(std::move(it->second));
-        lower_lambda_ranges.push_back(std::move(it->first));
+        upper_variable_ranges.push_back(std::move(it->second));
+        lower_variable_ranges.push_back(std::move(it->first));
     }
-    indices_of_boundary_lambdas = std::vector<int>(dim);
-    std::iota(indices_of_boundary_lambdas.begin(), indices_of_boundary_lambdas.end(), 0);
+    indices_of_boundary_variables = std::vector<int>(dim);
+    std::iota(indices_of_boundary_variables.begin(), indices_of_boundary_variables.end(), 0);
 
     previous_coordinates = odesolver::DevDatC(dim, N, 100001.02342);
     out_of_system = dev_vec_bool(N, false);
@@ -79,7 +79,7 @@ ConditionalRangeObserver::ConditionalRangeObserver(FlowEquationsWrapper * const 
 
 ConditionalRangeObserver::ConditionalRangeObserver(FlowEquationsWrapper * const flow_equations_, const uint N_total_,
         std::ofstream &os_, const ConditionalRangeObserverParameters &params) :
-        ConditionalRangeObserver(flow_equations_, N_total_, os_, params.boundary_lambda_ranges, params.minimum_change_of_state,
+        ConditionalRangeObserver(flow_equations_, N_total_, os_, params.boundary_variable_ranges, params.minimum_change_of_state,
         params.minimum_delta_t, params.maximum_flow_val)
 {}
 
@@ -121,9 +121,9 @@ void ConditionalRangeObserver::operator() (const odesolver::DevDatC &coordinates
 
 void ConditionalRangeObserver::update_out_of_system(const odesolver::DevDatC &coordinates)
 {
-    // Check if trajectories are still inside the provided lambda ranges - makes use of boundary_lambda_ranges
-    auto upper_out_of_range = compute_side_counter(coordinates, upper_lambda_ranges, indices_of_boundary_lambdas);
-    auto lower_out_of_range = compute_side_counter(coordinates, lower_lambda_ranges, indices_of_boundary_lambdas);
+    // Check if trajectories are still inside the provided variable ranges - makes use of boundary_variable_ranges
+    auto upper_out_of_range = compute_side_counter(coordinates, upper_variable_ranges, indices_of_boundary_variables);
+    auto lower_out_of_range = compute_side_counter(coordinates, lower_variable_ranges, indices_of_boundary_variables);
     for(auto dim_index = 0; dim_index < dim; dim_index++)
     {
         thrust::transform_if(upper_out_of_range[dim_index].begin(), upper_out_of_range[dim_index].end(), out_of_system.begin(),
@@ -149,7 +149,7 @@ void ConditionalRangeObserver::update_out_of_system(const odesolver::DevDatC &co
     }
 
     // Check if evaluated flow is too large - makes use of maximum_flow_val
-    auto velocities = compute_vertex_velocities(coordinates, flow_equations);
+    auto velocities = compute_flow(coordinates, flow_equations);
     auto maximum_flow_val_ = maximum_flow_val;
     for(auto dim_index = 0; dim_index < dim; dim_index++) {
         thrust::transform_if(velocities[dim_index].begin(), velocities[dim_index].end(), out_of_system.begin(),
@@ -178,15 +178,15 @@ void ConditionalRangeObserver::update_for_valid_coordinates(dev_vec_bool& potent
                          [] __host__ __device__ (const bool&status) { return false; }, [] __host__ __device__ (const bool& status) { return status; });
 }
 
-DevDatBool ConditionalRangeObserver::compute_side_counter(const odesolver::DevDatC &coordinates, const std::vector <cudaT>& lambdas, const std::vector<int>& indices_of_lambdas)
+DevDatBool ConditionalRangeObserver::compute_side_counter(const odesolver::DevDatC &coordinates, const std::vector <cudaT>& variables, const std::vector<int>& indices_of_variables)
 {
-    DevDatBool side_counter_(lambdas.size(), coordinates.size()/coordinates.dim_size(), false);
-    for(auto dim_index = 0; dim_index < lambdas.size(); dim_index++)
+    DevDatBool side_counter_(variables.size(), coordinates.size()/coordinates.dim_size(), false);
+    for(auto dim_index = 0; dim_index < variables.size(); dim_index++)
     {
-        auto index_of_lambdas = indices_of_lambdas[dim_index];
-        auto lambda_in_dim = lambdas[dim_index];
-        thrust::transform(coordinates[index_of_lambdas].begin(), coordinates[index_of_lambdas].end(), side_counter_[dim_index].begin(), [lambda_in_dim] __host__ __device__ (const cudaT &val) {
-            return val > lambda_in_dim;
+        auto index_of_variables = indices_of_variables[dim_index];
+        auto variable_in_dim = variables[dim_index];
+        thrust::transform(coordinates[index_of_variables].begin(), coordinates[index_of_variables].end(), side_counter_[dim_index].begin(), [variable_in_dim] __host__ __device__ (const cudaT &val) {
+            return val > variable_in_dim;
         });
     }
     return side_counter_;

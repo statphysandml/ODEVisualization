@@ -12,7 +12,7 @@
 
 odesolver::DevDatC get_fixed_points();
 
-void compute_vertex_velocities_t();
+void compute_flow_t();
 
 odesolver::DevDatC compute_jacobians();
 

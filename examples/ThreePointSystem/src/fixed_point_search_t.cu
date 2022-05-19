@@ -11,13 +11,13 @@ FixedPointSearch build_fixed_point_search_parameters()
             std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
             std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}};
     // mu, lambda, g
-    const std::vector <std::pair<cudaT, cudaT> > lambda_ranges = std::vector <std::pair<cudaT, cudaT> > {
+    const std::vector <std::pair<cudaT, cudaT> > variable_ranges = std::vector <std::pair<cudaT, cudaT> > {
             std::pair<cudaT, cudaT> (-0.9, 0.9), std::pair<cudaT, cudaT> (-1.8, 0.9), std::pair<cudaT, cudaT> (-0.61, 1.0)};
 
-    auto fixed_point_search = FixedPointSearch::from_parameters(
+    auto fixed_point_search = FixedPointSearch::generate(
             maximum_recursion_depth,
             n_branches_per_depth,
-            lambda_ranges,
+            variable_ranges,
             odesolver::flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0)
     );
 
@@ -150,13 +150,13 @@ void find_fixed_points()
             std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
             std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}};
     // mu, lambda, g
-    const std::vector <std::pair<cudaT, cudaT> > lambda_ranges = std::vector <std::pair<cudaT, cudaT> > {
+    const std::vector <std::pair<cudaT, cudaT> > variable_ranges = std::vector <std::pair<cudaT, cudaT> > {
             std::pair<cudaT, cudaT> (-0.9, 0.9), std::pair<cudaT, cudaT> (-1.8, 0.9), std::pair<cudaT, cudaT> (-0.61, 1.0)};
 
-    auto fixed_point_search = FixedPointSearch::from_parameters(
+    auto fixed_point_search = FixedPointSearch::generate(
         maximum_recursion_depth,
         n_branches_per_depth,
-        lambda_ranges,
+        variable_ranges,
         odesolver::flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0)
     );
 

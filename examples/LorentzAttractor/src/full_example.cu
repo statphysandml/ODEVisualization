@@ -5,7 +5,7 @@ void find_fixed_points()
 {
     const int maximum_recursion_depth = 18;
     const std::vector< std::vector<int> > n_branches_per_depth = std::vector< std::vector<int> > {
-        std::vector<int> {100, 100, 100}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
+        std::vector<int> {10, 10, 10}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
         std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
         std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
         std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
@@ -13,13 +13,13 @@ void find_fixed_points()
         std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}
     };
     // mu, lambda, g
-    const std::vector <std::pair<cudaT, cudaT> > lambda_ranges = std::vector <std::pair<cudaT, cudaT> > {
+    const std::vector <std::pair<cudaT, cudaT> > variable_ranges = std::vector <std::pair<cudaT, cudaT> > {
         std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-1.0, 31.0)};
 
-    auto fixed_point_search = odesolver::modes::FixedPointSearch::from_parameters(
+    auto fixed_point_search = odesolver::modes::FixedPointSearch::generate(
         maximum_recursion_depth,
         n_branches_per_depth,
-        lambda_ranges,
+        variable_ranges,
         odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0)
     );
 
@@ -38,7 +38,7 @@ void find_fixed_points()
     auto t0 = Time::now();
 
     // fixed_point_search.find_fixed_points_dynamic_memory();
-    fixed_point_search.find_fixed_points_preallocated_memory();
+    fixed_point_search.eval("preallocated_memory");
 
     auto t1 = Time::now();
     fsec fs = t1 - t0;
@@ -48,32 +48,27 @@ void find_fixed_points()
 
     odesolver::collections::Counter<odesolver::collections::Collection>::print_statistics();
 
-    // Just for testing issues -> get solutions and print infos about these
-    std::vector<std::shared_ptr<odesolver::collections::Leaf>> solutions = fixed_point_search.get_solutions();
-    for(auto &sol: solutions)
-        sol->info();
-
-    // Explicit use of parameters for clustering
-    // const std::string dir = "fixed_point_search_interface";
-    const uint maximum_expected_number_of_clusters = 80;
-    const double upper_bound_for_min_distance = 0.01;
-    const uint maximum_number_of_iterations = 1000;
+    // Just for testing issues -> get leaves and print infos about these
+    std::vector<std::shared_ptr<odesolver::collections::Leaf>> leaves = fixed_point_search.leaves();
+    for(auto &leaf: leaves)
+        leaf->info();
 
     // Cluster solutions
-    fixed_point_search.cluster_solutions_to_fixed_points(
-        maximum_expected_number_of_clusters,
-        upper_bound_for_min_distance,
-        maximum_number_of_iterations
+    odesolver::util::KMeansClustering kmeans_clustering(
+        80, // maximum_expected_number_of_clusters
+        0.01, // upper_bound_for_min_distance
+        1000 // maximum_number_of_iterations
     );
+    auto fixed_points = kmeans_clustering.cluster_device_data(fixed_point_search.fixed_points());
     
-    fixed_point_search.write_fixed_points_to_file("data/fe_fixed_point_search");
+    fixed_points.write_to_file("data/fe_fixed_point_search", "fixed_points");
 }
 
 void evaluate_fixed_points()
 {
-    auto fixed_points = odesolver::modes::load_fixed_points("data/fe_fixed_point_search");
+    auto fixed_points = odesolver::load_devdat("data/fe_fixed_point_search", "fixed_points");
 
-    odesolver::modes::CoordinateOperator evaluator = odesolver::modes::CoordinateOperator::from_vecvec(
+    odesolver::modes::CoordinateOperator evaluator = odesolver::modes::CoordinateOperator::generate(
         fixed_points,
         odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0),
         odesolver::flowequations::generate_jacobian_equations<LorentzAttractorJacobianEquations>(0)

@@ -1,4 +1,5 @@
 add_library(odevisualization STATIC
+    dev_dat.cu
     flow_equations/flow_equation.cu
     flow_equations/jacobian_equation.cu
     # executer.cu
@@ -10,10 +11,9 @@ add_library(odevisualization STATIC
     grid_computation/grid_computation.cu
     grid_computation/grid_computation_wrapper.cu
     grid_computation/static_recursive_grid_computation.cu
-    util/helper_functions.cu
     util/monitor.cu
-    util/dev_dat.cu
     util/kmeans.cpp
+    util/kmeans_clustering.cu
     util/partial_ranges.cpp
     util/python_integration.cpp
     util/random.cu

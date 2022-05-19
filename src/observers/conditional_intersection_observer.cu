@@ -21,8 +21,8 @@ struct check_potential_intersection_in_dim
 
 struct check_for_vicinity_in_dim
 {
-    check_for_vicinity_in_dim(const cudaT fixed_lambda_, const cudaT vicinity_distance_) :
-            fixed_lambda(fixed_lambda_), vicinity_distance(vicinity_distance_)
+    check_for_vicinity_in_dim(const cudaT fixed_variable_, const cudaT vicinity_distance_) :
+            fixed_variable(fixed_variable_), vicinity_distance(vicinity_distance_)
     {}
 
     template <typename Tuple>
@@ -32,13 +32,13 @@ struct check_for_vicinity_in_dim
         cudaT current_coor = thrust::get<0>(t);
         bool status  = thrust::get<1>(t);
 
-        if(abs(current_coor - fixed_lambda) > vicinity_distance)
+        if(abs(current_coor - fixed_variable) > vicinity_distance)
             thrust::get<2>(t) = false;
         else // Could be omitted
             thrust::get<2>(t) = status;
     }
 
-    const cudaT fixed_lambda;
+    const cudaT fixed_variable;
     const cudaT vicinity_distance;
 };
 
@@ -52,13 +52,13 @@ ConditionalIntersectionObserverParameters::ConditionalIntersectionObserverParame
 }
 
 ConditionalIntersectionObserverParameters::ConditionalIntersectionObserverParameters(
-        const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges_,
+        const std::vector <std::pair<cudaT, cudaT> > boundary_variable_ranges_,
         const std::vector < cudaT > minimum_change_of_state_,
         const cudaT minimum_delta_t_,
         const cudaT maximum_flow_val_,
         const std::vector < cudaT > vicinity_distances_
 ) : ConditionalIntersectionObserverParameters(
-        json {{"boundary_lambda_ranges", boundary_lambda_ranges_},
+        json {{"boundary_variable_ranges", boundary_variable_ranges_},
               {"minimum_change_of_state", minimum_change_of_state_},
               {"minimum_delta_t", minimum_delta_t_},
               {"maximum_flow_val", maximum_flow_val_},
@@ -68,31 +68,31 @@ ConditionalIntersectionObserverParameters::ConditionalIntersectionObserverParame
 
 
 ConditionalIntersectionObserver::ConditionalIntersectionObserver(FlowEquationsWrapper * flow_equations_, const uint N_total_, std::ofstream &os_,
-    const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges_,
+    const std::vector <std::pair<cudaT, cudaT> > boundary_variable_ranges_,
     const std::vector < cudaT > minimum_change_of_state_,
     const cudaT minimum_delta_t_,
     const cudaT maximum_flow_val_,
     const std::vector < cudaT > vicinity_distances_,
-    const std::vector < cudaT > fixed_lambdas_,
-    const std::vector<int> indices_of_fixed_lambdas_
-    ) : ConditionalRangeObserver(flow_equations_, N_total_, os_, boundary_lambda_ranges_, minimum_change_of_state_, minimum_delta_t_, maximum_flow_val_),
-    vicinity_distances(vicinity_distances_), fixed_lambdas(fixed_lambdas_), indices_of_fixed_lambdas(indices_of_fixed_lambdas_)
+    const std::vector < cudaT > fixed_variables_,
+    const std::vector<int> indices_of_fixed_variables_
+    ) : ConditionalRangeObserver(flow_equations_, N_total_, os_, boundary_variable_ranges_, minimum_change_of_state_, minimum_delta_t_, maximum_flow_val_),
+    vicinity_distances(vicinity_distances_), fixed_variables(fixed_variables_), indices_of_fixed_variables(indices_of_fixed_variables_)
 {
     intersection_counter = dev_vec_int(N, 0);
-    side_counter = DevDatBool(fixed_lambdas.size(), N, false);
+    side_counter = DevDatBool(fixed_variables.size(), N, false);
 }
 
 ConditionalIntersectionObserver::ConditionalIntersectionObserver(FlowEquationsWrapper * flow_equations_,
         const uint N_total_, std::ofstream &os_, ConditionalIntersectionObserverParameters &params,
-        const std::vector<cudaT> fixed_lambdas_, const std::vector<int> indices_of_fixed_lambdas_) :
-    ConditionalIntersectionObserver(flow_equations_, N_total_, os_, params.boundary_lambda_ranges, params.minimum_change_of_state,
-    params.minimum_delta_t, params.maximum_flow_val, params.vicinity_distances, fixed_lambdas_, indices_of_fixed_lambdas_)
+        const std::vector<cudaT> fixed_variables_, const std::vector<int> indices_of_fixed_variables_) :
+    ConditionalIntersectionObserver(flow_equations_, N_total_, os_, params.boundary_variable_ranges, params.minimum_change_of_state,
+    params.minimum_delta_t, params.maximum_flow_val, params.vicinity_distances, fixed_variables_, indices_of_fixed_variables_)
 {}
 
 
 void ConditionalIntersectionObserver::initalize_side_counter(const odesolver::DevDatC &coordinates)
 {
-    side_counter = compute_side_counter(coordinates, fixed_lambdas, indices_of_fixed_lambdas);
+    side_counter = compute_side_counter(coordinates, fixed_variables, indices_of_fixed_variables);
 }
 
 
@@ -106,7 +106,7 @@ void ConditionalIntersectionObserver::operator() (const odesolver::DevDatC &coor
     }
 
     // Update intersection_counter
-    auto updated_side_counter = compute_side_counter(coordinates, fixed_lambdas, indices_of_fixed_lambdas);
+    auto updated_side_counter = compute_side_counter(coordinates, fixed_variables, indices_of_fixed_variables);
 
     auto intersections = check_for_intersection(updated_side_counter);
     update_for_valid_coordinates(intersections);
@@ -127,12 +127,12 @@ void ConditionalIntersectionObserver::write_intersecting_separatrizes_to_file(co
     if(n_intersections > 0)
     {
         auto c = 0;
-        odesolver::DevDatC separatrizes(dim - fixed_lambdas.size(), coordinates.size() / coordinates.dim_size(), 0);
+        odesolver::DevDatC separatrizes(dim - fixed_variables.size(), coordinates.size() / coordinates.dim_size(), 0);
         std::vector< dev_iterator > end_iterators {};
         for (auto dim_index = 0; dim_index < dim; dim_index++) {
             // Fixed indices are fix -> only other coordinates are needed
-            if (std::find(indices_of_fixed_lambdas.begin(), indices_of_fixed_lambdas.end(), dim_index) ==
-                indices_of_fixed_lambdas.end()) {
+            if (std::find(indices_of_fixed_variables.begin(), indices_of_fixed_variables.end(), dim_index) ==
+                indices_of_fixed_variables.end()) {
 
                 // Write coordinates into separatrizes
                 auto end_iterator = thrust::copy_if(coordinates[dim_index].begin(), coordinates[dim_index].end(),
@@ -164,12 +164,12 @@ void ConditionalIntersectionObserver::write_vicinity_separatrizes_to_file(const 
     if(n_vicinity > 0)
     {
         auto c = 0;
-        odesolver::DevDatC separatrizes(dim - fixed_lambdas.size(), coordinates.size() / coordinates.dim_size(), 0);
+        odesolver::DevDatC separatrizes(dim - fixed_variables.size(), coordinates.size() / coordinates.dim_size(), 0);
         std::vector< dev_iterator > end_iterators {};
         for (auto dim_index = 0; dim_index < dim; dim_index++) {
             // Fixed indices are fix -> only other coordinates are needed
-            if (std::find(indices_of_fixed_lambdas.begin(), indices_of_fixed_lambdas.end(), dim_index) ==
-                indices_of_fixed_lambdas.end()) {
+            if (std::find(indices_of_fixed_variables.begin(), indices_of_fixed_variables.end(), dim_index) ==
+                indices_of_fixed_variables.end()) {
                 // dev_vec vicinity_c(vicinity_to_fixed_dimensions.begin(), vicinity_to_fixed_dimensions.end());
                 auto end_iterator = thrust::copy_if(coordinates[dim_index].begin(), coordinates[dim_index].end(),
                                                     vicinity_to_fixed_dimensions.begin(),
@@ -188,7 +188,7 @@ dev_vec_bool ConditionalIntersectionObserver::check_for_intersection(const DevDa
 {
     // Initialize true and set to false if in some dimension no side change took place
     dev_vec_bool potential_intersections(N, true);
-    for(auto fixed_dim_index = 0; fixed_dim_index < fixed_lambdas.size(); fixed_dim_index++)
+    for(auto fixed_dim_index = 0; fixed_dim_index < fixed_variables.size(); fixed_dim_index++)
     {
         thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(
                 updated_side_counter[fixed_dim_index].begin(),
@@ -220,18 +220,18 @@ dev_vec_bool ConditionalIntersectionObserver::check_for_vicinity_to_fixed_dimens
 {
     // Initialize true and set to false if in some dimension the coordinate is not in the vicinity
     dev_vec_bool potential_vicinities(N, true);
-    for(auto fixed_dim_index = 0; fixed_dim_index < fixed_lambdas.size(); fixed_dim_index++)
+    for(auto fixed_dim_index = 0; fixed_dim_index < fixed_variables.size(); fixed_dim_index++)
     {
-        auto index_of_fixed_lambdas = indices_of_fixed_lambdas[fixed_dim_index];
+        auto index_of_fixed_variables = indices_of_fixed_variables[fixed_dim_index];
         thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(
-                coordinates[index_of_fixed_lambdas].begin(),
+                coordinates[index_of_fixed_variables].begin(),
                 potential_vicinities.begin(),
                 potential_vicinities.begin())),
                          thrust::make_zip_iterator(thrust::make_tuple(
-                                 coordinates[index_of_fixed_lambdas].end(),
+                                 coordinates[index_of_fixed_variables].end(),
                                  potential_vicinities.end(),
                                  potential_vicinities.end())),
-                         check_for_vicinity_in_dim(fixed_lambdas[fixed_dim_index], vicinity_distances[fixed_dim_index])
+                         check_for_vicinity_in_dim(fixed_variables[fixed_dim_index], vicinity_distances[fixed_dim_index])
         );
     }
     if(monitor)

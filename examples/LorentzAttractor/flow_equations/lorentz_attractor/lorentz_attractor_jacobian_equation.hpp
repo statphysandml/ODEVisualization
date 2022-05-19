@@ -117,7 +117,7 @@ private:
 };
 
 
-class LorentzAttractorJacobianEquations : public odesolver::flowequations::JacobianEquationWrapper
+class LorentzAttractorJacobianEquations : public odesolver::flowequations::JacobianEquationsWrapper
 {
 public:
 	LorentzAttractorJacobianEquations(const cudaT k) : k_(k)

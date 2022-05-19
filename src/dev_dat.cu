@@ -26,4 +26,20 @@ namespace odesolver {
             os << std::endl;
         }
     }
+
+    void write_devdat_to_file(DevDatC &data, std::string rel_dir, std::string filename)
+    {
+        auto transposed_data = data.transpose_device_data();
+        param_helper::fs::write_parameter_file(
+            json {odesolver::util::vec_vec_to_json(transposed_data)},
+            param_helper::proj::project_root() + "/" + rel_dir + "/", filename,
+            false
+        );
+    }
+
+    DevDatC load_devdat(std::string rel_dir, std::string filename)
+    {
+        json j = param_helper::fs::read_parameter_file(param_helper::proj::project_root() + rel_dir + "/", filename, false);
+        return DevDatC(odesolver::util::json_to_vec_vec(j.get<std::vector<std::vector<cudaT>>>()));
+    }
 }

@@ -8,7 +8,6 @@
 #include <odesolver/header.hpp>
 #include <odesolver/dev_dat.hpp>
 #include <odesolver/util/monitor.hpp>
-#include <odesolver/util/helper_functions.hpp>
 #include <odesolver/util/json_conversions.hpp>
 #include <odesolver/util/random.hpp>
 #include <odesolver/util/partial_ranges.hpp>
@@ -26,10 +25,10 @@
 using json = nlohmann::json;
 
 /* Examples:
- * - Full lambda scan
- * - Scan for unique fixed lambdas in two dimensions
- * - Scan for fixed lambdas in two dimensions with one altering value (one fix lambda)
- * - Scan for fixed lambdas in two dimensions with two altering values (two fix lambdas)
+ * - Full variable scan
+ * - Scan for unique fixed variables in two dimensions
+ * - Scan for fixed variables in two dimensions with one altering value (one fixed variable)
+ * - Scan for fixed variables in two dimensions with two altering values (two fixed variables)
  */
 
 
@@ -42,7 +41,17 @@ namespace odesolver {
             explicit Visualization(
                 const json params,
                 std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr=nullptr,
+                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
+                const std::string computation_parameters_path=param_helper::proj::project_root()
+            );
+
+            // From parameters
+            static Visualization generate(
+                const std::vector<int> n_branches,
+                const std::vector<std::pair<cudaT, cudaT>> variable_ranges,
+                const std::vector<std::vector<cudaT>> fixed_variables = std::vector< std::vector<cudaT>> {},
+                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
+                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
                 const std::string computation_parameters_path=param_helper::proj::project_root()
             );
 
@@ -50,17 +59,7 @@ namespace odesolver {
             static Visualization from_file(
                 const std::string rel_config_dir,
                 std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr=nullptr,
-                const std::string computation_parameters_path=param_helper::proj::project_root()
-            );
-
-            // From parameters
-            static Visualization from_parameters(
-                const std::vector<int> n_branches,
-                const std::vector<std::pair<cudaT, cudaT>> lambda_ranges,
-                const std::vector<std::vector<cudaT>> fixed_lambdas = std::vector< std::vector<cudaT>> {},
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr=nullptr,
+                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
                 const std::string computation_parameters_path=param_helper::proj::project_root()
             );
 
@@ -75,12 +74,12 @@ namespace odesolver {
                 ComputeVertexVelocitiesParameters(const json params);
 
                 ComputeVertexVelocitiesParameters(
-                        const bool skip_fixed_lambdas, const bool with_vertices
+                        const bool skip_fixed_variables, const bool with_vertices
                 );
 
-                std::string name() const {  return "compute_vertex_velocities";  }
+                std::string name() const {  return "compute_flow";  }
 
-                const bool skip_fixed_lambdas_;
+                const bool skip_fixed_variables_;
                 const bool with_vertices_;
             };
 
@@ -99,12 +98,12 @@ namespace odesolver {
                 const std::vector<double> shift_per_dim_;
             };
 
-            void evaluate_vertices(std::string rel_dir, bool skip_fixed_lambdas, bool with_vertices);
+            void eval(std::string rel_dir, bool skip_fixed_variables, bool with_vertices);
 
-            // void compute_vertex_velocities_from_parameters(std::string rel_dir);
+            // void compute_flow_from_parameters(std::string rel_dir);
 
             /* void compute_separatrizes(const std::string rel_dir,
-                                    const std::vector<std::pair<cudaT, cudaT>> boundary_lambda_ranges,
+                                    const std::vector<std::pair<cudaT, cudaT>> boundary_variable_ranges,
                                     const std::vector<cudaT> minimum_change_of_state,
                                     const cudaT minimum_delta_t, const cudaT maximum_flow_val,
                                     const std::vector<cudaT> vicinity_distances,
@@ -118,10 +117,10 @@ namespace odesolver {
             const uint dim_;
 
             std::vector<int> n_branches_;
-            std::vector<std::pair<cudaT, cudaT>> partial_lambda_ranges_;
-            std::vector<std::vector<cudaT>> fixed_lambdas_;
+            std::vector<std::pair<cudaT, cudaT>> partial_variable_ranges_;
+            std::vector<std::vector<cudaT>> fixed_variables_;
 
-            std::vector<int> indices_of_fixed_lambdas_;
+            std::vector<int> indices_of_fixed_variables_;
 
             /* odesolver::DevDatC sample_around_saddle_point(const std::vector<double> coordinate, const std::vector<int> manifold_indices,
                                             const std::vector<std::vector<cudaT>> manifold_eigenvectors, const std::vector<double> shift_per_dim, const uint N_per_eigen_dim);
@@ -142,7 +141,7 @@ namespace odesolver {
                     const std::vector<int> manifold_indices,
                     const std::vector<std::vector<cudaT>> manifold_eigenvectors,
                     const cudaT delta_t,
-                    const std::vector<std::pair<cudaT, cudaT>> boundary_lambda_ranges,
+                    const std::vector<std::pair<cudaT, cudaT>> boundary_variable_ranges,
                     const std::vector<cudaT> minimum_change_of_state,
                     const cudaT minimum_delta_t, const cudaT maximum_flow_val,
                     const std::vector<cudaT> vicinity_distances,
@@ -150,7 +149,7 @@ namespace odesolver {
                     const uint N_per_eigen_dim,
                     const std::vector<double> shift_per_dim,
                     std::ofstream &os,
-                    std::vector<cudaT> fixed_lambdas
+                    std::vector<cudaT> fixed_variables
             ); */
 
             std::vector<std::vector<cudaT>> get_fixed_points() const;

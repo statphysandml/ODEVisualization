@@ -6,7 +6,7 @@ namespace odesolver {
         CoordinateOperator::CoordinateOperator(
             const json params,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr,
+            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
             const std::string computation_parameters_path,
             const std::vector<std::vector<double>> vecvec_coordinates,
             const odesolver::DevDatC devdat_coordinates
@@ -19,26 +19,27 @@ namespace odesolver {
                 coordinates_ = devdat_coordinates;
         }
 
-        CoordinateOperator CoordinateOperator::from_file(
-            const std::string rel_config_dir,
+        CoordinateOperator CoordinateOperator::generate(
+            const odesolver::DevDatC devdat_coordinates,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr,
+            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
             const std::string computation_parameters_path
         )
         {
             return CoordinateOperator(
-                param_helper::fs::read_parameter_file(
-                    param_helper::proj::project_root() + rel_config_dir + "/", "config", false),
+                json {},
                 flow_equations_ptr,
                 jacobians_ptr,
-                computation_parameters_path
+                computation_parameters_path,
+                {},
+                devdat_coordinates
             );
         }
 
         CoordinateOperator CoordinateOperator::from_vecvec(
                 const std::vector<std::vector<double>> vecvec_coordinates,
                 std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr,
+                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
                 const std::string computation_parameters_path
         )
         {
@@ -51,20 +52,19 @@ namespace odesolver {
             );
         }
 
-        CoordinateOperator CoordinateOperator::from_devdat(
-            const odesolver::DevDatC devdat_coordinates,
+        CoordinateOperator CoordinateOperator::from_file(
+            const std::string rel_config_dir,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr,
+            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
             const std::string computation_parameters_path
         )
         {
             return CoordinateOperator(
-                json {},
+                param_helper::fs::read_parameter_file(
+                    param_helper::proj::project_root() + rel_config_dir + "/", "config", false),
                 flow_equations_ptr,
                 jacobians_ptr,
-                computation_parameters_path,
-                {},
-                devdat_coordinates
+                computation_parameters_path
             );
         }
 
@@ -95,7 +95,7 @@ namespace odesolver {
         // Velocities
         void CoordinateOperator::compute_velocities()
         {
-            velocities_ = compute_vertex_velocities(coordinates_, flow_equations_ptr_.get());
+            velocities_ = compute_flow(coordinates_, flow_equations_ptr_.get());
         }
 
         void CoordinateOperator::compute_jacobians()

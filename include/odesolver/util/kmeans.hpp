@@ -18,7 +18,7 @@ namespace odesolver {
         class KMeans
         {
         public:
-            KMeans(const uint k, const std::vector< std::vector<double> > data) ;
+            KMeans(const uint k, const std::vector<std::vector<double>> data) ;
 
             void initialize();
 
@@ -38,15 +38,15 @@ namespace odesolver {
 
         private:
             const uint k_;
-            const std::vector< std::vector<double> > data_;
+            const std::vector<std::vector<double>> data_;
             const uint n_data_;
             const uint dim_;
 
             std::uniform_int_distribution<int> random_data_point_generator_;
-            std::vector < std::vector<double> > centers_;
+            std::vector<std::vector<double>> centers_;
             std::vector<uint> assignments_;
 
-            static std::vector<double> compute_euclidean_distances(const std::vector<double> &dat, const std::vector< std::vector<double> > &centers);
+            static std::vector<double> compute_euclidean_distances(const std::vector<double> &dat, const std::vector<std::vector<double>> &centers);
 
             static double compute_euclidean_distance(const std::vector<double> &dat1, const std::vector<double> &dat2);
         };

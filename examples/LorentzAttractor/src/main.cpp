@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     // fixed_point_search();
     // fixed_points_search();
     // find_fixed_points();
-    // compute_vertex_velocities_t();
+    // compute_flow_t();
     
     /* auto jacobian_elements = compute_jacobian_elements_t();
     auto jac = Jacobians(jacobian_elements);

@@ -1,7 +1,7 @@
 pybind11_add_module(odevisualization_python odevisualization_python.cu)
 
 target_link_libraries(odevisualization_python PUBLIC odevisualization paramhelper::paramhelper Eigen3::Eigen)
-set_target_properties(odevisualization_python PROPERTIES OUTPUT_NAME odevisualization)
+set_target_properties(odevisualization_python PROPERTIES OUTPUT_NAME odevisualizationlib)
 
 if(RUN_WITH_PYTHON_BACKEND)
     target_compile_definitions(odevisualization_python PUBLIC PYTHON_BACKEND)

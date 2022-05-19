@@ -45,7 +45,7 @@ class CMakeBuild(build_ext):
             build_args += ['--', '/m']
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-            build_args += ['--', '-j2']
+            build_args += ['--', '-j12']
 
         cmake_args += ['-DGPU=ON']
 
@@ -58,13 +58,13 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.', '--target', 'odevisualization_python'] + build_args, cwd=self.build_temp)
 
 setup(
-    name='odevisualization',
+    name='ODEVisualizationLib',
     version='0.0.1',
     author='Lukas Kades',
     author_email='statphysandml@thphys.uni-heidelberg.de',
     description='Add description here',
     long_description='',
-    ext_modules=[CMakeExtension('odevisualization')],
+    ext_modules=[CMakeExtension('odevisualizationlib')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
     classifiers=[

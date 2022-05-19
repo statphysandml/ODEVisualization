@@ -22,7 +22,7 @@ namespace odesolver {
             explicit ODEVisualization(
                 const json params,
                 std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr=nullptr,
+                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
                 const std::string computation_parameters_path=param_helper::proj::project_root()
             ) : Parameters(params),
                 flow_equations_ptr_(flow_equations_ptr),
@@ -61,12 +61,12 @@ namespace odesolver {
                 return flow_equations_ptr_.get();
             }
 
-            void set_jacobians(std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr)
+            void set_jacobians(std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr)
             {
                 jacobians_ptr_ = jacobians_ptr;
             }
 
-            odesolver::flowequations::JacobianEquationWrapper* get_jacobians()
+            odesolver::flowequations::JacobianEquationsWrapper* get_jacobians()
             {
                 return jacobians_ptr_.get();
             }
@@ -82,7 +82,7 @@ namespace odesolver {
 
         protected:
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr_;
-            std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr_;
+            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr_;
             const std::string computation_parameters_path_;
 
             odesolver::util::ComputationParameters computation_parameters_;

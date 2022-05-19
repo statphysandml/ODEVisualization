@@ -6,7 +6,7 @@
 
 
 namespace odesolver {
-    namespace grid_computation {
+    namespace gridcomputation {
         struct GridComputationWrapper
         {
             /** @brief Class for managing expanded cubes and a respective computation of cube vertices in different recursive depths of the rescursive search tree

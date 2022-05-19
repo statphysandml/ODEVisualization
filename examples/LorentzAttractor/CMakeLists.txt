@@ -65,6 +65,32 @@ endif()
 if(BUILD_PYTHON_BINDINGS)
     message("Integrate python for python_bindings")
     add_subdirectory(ext/pybind11)
+
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11_json")
+        find_package(Git QUIET)
+        if(GIT_FOUND)
+            message("Downloading pybind11_json into ${CMAKE_CURRENT_SOURCE_DIR}/ext")
+            file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext")
+            execute_process(COMMAND ${GIT_EXECUTABLE} clone https://github.com/pybind/pybind11_json.git
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext"
+                    RESULT_VARIABLE GIT_SUBMOD_RESULT)
+            if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+                message(FATAL_ERROR "https://github.com/pybind/pybind11_json.git failed with ${GIT_SUBMOD_RESULT}.")
+            endif()
+            execute_process(COMMAND ${GIT_EXECUTABLE} checkout "0.2.12"
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11_json"
+                    RESULT_VARIABLE GIT_SUBMOD_RESULT OUTPUT_QUIET ERROR_QUIET)
+            if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+                message(FATAL_ERROR "git checkout \"0.2.12\" failed with ${GIT_SUBMOD_RESULT}.")
+            endif()
+        endif()
+
+        if(NOT EXISTS "${PROJECT_SOURCE_DIR}/ext/pybind11_json")
+            message(FATAL_ERROR "pybind11_json was not added to ${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11_json. Please install git or add pybind11_json manually.")
+        endif()
+    endif()
+    # add_subdirectory(ext/pybind11_json)
+
     # Python wrapper
     add_subdirectory(python_pybind)
 elseif(RUN_WITH_PYTHON_BACKEND)
@@ -99,3 +125,9 @@ target_compile_options(LorentzAttractor PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--exp
 
 set_target_properties(LorentzAttractor PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_STANDARD 14)
 target_link_libraries(LorentzAttractor PUBLIC odevisualization::odevisualization ${target_link_libraries_python_appendix})
+
+message("Source dir ${CMAKE_SOURCE_DIR}")
+
+target_include_directories(LorentzAttractor PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include/>
+)

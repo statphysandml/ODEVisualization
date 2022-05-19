@@ -13,13 +13,13 @@ odesolver::DevDatC get_fixed_points()
     return fixed_points;
 }
 
-void compute_vertex_velocities_t()
+void compute_flow_t()
 {
     auto flow_equations_ptr = odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
     auto fixed_points = get_fixed_points();
     fixed_points.print_dim_by_dim();
 
-    auto vertex_velocities = odesolver::flowequations::compute_vertex_velocities(fixed_points, flow_equations_ptr.get());
+    auto vertex_velocities = odesolver::flowequations::compute_flow(fixed_points, flow_equations_ptr.get());
 
     vertex_velocities.print_dim_by_dim();
 }

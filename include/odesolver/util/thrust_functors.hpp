@@ -14,6 +14,8 @@
 
 #include <iterator>
 #include <iostream>
+#include <sstream>
+
 // from https://github.com/thrust/thrust/blob/master/examples/repeated_range.cu
 
 template <typename Iterator>
@@ -198,6 +200,15 @@ void print_range_in_os(Iterator first, Iterator last, std::ofstream &os)
     thrust::copy(first, last, std::ostream_iterator<T>(os, " "));
 }
 
+template <typename Iterator>
+void print_range_in_string(Iterator first, Iterator last, std::string &s)
+{
+    typedef typename std::iterator_traits<Iterator>::value_type T;
+    std::stringstream oss;
+    thrust::copy(first, last, std::ostream_iterator<T>(oss, " "));
+    s += oss.str();
+    s.pop_back();
+}
 
 // from https://github.com/thrust/thrust/blob/master/examples/sum_rows.cu
 

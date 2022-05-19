@@ -7,22 +7,22 @@
 void partial_ranges_t()
 {
     const std::vector<int> n_branches {20, 20, 1, 10, 1};
-    const std::vector<std::pair<cudaT, cudaT>> partial_lambda_ranges = std::vector<std::pair<cudaT, cudaT>> {std::pair<cudaT, cudaT> (-1.0, 1.0), std::pair<cudaT, cudaT> (0.0, 4.0), std::pair<cudaT, cudaT> (-3.0, 3.0)};
-    const std::vector<std::vector<cudaT>> fix_lambdas = std::vector<std::vector<cudaT>> {std::vector<cudaT> {0.5, 0.0}, std::vector<cudaT> {0.2, 0.2}, std::vector<cudaT> {0.5, 3.0}};
+    const std::vector<std::pair<cudaT, cudaT>> partial_variable_ranges = std::vector<std::pair<cudaT, cudaT>> {std::pair<cudaT, cudaT> (-1.0, 1.0), std::pair<cudaT, cudaT> (0.0, 4.0), std::pair<cudaT, cudaT> (-3.0, 3.0)};
+    const std::vector<std::vector<cudaT>> fixed_variables = std::vector<std::vector<cudaT>> {std::vector<cudaT> {0.5, 0.0}, std::vector<cudaT> {0.2, 0.2}, std::vector<cudaT> {0.5, 3.0}};
     odesolver::util::PartialRanges partial_ranges(
         n_branches,
-        partial_lambda_ranges,
-        fix_lambdas
+        partial_variable_ranges,
+        fixed_variables
     );
 
-    std::vector<std::pair<cudaT, cudaT>> lambda_ranges;
+    std::vector<std::pair<cudaT, cudaT>> variable_ranges;
     for(auto i = 0; i < partial_ranges.size(); i++)
     {
-        auto lambda_ranges = partial_ranges[i];
-        std::cout << "Lambda range" << std::endl;
-        for(const auto &lambda_range: lambda_ranges)
+        auto variable_ranges = partial_ranges[i];
+        std::cout << "Variable range" << std::endl;
+        for(const auto &variable_range: variable_ranges)
         {
-            std::cout << lambda_range.first << ", " << lambda_range.second << std::endl;
+            std::cout << variable_range.first << ", " << variable_range.second << std::endl;
         }
     }
 }

@@ -2,7 +2,7 @@
 
 
 namespace odesolver {
-    namespace grid_computation {
+    namespace gridcomputation {
         GridComputationWrapper::GridComputationWrapper(
             const int maximum_number_of_cubes,
             const int maximum_depth,

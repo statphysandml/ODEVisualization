@@ -5,7 +5,7 @@
 
 
 namespace odesolver {
-    namespace grid_computation {
+    namespace gridcomputation {
         class StaticRecursiveGridComputation : public DynamicRecursiveGridComputation
         {
         public:

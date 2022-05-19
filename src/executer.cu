@@ -16,7 +16,7 @@ const std::map<std::string, Executer::ExecutionMode> Executer::mode_resolver = {
 void Executer::exec_visualization(const VisualizationParameters& visualization_parameters, std::string dir)
 {
     Visualization visualization(visualization_parameters);
-    visualization.compute_vertex_velocities_from_parameters(dir);
+    visualization.compute_flow_from_parameters(dir);
 
     auto path_parameters_ = visualization_parameters.get_path_parameters();
 
@@ -59,24 +59,24 @@ void Executer::prep_exec_visualization(std::string dir, const PathParameters pat
     n_branches[0] = initial_n_branches;
     n_branches[1] = initial_n_branches;
 
-    const std::vector <std::pair<cudaT, cudaT> > partial_lambda_ranges = std::vector <std::pair<cudaT, cudaT> > {std::pair<cudaT, cudaT> (-1.0, 1.0), std::pair<cudaT, cudaT> (-1.0, 1.0)};
+    const std::vector <std::pair<cudaT, cudaT> > partial_variable_ranges = std::vector <std::pair<cudaT, cudaT> > {std::pair<cudaT, cudaT> (-1.0, 1.0), std::pair<cudaT, cudaT> (-1.0, 1.0)};
 
-    std::vector <std::vector <cudaT> > fix_lambdas = {};
+    std::vector <std::vector <cudaT> > fixed_variables = {};
     if(dim > 2)
-        fix_lambdas = std::vector< std::vector<cudaT> >(
+        fixed_variables = std::vector< std::vector<cudaT> >(
                 dim - 2, std::vector<cudaT>{-0.5, 0.0, 0.5});
 
-    VisualizationParameters visualization_parameters(theory, n_branches, partial_lambda_ranges, fix_lambdas);
+    VisualizationParameters visualization_parameters(theory, n_branches, partial_variable_ranges, fixed_variables);
 
     std::vector <std::vector <cudaT> > explicit_points = {std::vector<cudaT> (dim, 0.5), std::vector<cudaT> (dim, -0.5)};
 
     visualization_parameters.append_explicit_points_parameters(explicit_points);
     // visualization_parameters.append_fixed_point_parameters(std::vector < std::vector<cudaT> > {}, "/data/", true, "fixed_point_search");
 
-    const bool skip_fix_lambdas = false;
+    const bool skip_fixed_variables = false;
     const bool with_vertices = true;
-    VisualizationParameters::ComputeVertexVelocitiesParameters compute_vertex_velocities_parameters(skip_fix_lambdas, with_vertices);
-    visualization_parameters.append_parameters(compute_vertex_velocities_parameters);
+    VisualizationParameters::ComputeVertexVelocitiesParameters compute_flow_parameters(skip_fixed_variables, with_vertices);
+    visualization_parameters.append_parameters(compute_flow_parameters);
 
     visualization_parameters.write_to_file(dir);
 }
@@ -110,14 +110,14 @@ void Executer::prep_exec_fixed_point_search(std::string dir, const PathParameter
     std::transform(n_branches_per_depth[0].begin(), n_branches_per_depth[0].end(), n_branches_per_depth[0].begin(),
             [n_branches_in_most_upper_depth] (const int& val) { return n_branches_in_most_upper_depth; });
 
-    std::vector <std::pair<cudaT, cudaT> > lambda_ranges = std::vector <std::pair<cudaT, cudaT> > (
+    std::vector <std::pair<cudaT, cudaT> > variable_ranges = std::vector <std::pair<cudaT, cudaT> > (
             dim, std::pair<cudaT, cudaT> (-1.0, 1.0));
 
     FixedPointSearchParameters fixed_point_search_parameters(
             theory,
             maximum_recursion_depth,
             n_branches_per_depth,
-            lambda_ranges);
+            variable_ranges);
 
     // Setting gpu specific computation parameters (optional) - parameters are already set default
     const int number_of_cubes_per_gpu_call = 20000;
@@ -154,7 +154,7 @@ void Executer::prep_exec_evaluate(std::string dir, const PathParameters path_par
 
     std::vector< std::vector<cudaT> > coordinates = std::vector< std::vector<cudaT> >(2, std::vector<cudaT> (dim, 0.0));
 
-    CoordinateOperatorParameters evaluator_parameters = CoordinateOperatorParameters::from_parameters(
+    CoordinateOperatorParameters evaluator_parameters = CoordinateOperatorParameters::generate(
             theory, coordinates, "evaluate");
     evaluator_parameters.write_to_file(dir);
 }
@@ -179,7 +179,7 @@ void Executer::prep_exec_jacobian(std::string dir, const PathParameters path_par
 
     std::vector< std::vector<cudaT> > coordinates = std::vector< std::vector<cudaT> >(2, std::vector<cudaT> (dim, 0.0));
 
-    CoordinateOperatorParameters evaluator_parameters = CoordinateOperatorParameters::from_parameters(
+    CoordinateOperatorParameters evaluator_parameters = CoordinateOperatorParameters::generate(
             theory, coordinates, "jacobian");
     evaluator_parameters.write_to_file(dir);
 }

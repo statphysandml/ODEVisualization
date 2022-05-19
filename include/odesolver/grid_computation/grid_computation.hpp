@@ -21,13 +21,13 @@
 
 
 namespace odesolver {
-    namespace grid_computation {
+    namespace gridcomputation {
         class GridComputation
         {
         public:
             // Base constructor
             GridComputation(const std::vector<std::vector<int>> n_branches_per_depth={},
-                    const std::vector<std::pair<cudaT, cudaT>> lambda_ranges={});
+                    const std::vector<std::pair<cudaT, cudaT>> variable_ranges={});
 
             static thrust::host_vector<thrust::host_vector<int>> compute_accum_n_branches_per_dim(const std::vector<std::vector<int>> &n_branches_per_depth, const uint dim);
 
@@ -44,15 +44,15 @@ namespace odesolver {
             void compute_reference_vertices(odesolver::DevDatC &reference_vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
             odesolver::DevDatC compute_reference_vertices(GridComputationWrapper &grcompwrap);
 
-            void compute_vertices(odesolver::DevDatC &vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
-            odesolver::DevDatC compute_vertices(GridComputationWrapper &grcompwrap);
+            void compute_cube_vertices(odesolver::DevDatC &cube_vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
+            odesolver::DevDatC compute_cube_vertices(GridComputationWrapper &grcompwrap);
 
             void compute_cube_center_vertices(odesolver::DevDatC &center_vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
             odesolver::DevDatC compute_cube_center_vertices(GridComputationWrapper &grcompwrap);
 
-            const std::vector<std::vector<int>>& get_n_branches_per_depth() const;
+            const std::vector<std::vector<int>> n_branches_per_depth() const;
 
-            const std::vector<std::pair<cudaT, cudaT>>& get_lambda_ranges() const;
+            const std::vector<std::pair<cudaT, cudaT>> variable_ranges() const;
 
             size_t dim() const;
 
@@ -63,7 +63,7 @@ namespace odesolver {
             std::vector<std::vector<int>> n_branches_per_depth_;
             thrust::host_vector<thrust::host_vector<int>> accum_n_branches_per_dim_;
             thrust::host_vector<thrust::host_vector<int>> accum_n_branches_per_depth_;
-            std::vector<std::pair<cudaT, cudaT>> lambda_ranges_;
+            std::vector<std::pair<cudaT, cudaT>> variable_ranges_;
 
             // Helper functions
             void compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices, GridComputationWrapper &grcompwrap, int dim_index, int maximum_depth=0) const;

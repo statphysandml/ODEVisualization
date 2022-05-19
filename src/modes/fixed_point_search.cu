@@ -37,14 +37,14 @@ namespace odesolver {
         FixedPointSearch::FixedPointSearch(
             const json params,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr,
+            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
             const std::string computation_parameters_path
         ) : ODEVisualization(params, flow_equations_ptr, jacobians_ptr, computation_parameters_path),
             dim_(get_entry<json>("flow_equation")["dim"].get<cudaT>()),
             maximum_recursion_depth_(get_entry<int>("maximum_recursion_depth"))
         {
             n_branches_per_depth_ = odesolver::util::json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth"));
-            lambda_ranges_ = odesolver::util::json_to_vec_pair<double>(get_entry<json>("lambda_ranges"));
+            variable_ranges_ = odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges"));
 
             // Tests
             if (n_branches_per_depth_.size() < maximum_recursion_depth_)
@@ -63,9 +63,9 @@ namespace odesolver {
                 }
             }
 
-            if(lambda_ranges_.size() != dim_)
+            if(variable_ranges_.size() != dim_)
             {
-                std::cout << "\nERROR: Number of lambda ranges " << lambda_ranges_.size() << " do not coincide with dimension" << dim_ << std::endl;
+                std::cout << "\nERROR: Number of variable ranges " << variable_ranges_.size() << " do not coincide with dimension" << dim_ << std::endl;
                 std::exit(EXIT_FAILURE);
             }
 
@@ -76,10 +76,29 @@ namespace odesolver {
             }
         }
 
+        FixedPointSearch FixedPointSearch::generate(
+            const int maximum_recursion_depth,
+            const std::vector< std::vector<int> > n_branches_per_depth,
+            const std::vector<std::pair<cudaT, cudaT>> variable_ranges,
+            std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
+            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
+            const std::string computation_parameters_path
+        )
+        {
+            return FixedPointSearch(
+                json {{"maximum_recursion_depth", maximum_recursion_depth},
+                    {"n_branches_per_depth", n_branches_per_depth},
+                    {"variable_ranges", variable_ranges}},
+                flow_equations_ptr,
+                jacobians_ptr,
+                computation_parameters_path
+            );
+        }
+
         FixedPointSearch FixedPointSearch::from_file(
             const std::string rel_config_dir,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr,
+            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
             const std::string computation_parameters_path
         )
         {
@@ -91,133 +110,171 @@ namespace odesolver {
                 computation_parameters_path
             );
         }
+        
 
-        FixedPointSearch FixedPointSearch::from_parameters(
-                const int maximum_recursion_depth,
-                const std::vector< std::vector<int> > n_branches_per_depth,
-                const std::vector <std::pair<cudaT, cudaT> > lambda_ranges,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationWrapper> jacobians_ptr,
-                const std::string computation_parameters_path
-        )
+        void FixedPointSearch::compute_summed_positive_signs_per_cube(dev_vec_bool &velocity_sign_properties_in_dim, dev_vec_int &summed_positive_signs)
         {
-            return FixedPointSearch(
-                json {{"maximum_recursion_depth", maximum_recursion_depth},
-                    {"n_branches_per_depth", n_branches_per_depth},
-                    {"lambda_ranges", lambda_ranges}},
-                flow_equations_ptr,
-                jacobians_ptr,
-                computation_parameters_path
-            );
+            // Initialize a vectors for sign checks
+            auto total_number_of_cubes = summed_positive_signs.size();
+            auto total_number_of_vertices = velocity_sign_properties_in_dim.size();
+            if(total_number_of_cubes != 0)
+            {
+                auto number_of_vertices_per_cube = int(total_number_of_vertices / total_number_of_cubes); // = pow(2, dim)
+
+                dev_vec_int indices_of_summed_positive_signs(total_number_of_vertices);
+
+                // Necessary that reduce by key works (cannot handle mixture of bool and integer), ToDo: Alternative solution??
+                dev_vec_int int_velocity_sign_properties_in_dim(velocity_sign_properties_in_dim.begin(), velocity_sign_properties_in_dim.end());
+
+                /*Use iterators to transform the linear index into a row index -> the final iterator repeats the
+                * row indices (0 to pow(2, dim)-1) total_number_of_cubes times, i.e.: 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1
+                * These are then used as a mask to define which signs in vertex_velocity should be summed up.
+                * indices_of_summed_positive_signs contains the keys for the mask, i.e. (0, 1, 2, etc.) and
+                * summed_positive_signs the corresponding sum per key. */
+                // Sum positive signs
+                thrust::reduce_by_key
+                        (thrust::make_transform_iterator(thrust::counting_iterator<int>(0),
+                                                        linear_index_to_row_index<int>(number_of_vertices_per_cube)),
+                        thrust::make_transform_iterator(thrust::counting_iterator<int>(0),
+                                                        linear_index_to_row_index<int>(number_of_vertices_per_cube)) +
+                        (number_of_vertices_per_cube * total_number_of_cubes),
+                        int_velocity_sign_properties_in_dim.begin(),
+                        indices_of_summed_positive_signs.begin(),
+                        summed_positive_signs.begin(),
+                        thrust::equal_to<int>(),
+                        thrust::plus<int>());
+            }
         }
-
-
-        FixedPointSearch::ClusterParameters::ClusterParameters(const json params) : Parameters(params),
-                                                maximum_expected_number_of_clusters_(get_entry<uint>("maximum_expected_number_of_clusters")),
-                                                upper_bound_for_min_distance_(get_entry<double>("upper_bound_for_min_distance")),
-                                                maximum_number_of_iterations_(get_entry<uint>("maximum_number_of_iterations"))
-        {}
-
-        FixedPointSearch::ClusterParameters::ClusterParameters(
-                const uint maximum_expected_number_of_clusters,
-                const double upper_bound_for_min_distance,
-                const uint maximum_number_of_iterations
-        ) : ClusterParameters(
-                json {{"maximum_expected_number_of_clusters", maximum_expected_number_of_clusters},
-                    {"upper_bound_for_min_distance", upper_bound_for_min_distance},
-                    {"maximum_number_of_iterations", maximum_number_of_iterations}}
-        )
-        {}
 
         // Main functions
-
-        void FixedPointSearch::cluster_solutions_to_fixed_points(const uint maximum_expected_number_of_clusters,
-                const double upper_bound_for_min_distance,
-                const uint maximum_number_of_iterations)
+        
+        void FixedPointSearch::eval(std::string memory_usage)
         {
-            // Compute vertices of solutions
-            std::vector<odesolver::collections::Leaf*> solutions;
-            std::transform(solutions_.begin(), solutions_.end(), std::back_inserter(solutions), [](const std::shared_ptr<odesolver::collections::Leaf>& leaf_ptr) {
+            if(memory_usage == "dynamic")
+                evaluate_with_dynamic_memory();
+            else
+                evaluate_with_preallocated_memory();
+            if(leaves_.size() == 0)
+            {
+                std::cout << "No fixed points have been found within in the given range and based on the provided variable ranges" << std::endl;
+            }
+            else
+            {
+                project_leaves_on_cube_centers();
+            }
+        }
+
+        void FixedPointSearch::evaluate_with_dynamic_memory()
+        {
+            odesolver::gridcomputation::DynamicRecursiveGridComputation dynamic_recursive_grid_computation(
+                computation_parameters_.number_of_cubes_per_gpu_call_,
+                computation_parameters_.maximum_number_of_gpu_calls_
+            );
+
+            odesolver::DevDatC vertices;
+            odesolver::DevDatC vertex_velocities;
+
+            thrust::host_vector<int> host_indices_of_pot_fixed_points;
+            
+            dynamic_recursive_grid_computation.initialize(
+                odesolver::util::json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth")),
+                odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges")), odesolver::gridcomputation::DynamicRecursiveGridComputation::CubeVertices
+            );
+
+            while(!dynamic_recursive_grid_computation.finished())
+            {
+                // Compute vertices
+                dynamic_recursive_grid_computation.next(vertices);
+                
+                // Compute vertex velocities
+                vertex_velocities = odesolver::DevDatC(vertices.dim_size(), vertices.n_elems());
+                compute_flow(vertices, vertex_velocities, flow_equations_ptr_.get());
+                // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
+            
+                // Determine potential fixed points
+                host_indices_of_pot_fixed_points = determine_potential_fixed_points(vertex_velocities);
+            
+                // Generate new collections and derive leaves based on collections and indices of potential fixed points
+                generate_new_collections_and_leaves(
+                    host_indices_of_pot_fixed_points,
+                    dynamic_recursive_grid_computation.get_collection_package(),
+                    dynamic_recursive_grid_computation.get_buffer()
+                );
+            }
+        }
+
+        void FixedPointSearch::evaluate_with_preallocated_memory()
+        {
+            // Initialize grid computation wrapper
+            odesolver::gridcomputation::GridComputationWrapper grid_computation_wrapper(computation_parameters_.number_of_cubes_per_gpu_call_, maximum_recursion_depth_);
+
+            // Initialize vertices
+            odesolver::DevDatC vertices(dim_, computation_parameters_.number_of_cubes_per_gpu_call_ * pow(2, dim_));
+
+            // Initialize vertex velocities
+            odesolver::DevDatC vertex_velocities(dim_, computation_parameters_.number_of_cubes_per_gpu_call_ * pow(2, dim_));
+
+            // Initialize vector for storing indices of potential fixed points
+            thrust::host_vector<int> host_indices_of_pot_fixed_points;
+
+            // Initialize recursive grid computation
+            odesolver::gridcomputation::StaticRecursiveGridComputation static_recursive_grid_computation(
+                maximum_recursion_depth_,
+                computation_parameters_.number_of_cubes_per_gpu_call_,
+                computation_parameters_.maximum_number_of_gpu_calls_
+            );
+            
+            static_recursive_grid_computation.initialize(
+                odesolver::util::json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth")),
+                odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges")), odesolver::gridcomputation::DynamicRecursiveGridComputation::CubeVertices
+            );
+
+            while(!static_recursive_grid_computation.finished())
+            {
+                // Compute vertices
+                static_recursive_grid_computation.next(vertices);
+
+                // Compute vertex velocities
+                vertex_velocities.set_N(vertices.n_elems());
+                compute_flow(vertices, vertex_velocities, flow_equations_ptr_.get());
+                // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
+            
+                // Determine potential fixed points
+                host_indices_of_pot_fixed_points = determine_potential_fixed_points(vertex_velocities);
+            
+                // Generate new collections and derive leaves based on collections and indices of potential fixed points
+                generate_new_collections_and_leaves(
+                    host_indices_of_pot_fixed_points,
+                    static_recursive_grid_computation.get_collection_package(),
+                    static_recursive_grid_computation.get_buffer()
+                );
+            }
+        }
+        
+        void FixedPointSearch::project_leaves_on_cube_centers()
+        {
+            // Compute vertices of leaves
+            std::vector<odesolver::collections::Leaf*> leaves;
+            std::transform(leaves_.begin(), leaves_.end(), std::back_inserter(leaves), [](const std::shared_ptr<odesolver::collections::Leaf>& leaf_ptr) {
                 return leaf_ptr.get();
             });
-
-            odesolver::grid_computation::GridComputation hypercubes(n_branches_per_depth_, lambda_ranges_);
-
-            odesolver::grid_computation::GridComputationWrapper grcompwrap = hypercubes.project_leaves_on_expanded_cube_and_depth_per_cube_indices(solutions);
             
+            odesolver::gridcomputation::GridComputation hypercubes(n_branches_per_depth_, variable_ranges_);
+            
+            odesolver::gridcomputation::GridComputationWrapper grcompwrap = hypercubes.project_leaves_on_expanded_cube_and_depth_per_cube_indices(leaves);
+                        
             // Get center vertices
-            const odesolver::DevDatC potential_fixed_points = hypercubes.compute_cube_center_vertices(grcompwrap);
-
-            // Cluster center vertices
-            fixed_points_ = odesolver::util::cluster_device_data(
-                    maximum_expected_number_of_clusters,
-                    upper_bound_for_min_distance,
-                    potential_fixed_points,
-                    maximum_number_of_iterations
-                    );
+            fixed_points_ = hypercubes.compute_cube_center_vertices(grcompwrap);
         }
 
-        void FixedPointSearch::cluster_solutions_to_fixed_points_from_parameters(const FixedPointSearch::ClusterParameters cluster_parameters)
+        const std::vector<std::shared_ptr<odesolver::collections::Leaf>> FixedPointSearch::leaves() const
         {
-            cluster_solutions_to_fixed_points(
-                    cluster_parameters.maximum_expected_number_of_clusters_,
-                    cluster_parameters.upper_bound_for_min_distance_,
-                    cluster_parameters.maximum_number_of_iterations_);
+            return leaves_;
         }
 
-        void FixedPointSearch::cluster_solutions_to_fixed_points_from_file()
-        {
-            auto cluster_parameters = FixedPointSearch::ClusterParameters(get_entry<json>("cluster"));
-            cluster_solutions_to_fixed_points_from_parameters(cluster_parameters);
-        }
-
-        std::vector<std::shared_ptr<odesolver::collections::Leaf>> FixedPointSearch::get_solutions()
-        {
-            return solutions_;
-        }
-
-        odesolver::DevDatC FixedPointSearch::get_fixed_points() const
+        const odesolver::DevDatC FixedPointSearch::fixed_points() const
         {
             return fixed_points_;
-        }
-
-        void FixedPointSearch::write_solutions_to_file(std::string rel_dir) const
-        {
-            json j;
-            for(auto &sol: solutions_)
-                j.push_back(sol->to_json());
-            param_helper::fs::write_parameter_file(json {{"number_of_solutions", solutions_.size()}, {"solutions", j}}, param_helper::proj::project_root() + rel_dir + "/", "solutions", false);
-        }
-
-        void FixedPointSearch::load_solutions_from_file(std::string rel_dir)
-        {
-            solutions_.clear();
-
-            json j = param_helper::fs::read_parameter_file(param_helper::proj::project_root() + rel_dir + "/", "solutions", false);
-            solutions_.reserve(j["number_of_solutions"].get<int>());
-            for(auto &sol: j["solutions"])
-                solutions_.push_back(std::make_shared<odesolver::collections::Leaf>(sol["cube_indices"].get<std::vector<int>>()));
-            std::cout << "solutions loaded" << std::endl;
-        }
-
-        void FixedPointSearch::write_fixed_points_to_file(std::string rel_dir) const
-        {
-            auto transposed_fixed_points = fixed_points_.transpose_device_data();
-            param_helper::fs::write_parameter_file(
-                json {
-                    {"number_of_fixed_points", transposed_fixed_points.size()},
-                    {"fixed_points", odesolver::util::vec_vec_to_json(transposed_fixed_points)}
-                },
-                param_helper::proj::project_root() + "/" + rel_dir + "/", "fixed_points",
-                false
-            );
-        }
-
-        void FixedPointSearch::load_fixed_points_from_file(std::string rel_dir)
-        {
-            auto fixed_points = load_fixed_points(rel_dir);
-            fixed_points_ = odesolver::DevDatC(fixed_points);
-            std::cout << "fixed points loaded" << std::endl;
         }
 
         // Iterate over collections and generate new collections based on the indices of pot fixed points
@@ -256,7 +313,7 @@ namespace odesolver {
                             }
                             else // Found solution -> Generate new leaf
                             {
-                                solutions_.push_back(std::make_shared<odesolver::collections::Leaf>(parent_cube_indices));
+                                leaves_.push_back(std::make_shared<odesolver::collections::Leaf>(parent_cube_indices));
                                 n_new_leaves++;
                             }
                             // Update
@@ -273,133 +330,12 @@ namespace odesolver {
             }
 
             // buffer_.add_collections(new_collections);
-            // solutions_.insert(solutions_.end(), new_leaves.begin(), new_leaves.end());
+            // leaves_.insert(leaves_.end(), new_leaves.begin(), new_leaves.end());
 
             /* if(monitor) {
                 std::cout << "\n### New collections" << std::endl;
                 buffer_.get_collections_info(new_collections);
             } */
-        }
-
-        void FixedPointSearch::compute_summed_positive_signs_per_cube(dev_vec_bool &velocity_sign_properties_in_dim, dev_vec_int &summed_positive_signs)
-        {
-            // Initialize a vectors for sign checks
-            auto total_number_of_cubes = summed_positive_signs.size();
-            auto total_number_of_vertices = velocity_sign_properties_in_dim.size();
-            if(total_number_of_cubes != 0)
-            {
-                auto number_of_vertices_per_cube = int(total_number_of_vertices / total_number_of_cubes); // = pow(2, dim)
-
-                dev_vec_int indices_of_summed_positive_signs(total_number_of_vertices);
-
-                // Necessary that reduce by key works (cannot handle mixture of bool and integer), ToDo: Alternative solution??
-                dev_vec_int int_velocity_sign_properties_in_dim(velocity_sign_properties_in_dim.begin(), velocity_sign_properties_in_dim.end());
-
-                /*Use iterators to transform the linear index into a row index -> the final iterator repeats the
-                * row indices (0 to pow(2, dim)-1) total_number_of_cubes times, i.e.: 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1
-                * These are then used as a mask to define which signs in vertex_velocity should be summed up.
-                * indices_of_summed_positive_signs contains the keys for the mask, i.e. (0, 1, 2, etc.) and
-                * summed_positive_signs the corresponding sum per key. */
-                // Sum positive signs
-                thrust::reduce_by_key
-                        (thrust::make_transform_iterator(thrust::counting_iterator<int>(0),
-                                                        linear_index_to_row_index<int>(number_of_vertices_per_cube)),
-                        thrust::make_transform_iterator(thrust::counting_iterator<int>(0),
-                                                        linear_index_to_row_index<int>(number_of_vertices_per_cube)) +
-                        (number_of_vertices_per_cube * total_number_of_cubes),
-                        int_velocity_sign_properties_in_dim.begin(),
-                        indices_of_summed_positive_signs.begin(),
-                        summed_positive_signs.begin(),
-                        thrust::equal_to<int>(),
-                        thrust::plus<int>());
-            }
-        }
-
-        void FixedPointSearch::find_fixed_points_dynamic_memory()
-        {
-            odesolver::grid_computation::DynamicRecursiveGridComputation dynamic_recursive_grid_computation(
-                computation_parameters_.number_of_cubes_per_gpu_call_,
-                computation_parameters_.maximum_number_of_gpu_calls_
-            );
-
-            odesolver::DevDatC vertices;
-            odesolver::DevDatC vertex_velocities;
-
-            thrust::host_vector<int> host_indices_of_pot_fixed_points;
-            
-            dynamic_recursive_grid_computation.initialize(
-                odesolver::util::json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth")),
-                odesolver::util::json_to_vec_pair<double>(get_entry<json>("lambda_ranges")), odesolver::grid_computation::DynamicRecursiveGridComputation::CubeVertices
-            );
-
-            while(!dynamic_recursive_grid_computation.finished())
-            {
-                // Compute vertices
-                dynamic_recursive_grid_computation.next(vertices);
-                
-                // Compute vertex velocities
-                vertex_velocities = odesolver::DevDatC(vertices.dim_size(), vertices.n_elems());
-                compute_vertex_velocities(vertices, vertex_velocities, flow_equations_ptr_.get());
-                // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
-            
-                // Determine potential fixed points
-                host_indices_of_pot_fixed_points = determine_potential_fixed_points(vertex_velocities);
-            
-                // Generate new collections and derive solutions based on collections and indices of potential fixed points
-                generate_new_collections_and_leaves(
-                    host_indices_of_pot_fixed_points,
-                    dynamic_recursive_grid_computation.get_collection_package(),
-                    dynamic_recursive_grid_computation.get_buffer()
-                );
-            }
-        }
-
-        void FixedPointSearch::find_fixed_points_preallocated_memory()
-        {
-            // Initialize grid computation wrapper
-            odesolver::grid_computation::GridComputationWrapper grid_computation_wrapper(computation_parameters_.number_of_cubes_per_gpu_call_, maximum_recursion_depth_);
-
-            // Initialize vertices
-            odesolver::DevDatC vertices(dim_, computation_parameters_.number_of_cubes_per_gpu_call_ * pow(2, dim_));
-
-            // Initialize vertex velocities
-            odesolver::DevDatC vertex_velocities(dim_, computation_parameters_.number_of_cubes_per_gpu_call_ * pow(2, dim_));
-
-            // Initialize vector for storing indices of potential fixed points
-            thrust::host_vector<int> host_indices_of_pot_fixed_points;
-
-            // Initialize recursive grid computation
-            odesolver::grid_computation::StaticRecursiveGridComputation static_recursive_grid_computation(
-                maximum_recursion_depth_,
-                computation_parameters_.number_of_cubes_per_gpu_call_,
-                computation_parameters_.maximum_number_of_gpu_calls_
-            );
-            
-            static_recursive_grid_computation.initialize(
-                odesolver::util::json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth")),
-                odesolver::util::json_to_vec_pair<double>(get_entry<json>("lambda_ranges")), odesolver::grid_computation::DynamicRecursiveGridComputation::CubeVertices
-            );
-
-            while(!static_recursive_grid_computation.finished())
-            {
-                // Compute vertices
-                static_recursive_grid_computation.next(vertices);
-
-                // Compute vertex velocities
-                vertex_velocities.set_N(vertices.n_elems());
-                compute_vertex_velocities(vertices, vertex_velocities, flow_equations_ptr_.get());
-                // hypercubes.determine_vertex_velocities(flow_equations_ptr_));
-            
-                // Determine potential fixed points
-                host_indices_of_pot_fixed_points = determine_potential_fixed_points(vertex_velocities);
-            
-                // Generate new collections and derive solutions based on collections and indices of potential fixed points
-                generate_new_collections_and_leaves(
-                    host_indices_of_pot_fixed_points,
-                    static_recursive_grid_computation.get_collection_package(),
-                    static_recursive_grid_computation.get_buffer()
-                );
-            }
         }
 
         thrust::host_vector<int> FixedPointSearch::determine_potential_fixed_points(odesolver::DevDatC& vertex_velocities)
@@ -465,10 +401,24 @@ namespace odesolver {
             return host_indices_of_pot_fixed_points;
         }
 
-        std::vector<std::vector<double>> load_fixed_points(std::string rel_dir)
+        void write_leaves_to_file(std::string rel_dir, std::vector<odesolver::collections::Leaf*> leaves)
         {
-            json j = param_helper::fs::read_parameter_file(param_helper::proj::project_root() + rel_dir + "/", "fixed_points", false);
-            return odesolver::util::json_to_vec_vec(j["fixed_points"]);
+            json j;
+            for(auto &sol: leaves)
+                j.push_back(sol->to_json());
+            param_helper::fs::write_parameter_file(json {{"number_of_leaves", leaves.size()}, {"leaves", j}}, param_helper::proj::project_root() + rel_dir + "/", "leaves", false);
+        }
+
+        std::vector<std::shared_ptr<odesolver::collections::Leaf>> load_leaves(std::string rel_dir)
+        {
+            std::vector<std::shared_ptr<odesolver::collections::Leaf>> leaves;
+            
+            json j = param_helper::fs::read_parameter_file(param_helper::proj::project_root() + rel_dir + "/", "leaves", false);
+            leaves.reserve(j["number_of_leaves"].get<int>());
+            for(auto &sol: j["leaves"])
+                leaves.push_back(std::make_shared<odesolver::collections::Leaf>(sol["indices"].get<std::vector<int>>()));
+            std::cout << "leaves loaded" << std::endl;
+            return leaves;
         }
     }
 }

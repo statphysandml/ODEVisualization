@@ -19,7 +19,7 @@ struct ConditionalIntersectionObserverParameters : public ConditionalRangeObserv
     ConditionalIntersectionObserverParameters(const json params_);
 
     ConditionalIntersectionObserverParameters(
-            const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges_,
+            const std::vector <std::pair<cudaT, cudaT> > boundary_variable_ranges_,
             const std::vector < cudaT > minimum_change_of_state_ = std::vector<cudaT> {},
             const cudaT minimum_delta_t_ = 0.0000001,
             const cudaT maximum_flow_val_ = 1e10,
@@ -38,17 +38,17 @@ struct ConditionalIntersectionObserver : public ConditionalRangeObserver
 {
 public:
     explicit ConditionalIntersectionObserver(FlowEquationsWrapper * flow_equations_, const uint N_total_, std::ofstream &os_,
-            const std::vector <std::pair<cudaT, cudaT> > boundary_lambda_ranges_ = std::vector <std::pair<cudaT, cudaT> > {},
+            const std::vector <std::pair<cudaT, cudaT> > boundary_variable_ranges_ = std::vector <std::pair<cudaT, cudaT> > {},
             const std::vector < cudaT > minimum_change_of_state_ = std::vector<cudaT> {},
             const cudaT minimum_delta_t_ = 0.0000001,
             const cudaT maximum_flow_val_ = 1e10,
             const std::vector < cudaT > vicinity_distances_ = std::vector<cudaT> {},
-            const std::vector < cudaT > fixed_lambdas_ = std::vector<cudaT> {},
-            const std::vector<int> indices_of_fixed_lambdas_ = std::vector<int> {}
+            const std::vector < cudaT > fixed_variables_ = std::vector<cudaT> {},
+            const std::vector<int> indices_of_fixed_variables_ = std::vector<int> {}
     );
 
     ConditionalIntersectionObserver(FlowEquationsWrapper * flow_equations_, const uint N_total_, std::ofstream &os_, ConditionalIntersectionObserverParameters &params,
-                        const std::vector<cudaT> fixed_lambdas_ = std::vector<cudaT> {}, const std::vector<int> indices_of_fixed_lambdas_ = std::vector<int> {});
+                        const std::vector<cudaT> fixed_variables_ = std::vector<cudaT> {}, const std::vector<int> indices_of_fixed_variables_ = std::vector<int> {});
 
     void initalize_side_counter(const odesolver::DevDatC &coordinates);
 
@@ -64,8 +64,8 @@ public:
 
     static std::string name() {  return "conditional_intersection_observer";  }
 
-    const std::vector <cudaT> fixed_lambdas;
-    const std::vector<int> indices_of_fixed_lambdas;
+    const std::vector <cudaT> fixed_variables;
+    const std::vector<int> indices_of_fixed_variables;
     const std::vector <cudaT> vicinity_distances;
 
     dev_vec_int intersection_counter;
