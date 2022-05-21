@@ -9,6 +9,7 @@
 #include "../include/evaluate_t.hpp"
 
 #include "../include/partial_ranges_t.hpp"
+#include "../include/jacobians_t.hpp"
 
 int main(int argc, char **argv) {
     // Initialize project dependent parameters
@@ -35,9 +36,11 @@ int main(int argc, char **argv) {
     jac.compute_characteristics(); */
 
     // evaluate_velocities_and_jacobians();
-    find_fixed_points();
+    // find_fixed_points();
     /* evaluate_fixed_points(); */
     // partial_ranges_t();
+    // partial_ranges_t2();
+    jacobians_t();
 
 
     // Finalization

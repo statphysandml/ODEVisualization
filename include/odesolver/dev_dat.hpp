@@ -261,7 +261,7 @@ namespace odesolver {
             // vs. total_number_of_coordinates x dim (len = dim)
             thrust::host_vector<cudaT> host_device_data(*this);
 
-            std::vector<std::vector<double >> transposed_device_data(N_, std::vector<double> (dim_, 0));
+            std::vector<std::vector<double>> transposed_device_data(N_, std::vector<double> (dim_, 0));
             for(auto j = 0; j < dim_; j++) {
                 for (auto i = 0; i < N_; i++) {
                     transposed_device_data[i][j] = host_device_data[j * N_ + i];
@@ -307,8 +307,8 @@ namespace odesolver {
     private:
         size_t dim_;
         size_t N_;
-        std::vector< DimensionIterator<VecIterator> > dimension_iterators_;
-        std::vector < DimensionIterator<ConstVecIterator> > const_dimension_iterators_;
+        std::vector<DimensionIterator<VecIterator>> dimension_iterators_;
+        std::vector<DimensionIterator<ConstVecIterator>> const_dimension_iterators_;
     };
 
 

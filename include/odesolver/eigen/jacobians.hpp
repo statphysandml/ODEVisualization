@@ -2,6 +2,7 @@
 #define PROGRAM_JACOBIANS_HPP
 
 #include <vector>
+#include <numeric>
 #include <Eigen/Dense>
 
 #include <odesolver/header.hpp>
@@ -24,6 +25,8 @@ namespace odesolver {
             */
             Jacobians(std::vector<std::vector<double>> jacobian_elements);
 
+            Jacobians(std::vector<double> jacobian_elements, uint dim);
+
             size_t size() const;
 
             void compute_characteristics();
@@ -34,7 +37,7 @@ namespace odesolver {
 
             Eigen::EigenSolver<MatXd>::EigenvalueType get_eigenvalue(const int i) const;
 
-            std::vector<std::vector< std::vector<cudaT>>> get_real_parts_of_eigenvectors() const;
+            std::vector<std::vector<std::vector<cudaT>>> get_real_parts_of_eigenvectors() const;
 
             std::vector<std::vector<cudaT>> get_real_parts_of_eigenvalues() const;
 
@@ -48,7 +51,7 @@ namespace odesolver {
 
             int sign(const double val) const;
 
-            std::vector<std::vector<double>> jacobian_elements_;
+            std::vector<double> jacobian_elements_;
 
             std::vector<MatXdMap> jacobians_;
             

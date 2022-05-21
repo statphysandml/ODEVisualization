@@ -17,9 +17,11 @@ add_library(odevisualization STATIC
     util/partial_ranges.cpp
     util/python_integration.cpp
     util/random.cu
-    modes/coordinate_operator.cu
-    modes/fixed_point_search.cu
-    modes/visualization.cu
+    # modes/coordinate_operator.cu
+    modes/fixed_point_criterion.cu
+    modes/recursive_search.cu
+    # modes/visualization.cu
+    modes/mesh.cu
     boost/dev_dat_boost_integration.cu
     eigen/jacobians.cpp
     # observers/evolution.cu

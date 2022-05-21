@@ -16,19 +16,18 @@ void find_fixed_points()
     const std::vector <std::pair<cudaT, cudaT> > variable_ranges = std::vector <std::pair<cudaT, cudaT> > {
         std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-1.0, 31.0)};
 
-    auto fixed_point_search = odesolver::modes::FixedPointSearch::generate(
+
+    std::shared_ptr<odesolver::modes::RecursiveSearchCriterion> recursive_search_criterion_ptr = std::make_unique<odesolver::modes::FixedPointCriterion>(3);
+
+    auto fixed_point_search = odesolver::modes::RecursiveSearch::generate(
         maximum_recursion_depth,
         n_branches_per_depth,
         variable_ranges,
-        odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0)
-    );
-
-    // Setting gpu specfic computation parameters (optional) - parameters are already set default
-    const int number_of_cubes_per_gpu_call = 100;
-    const int maximum_number_of_gpu_calls = 100000;
-    fixed_point_search.set_computation_parameters(
-        number_of_cubes_per_gpu_call,
-        maximum_number_of_gpu_calls
+        recursive_search_criterion_ptr,
+        odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0),
+        nullptr,
+        100,
+        100000
     );
 
     // Find fixed point solutions
@@ -59,16 +58,16 @@ void find_fixed_points()
         0.01, // upper_bound_for_min_distance
         1000 // maximum_number_of_iterations
     );
-    auto fixed_points = kmeans_clustering.cluster_device_data(fixed_point_search.fixed_points());
+    auto fixed_points = kmeans_clustering.cluster_device_data(fixed_point_search.solutions());
     
-    fixed_points.write_to_file("data/fe_fixed_point_search", "fixed_points");
+    // fixed_points.write_to_file("data/fe_fixed_point_search", "fixed_points");
 }
 
 void evaluate_fixed_points()
 {
     auto fixed_points = odesolver::load_devdat("data/fe_fixed_point_search", "fixed_points");
 
-    odesolver::modes::CoordinateOperator evaluator = odesolver::modes::CoordinateOperator::generate(
+    /* odesolver::modes::CoordinateOperator evaluator = odesolver::modes::CoordinateOperator::generate(
         fixed_points,
         odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0),
         odesolver::flowequations::generate_jacobian_equations<LorentzAttractorJacobianEquations>(0)
@@ -77,5 +76,5 @@ void evaluate_fixed_points()
     evaluator.compute_velocities();
     evaluator.compute_jacobians();
 
-    evaluator.write_characteristics_to_file("data/fe_fixed_point_characteristics");
+    evaluator.write_characteristics_to_file("data/fe_fixed_point_characteristics"); */
 }

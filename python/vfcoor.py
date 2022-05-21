@@ -8,7 +8,7 @@ from odevisualizationlib import DevDat
 
 
 class VFCoor:
-    def __init__(self, devdat: any):
+    def __init__(self, devdat: Any):
         self._devdat = devdat
     
     @classmethod
@@ -16,11 +16,11 @@ class VFCoor:
         return cls(DevDat(dim, N, init_val))
 
     @classmethod
-    def from_flattened_data(cls, data: List, dim: int):
+    def from_flattened_data(cls, data: Iterable, dim: int):
         return cls(DevDat(data, dim))
 
     @classmethod
-    def from_data(cls, data: List[List]=None):
+    def from_data(cls, data: Iterable[Iterable]=None):
         return cls(DevDat(data))
 
     def dim(self):
@@ -44,7 +44,7 @@ class VFCoor:
         return str(self.data)
 
     @staticmethod
-    def __fill(func: Callable[int, List, int], key: Union[int, slice], val: Union[int, List], n: int, sub: Optional[slice] = None):
+    def __fill(func: Callable[int, Iterable, int], key: Union[int, slice], val: Union[int, Iterable], n: int, sub: Optional[slice] = None):
         index_tuple = sub.indices(n)
         if isinstance(val, Iterable):
             assert len(val) == index_tuple[1] - index_tuple[0], "ValueError: could not broadcast input array of length " + str(len(val)) + " into slice of size (" + str(index_tuple[1] - index_tuple[0]) + ", )"
@@ -52,7 +52,7 @@ class VFCoor:
         else:
             func(key, [val] * (index_tuple[1] - index_tuple[0]), index_tuple[0])
 
-    def __setitem__(self, key: Union[int, tuple, slice], val: Union[int, List, List[List]]):
+    def __setitem__(self, key: Union[int, tuple, slice], val: Union[int, Iterable, Iterable[Iterable]]):
         if isinstance(key, tuple):
             if isinstance(key[0], int) and isinstance(key[1], int):
                 self[key[0]:key[0] + 1, key[1]:key[1] + 1] = val
@@ -95,25 +95,33 @@ class VFCoor:
             # key[0] == int and key[1] == slice(preferred!)
             elif isinstance(key[0], int):
                 elem_index_tuple = key[1].indices(self.size())
-                return self._devdat.data_in_dim(key[0], elem_index_tuple[0], elem_index_tuple[1])
+                return np.array(self._devdat.data_in_dim(key[0], elem_index_tuple[0], elem_index_tuple[1]))
             # key[1] == int and key[0] == slice
             elif isinstance(key[1], int):
                 dim_index_tuple = key[0].indices(self.dim())
-                return self._devdat.get_nth_element(key[1], dim_index_tuple[0], dim_index_tuple[1])
+                return np.array(self._devdat.get_nth_element(key[1], dim_index_tuple[0], dim_index_tuple[1]))
             else:
                 data = []
                 for dim in range(*key[0].indices(self.dim())):
                     data.append(self[dim, key[1]])
-                return data
+                return np.array(data)
         else:
             return self[key, :]
         
     
-    def fill_data_in_dim(self, dim, data):
-        self._devdat.fill_dim(dim, data, 0)
+    def fill_data_in_dim(self, dim: Union[int, Iterable], data: Union[Iterable, Iterable[Iterable]]):
+        if isinstance(dim, Iterable):
+            assert len(dim) == len(data), "Cannot assign data of len " + str(len(data)) + " to dims of len " + str(len(dim))
+            for dim_, data_ in zip(dim, data):
+                self._devdat.fill_dim(dim_, data_, 0)
+        else:
+            self._devdat.fill_dim(dim, data, 0)
 
-    def data_in_dim(self, dim):
-        return self._devdat.data_in_dim(dim, 0, self._devdat.n_elems())
+    def data_in_dim(self, dim: Union[int, Iterable]):
+        if isinstance(dim, Iterable):
+            return np.array([self._devdat.data_in_dim(dim_, 0, self._devdat.n_elems()) for dim_ in dim])
+        else:
+            return np.array(self._devdat.data_in_dim(dim, 0, self._devdat.n_elems()))
 
     def write_to_file(self, rel_dir, filename):
         self._devdat.write_to_file(rel_dir, filename)

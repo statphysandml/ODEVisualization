@@ -400,25 +400,5 @@ namespace odesolver {
 
             return host_indices_of_pot_fixed_points;
         }
-
-        void write_leaves_to_file(std::string rel_dir, std::vector<odesolver::collections::Leaf*> leaves)
-        {
-            json j;
-            for(auto &sol: leaves)
-                j.push_back(sol->to_json());
-            param_helper::fs::write_parameter_file(json {{"number_of_leaves", leaves.size()}, {"leaves", j}}, param_helper::proj::project_root() + rel_dir + "/", "leaves", false);
-        }
-
-        std::vector<std::shared_ptr<odesolver::collections::Leaf>> load_leaves(std::string rel_dir)
-        {
-            std::vector<std::shared_ptr<odesolver::collections::Leaf>> leaves;
-            
-            json j = param_helper::fs::read_parameter_file(param_helper::proj::project_root() + rel_dir + "/", "leaves", false);
-            leaves.reserve(j["number_of_leaves"].get<int>());
-            for(auto &sol: j["leaves"])
-                leaves.push_back(std::make_shared<odesolver::collections::Leaf>(sol["indices"].get<std::vector<int>>()));
-            std::cout << "leaves loaded" << std::endl;
-            return leaves;
-        }
     }
 }

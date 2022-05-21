@@ -22,12 +22,10 @@ namespace odesolver {
             explicit ODEVisualization(
                 const json params,
                 std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr=nullptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
-                const std::string computation_parameters_path=param_helper::proj::project_root()
+                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
             ) : Parameters(params),
                 flow_equations_ptr_(flow_equations_ptr),
-                jacobians_ptr_(jacobians_ptr),
-                computation_parameters_path_(computation_parameters_path)
+                jacobians_ptr_(jacobians_ptr)
             {
                 // Merge specific information and global_parameters.json file for a possible consecutive computation including all parameters
                 if(flow_equations_ptr_)
@@ -35,7 +33,7 @@ namespace odesolver {
                     append_parameters(*flow_equations_ptr_.get());
                 }
                 
-                if(param_helper::fs::check_if_parameter_file_exists(computation_parameters_path_, "computation_parameters", false))
+                /* if(param_helper::fs::check_if_parameter_file_exists(computation_parameters_path_, "computation_parameters", false))
                 {
                     std::cout << "Computations parameters are loaded from computation_parameters.json" << std::endl;
                     json computation_params = param_helper::fs::read_parameter_file(computation_parameters_path_, "computation_parameters", false);
@@ -44,7 +42,7 @@ namespace odesolver {
                 else
                 {
                     std::cout << "Computations are performed with default computation parameters - change them by providing a computation_parameters_path or with the member function: set_computation_parameters(), or in the automatically generated computation_parameters.json file." << std::endl;
-                }
+                } */
             }
 
             void write_configs_to_file(const std::string& rel_config_dir) {
@@ -71,21 +69,9 @@ namespace odesolver {
                 return jacobians_ptr_.get();
             }
 
-            // Keep, or remove?
-            void set_computation_parameters(
-                const int number_of_cubes_per_gpu_call = 20000,
-                const int maximum_number_of_gpu_calls = 1000
-            )
-            {
-                computation_parameters_ = odesolver::util::ComputationParameters(number_of_cubes_per_gpu_call, maximum_number_of_gpu_calls);
-            }
-
         protected:
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr_;
             std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr_;
-            const std::string computation_parameters_path_;
-
-            odesolver::util::ComputationParameters computation_parameters_;
         };
     }
 }

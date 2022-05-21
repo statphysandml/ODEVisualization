@@ -49,6 +49,9 @@ namespace odesolver {
                 grid_computation_wrapper.expanded_depth_per_element_
             );
 
+            // The above line of code can, in princple, be replaced by:
+            /* GridComputationWrapper grid_computation_wrapper = hypercubes_.project_collection_package_on_expanded_cube_and_depth_per_cube_indices(collection_package_, expected_number_of_cubes_, expected_maximum_depth_); */
+
             // Testing
             if(monitor)
                 grid_computation_wrapper.print_expanded_vectors();
@@ -56,8 +59,8 @@ namespace odesolver {
             // Compute vertices
             if(vertex_mode_ == CenterVertices)
             {
-                vertices = odesolver::DevDatC(hypercubes_.dim() ,expected_number_of_cubes_);
-                hypercubes_.compute_reference_vertices(vertices, grid_computation_wrapper);
+                vertices = odesolver::DevDatC(hypercubes_.dim(),expected_number_of_cubes_);
+                hypercubes_.compute_cube_center_vertices(vertices, grid_computation_wrapper);
             }
             else if(vertex_mode_ == CubeVertices)
             {
@@ -67,7 +70,7 @@ namespace odesolver {
             else
             {
                 vertices = odesolver::DevDatC(hypercubes_.dim(),expected_number_of_cubes_);
-                hypercubes_.compute_cube_center_vertices(vertices, grid_computation_wrapper);
+                hypercubes_.compute_reference_vertices(vertices, grid_computation_wrapper);
             }
 
             c_++;

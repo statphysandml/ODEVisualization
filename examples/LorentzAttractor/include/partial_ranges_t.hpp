@@ -26,3 +26,24 @@ void partial_ranges_t()
         }
     }
 }
+
+void partial_ranges_t2()
+{
+    const std::vector<int> n_branches {11, 11};
+    const std::vector<std::pair<cudaT, cudaT>> partial_variable_ranges = std::vector<std::pair<cudaT, cudaT>> {std::pair<cudaT, cudaT> (-1.0, 1.0), std::pair<cudaT, cudaT> (0.0, 4.0)};
+    odesolver::util::PartialRanges partial_ranges(
+        n_branches,
+        partial_variable_ranges
+    );
+
+    std::vector<std::pair<cudaT, cudaT>> variable_ranges;
+    for(auto i = 0; i < partial_ranges.size() + 1; i++)
+    {
+        auto variable_ranges = partial_ranges[i];
+        std::cout << "Variable range" << std::endl;
+        for(const auto &variable_range: variable_ranges)
+        {
+            std::cout << variable_range.first << ", " << variable_range.second << std::endl;
+        }
+    }
+}

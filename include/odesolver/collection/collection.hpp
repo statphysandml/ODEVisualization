@@ -19,7 +19,7 @@ namespace odesolver {
         class Collection : Counter<Collection>
         {
         public:
-            Collection(const int internal_start_index, int internal_end_index, const std::vector<int> parent_indices);
+            Collection(const int internal_start_index, int internal_end_index, const std::vector<int> parent_indices=std::vector<int>{});
 
             ~Collection();
 

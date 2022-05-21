@@ -17,6 +17,8 @@
 #include <odesolver/util/thrust_functors.hpp>
 #include <odesolver/flow_equations/flow_equation_system.hpp>
 #include <odesolver/collection/leaf.hpp>
+#include <odesolver/collection/collection.hpp>
+#include <odesolver/collection/collection_expander.hpp>
 #include <odesolver/grid_computation/grid_computation_wrapper.hpp>
 
 
@@ -36,10 +38,13 @@ namespace odesolver {
             // Functions for generating grid computation wrapper from other resources)
 
             // Compute expanded cube indices and expanded depth per cube from coordinates
-            GridComputationWrapper project_coordinates_on_expanded_cube_and_depth_per_cube_indices(const odesolver::DevDatC &coordinates, bool coordinates_on_grid=false, int depth=-1) const; // no reference since coordinates is changed within this function
-
+            GridComputationWrapper project_coordinates_on_expanded_cube_and_depth_per_cube_indices(const odesolver::DevDatC &coordinates, bool coordinates_on_grid=false, int depth=-1) const;
+            
             // Compute expanded cube indices and expanded depth per cube from leaves
             GridComputationWrapper project_leaves_on_expanded_cube_and_depth_per_cube_indices(std::vector<odesolver::collections::Leaf*> &leaves, int depth=-1) const;
+
+            // Compute expanded cube indices and expanded depth per cube from collections
+            GridComputationWrapper  project_collection_package_on_expanded_cube_and_depth_per_cube_indices(std::vector<odesolver::collections::Collection*> &collection_package, int expected_number_of_cubes, int expected_maximum_depth_) const;
 
             void compute_reference_vertices(odesolver::DevDatC &reference_vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
             odesolver::DevDatC compute_reference_vertices(GridComputationWrapper &grcompwrap);

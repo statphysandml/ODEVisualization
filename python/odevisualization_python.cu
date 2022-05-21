@@ -8,7 +8,12 @@
 #include <odesolver/flow_equations/flow_equation.hpp>
 #include <odesolver/flow_equations/jacobian_equation.hpp>
 
-#include <odesolver/modes/fixed_point_search.hpp>
+#include <odesolver/collection/leaf.hpp>
+
+#include <odesolver/modes/recursive_search.hpp>
+#include <odesolver/modes/recursive_search_criterion.hpp>
+#include <odesolver/modes/fixed_point_criterion.hpp>
+#include <odesolver/modes/mesh.hpp>
 
 
 namespace py = pybind11;
@@ -81,15 +86,37 @@ namespace odesolver {
             });
         }
 
+        void init_recursive_search(py::module &m)
+        {
+            auto mrecursive_search = m.def_submodule("recursive_search");
+            
+            py::class_<odesolver::collections::Leaf, std::shared_ptr<odesolver::collections::Leaf>>(mrecursive_search, "Leaf")
+                .def(py::init<const std::vector<int>>(), "indices"_a)
+                .def_readonly("depth", &odesolver::collections::Leaf::depth_)
+                .def_readonly("indices", &odesolver::collections::Leaf::indices_);
+
+            py::class_<odesolver::modes::RecursiveSearchCriterion, std::shared_ptr<odesolver::modes::RecursiveSearchCriterion>>(mrecursive_search, "RecursiveSearchCriterion");
+
+            py::class_<odesolver::modes::FixedPointCriterion, std::shared_ptr<odesolver::modes::FixedPointCriterion>, odesolver::modes::RecursiveSearchCriterion>(mrecursive_search, "FixedPointCriterion")
+                .def(py::init<uint>(), "dim"_a);
+            
+            py::class_<odesolver::modes::RecursiveSearch, std::shared_ptr<odesolver::modes::RecursiveSearch>>(mrecursive_search, "RecursiveSearch")
+                .def(py::init(&odesolver::modes::RecursiveSearch::generate))
+                .def("eval", &odesolver::modes::RecursiveSearch::eval)
+                .def("solutions", &odesolver::modes::RecursiveSearch::solutions)
+                .def("leaves", &odesolver::modes::RecursiveSearch::leaves);
+        }
+
         void init_modes(py::module &m)
         {
             auto mmodes = m.def_submodule("modes");
 
-            py::class_<odesolver::modes::FixedPointSearch, std::shared_ptr<odesolver::modes::FixedPointSearch>>(mmodes, "FixedPointSearch")
-                .def(py::init(&odesolver::modes::FixedPointSearch::generate))
-                .def("eval", &odesolver::modes::FixedPointSearch::eval)
-                .def("fixed_points", &odesolver::modes::FixedPointSearch::fixed_points);
-                // .def("leaves", &odesolver::modes::FixedPointSearch::leaves);
+            py::class_<odesolver::modes::Mesh, std::shared_ptr<odesolver::modes::Mesh>>(mmodes, "Mesh")
+                .def(py::init(&odesolver::modes::Mesh::generate), "n_branches"_a, "variable_ranges"_a, "fixed_variables"_a=std::vector<std::vector<cudaT>>{})
+                .def("eval", &odesolver::modes::Mesh::eval)
+                .def_readonly("variable_ranges", &odesolver::modes::Mesh::partial_variable_ranges_)
+                .def_readonly("fixed_variables", &odesolver::modes::Mesh::fixed_variables_)
+                .def_readonly("n_branches", &odesolver::modes::Mesh::n_branches_);
         }
     }
 }
@@ -100,6 +127,7 @@ PYBIND11_MODULE(odevisualizationlib, m)
     // odesolver::pybind::init_functions(m);
     odesolver::pybind::init_devdat(m);
     odesolver::pybind::init_flow_equations(m);
+    odesolver::pybind::init_recursive_search(m);
     odesolver::pybind::init_modes(m);
 
     m.doc() = "Python Bindings for MCMCSimulationLib";

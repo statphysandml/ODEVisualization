@@ -8,7 +8,6 @@
 #include <odesolver/dev_dat.hpp>
 #include <odesolver/util/monitor.hpp>
 #include <odesolver/util/json_conversions.hpp>
-#include <odesolver/util/kmeans_clustering.hpp>
 #include <odesolver/collection/buffer.hpp>
 #include <odesolver/collection/collection.hpp>
 #include <odesolver/collection/leaf.hpp>

@@ -41,7 +41,7 @@ namespace odesolver {
             if(vertex_mode_ == CenterVertices)
             {
                 vertices.set_N(expected_number_of_cubes_);
-                hypercubes_.compute_reference_vertices(vertices, grid_computation_wrapper_, expected_maximum_depth_);
+                hypercubes_.compute_cube_center_vertices(vertices, grid_computation_wrapper_, expected_maximum_depth_);
             }
             else if(vertex_mode_ == CubeVertices)
             {
@@ -51,7 +51,7 @@ namespace odesolver {
             else
             {
                 vertices.set_N(expected_number_of_cubes_);
-                hypercubes_.compute_cube_center_vertices(vertices, grid_computation_wrapper_, expected_maximum_depth_);
+                hypercubes_.compute_reference_vertices(vertices, grid_computation_wrapper_, expected_maximum_depth_);
             }
 
             c_++;

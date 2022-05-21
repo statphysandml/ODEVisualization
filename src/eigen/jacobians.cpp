@@ -8,14 +8,20 @@ namespace odesolver {
         Jacobians::Jacobians()
         {}
 
-        Jacobians::Jacobians(std::vector<std::vector<double>> jacobian_elements):
+        Jacobians::Jacobians(std::vector<std::vector<double>> jacobian_elements) :
+            Jacobians(std::accumulate(jacobian_elements.begin(), jacobian_elements.end(), std::vector<double>{},
+                [](auto &x, auto &y) {
+                    x.insert(x.end(), y.begin(), y.end());
+                    return x;
+            }), int(std::sqrt(jacobian_elements[0].size())))
+        {}
+
+        Jacobians::Jacobians(std::vector<double> jacobian_elements, uint dim) :
             jacobian_elements_(jacobian_elements)
         {
-            auto dim = int(std::sqrt(jacobian_elements_[0].size()));
-
-            for(auto& jacobian_element: jacobian_elements_)
+            for(auto i = 0; i < jacobian_elements_.size() / dim; i++)
             {
-                jacobians_.push_back(MatXdMap(jacobian_element.data(), dim, dim));
+                jacobians_.push_back(MatXdMap(jacobian_elements_.data() + i, dim, dim));
             }
         }
 

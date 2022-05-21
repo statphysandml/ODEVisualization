@@ -13,6 +13,11 @@
 
 namespace odesolver {
     namespace gridcomputation {
+        /** @brief Class for dynamic and recursive computations of vertices and
+         * hypercubes on a grid. The get_collection_package() and the
+         * get_buffer() function serve as an interface to add new collections of
+         * hypercubes after each computation round, triggered by next().
+         */
         class DynamicRecursiveGridComputation
         {
         public:
