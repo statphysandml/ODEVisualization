@@ -4,8 +4,6 @@ from typing import Any, Dict, List, Optional, Union, Callable
 from odesolver.vfcoor import VFCoor
 from odesolver.cube_index_path import CubeIndexPath
 
-from odevisualizationlib.recursive_search import RecursiveSearch as VFRecursiveSearch
-
 
 class RecursiveSearch:
     def __init__(
@@ -18,6 +16,7 @@ class RecursiveSearch:
             number_of_cubes_per_gpu_call: int = 20000,
             maximum_number_of_gpu_calls: int = 1000
     ):
+        from odevisualizationlib.modes import RecursiveSearch as VFRecursiveSearch
         self._recursive_search = VFRecursiveSearch(
             maximum_recursion_depth,
             n_branches_per_depth,

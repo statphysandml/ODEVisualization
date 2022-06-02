@@ -206,7 +206,7 @@ namespace odesolver {
                     skip_iterators_in_dimensions.push_back(i);
             } */
 
-            odesolver::gridcomputation::DynamicRecursiveGridComputation dynamic_recursive_grid_computation(
+            odesolver::recursivesearch::DynamicRecursiveGridComputation dynamic_recursive_grid_computation(
                 computation_parameters_.number_of_cubes_per_gpu_call_,
                 computation_parameters_.maximum_number_of_gpu_calls_
             );
@@ -223,7 +223,7 @@ namespace odesolver {
                 dynamic_recursive_grid_computation.initialize(
                     std::vector<std::vector<int>> {n_branches_},
                     variable_ranges,
-                    odesolver::gridcomputation::DynamicRecursiveGridComputation::ReferenceVertices
+                    odesolver::recursivesearch::DynamicRecursiveGridComputation::ReferenceVertices
                 );
             
                 while(!dynamic_recursive_grid_computation.finished())
@@ -260,7 +260,7 @@ namespace odesolver {
             compute_flow(dir, params1.skip_fixed_variables, params1.with_vertices);
         } */
 
-        /* void Visualization::compute_separatrizes(const std::string rel_dir,
+        void Visualization::compute_separatrizes(const std::string rel_dir,
                                 const std::vector <std::pair<cudaT, cudaT> > boundary_variable_ranges,
                                 const std::vector <cudaT> minimum_change_of_state,
                                 const cudaT minimum_delta_t, const cudaT maximum_flow_val,
@@ -282,12 +282,12 @@ namespace odesolver {
 
             CoordinateOperatorParameters coordinate_operator_parameters = CoordinateOperatorParameters::generate(vp.path_parameters.theory, potential_saddle_points);
             CoordinateOperator saddle_point_evaluator(coordinate_operator_parameters);
-            saddle_point_evaluator.compute_jacobians_and_eigendata(); */
+            saddle_point_evaluator.compute_jacobians_and_eigendata();
             /* auto eigenvectors_real_part = saddle_point_evaluator.get_real_parts_of_eigenvectors();
             auto eigenvectors_imag_part = saddle_point_evaluator.get_imag_parts_of_eigenvectors();
             auto eigenvalues = saddle_point_evaluator.get_real_parts_of_eigenvalues(); */
 
-        /*     const std::vector<int> saddle_point_indices = saddle_point_evaluator.get_indices_with_saddle_point_characteristics();
+            const std::vector<int> saddle_point_indices = saddle_point_evaluator.get_indices_with_saddle_point_characteristics();
 
             // Iterator through emerging variable ranges from given fixed variables
             odesolver::util::PartialRanges variable_range_generator(n_branches_, partial_variable_ranges_, fixed_variables_);
@@ -307,12 +307,12 @@ namespace odesolver {
                 // Iterate over all saddle points
                 for(auto saddle_point_index = 0; saddle_point_index < saddle_point_indices.size(); saddle_point_index++)
                 {
-                    std::cout << "Performing for saddle point with x = " << potential_saddle_points[saddle_point_index][0] << std::endl; */
+                    std::cout << "Performing for saddle point with x = " << potential_saddle_points[saddle_point_index][0] << std::endl;
                     /* std::vector<std::vector<cudaT>> eigenvector_real_part = eigenvectors_real_part[saddle_point_index];
                     std::vector<std::vector<cudaT>> eigenvector_imag_part = eigenvectors_imag_part[saddle_point_index];
                     std::vector<cudaT> eigenvalue = eigenvalues[saddle_point_index]; */
 
-        /*             auto eigenvector = saddle_point_evaluator.get_eigenvector(saddle_point_index);
+                    auto eigenvector = saddle_point_evaluator.get_eigenvector(saddle_point_index);
                     auto eigenvalue = saddle_point_evaluator.get_eigenvalue(saddle_point_index);
 
                     std::vector<int> stable_manifold_indices {};
@@ -367,12 +367,12 @@ namespace odesolver {
                         << dim_ << std::endl;
                 std::exit(EXIT_FAILURE);
             }
-        } */
+        }
 
-        /* void Visualization::compute_separatrizes_from_parameters(const std::string rel_dir)
-        { */
+        void Visualization::compute_separatrizes_from_parameters(const std::string rel_dir)
+        {
             // ToDo: Reactivate
-            /* auto evolve_on_condition_parameters = vp.get_entry<json>("evolve_on_condition");
+            auto evolve_on_condition_parameters = vp.get_entry<json>("evolve_on_condition");
             auto compute_separatrizes_parameters = vp.get_entry<json>("compute_separatrizes");
             auto params3 = Visualization::ComputeSeparatrizesParameters(compute_separatrizes_parameters);
             if(fixed_variables_.size() > 0)
@@ -394,10 +394,10 @@ namespace odesolver {
                                     params1.minimum_delta_t, params1.maximum_flow_val, std::vector <cudaT> {},
                                     params2.observe_every_nth_step, params2.maximum_total_number_of_steps,
                                     params3.N_per_eigen_dim, params3.shift_per_dim);
-            } */
-        // }
+            }
+        }
 
-        /* odesolver::DevDatC Visualization::sample_around_saddle_point(const std::vector<double> coordinate, const std::vector<int> manifold_indices,
+        odesolver::DevDatC Visualization::sample_around_saddle_point(const std::vector<double> coordinate, const std::vector<int> manifold_indices,
                                                         const std::vector<std::vector<cudaT>> manifold_eigenvectors, const std::vector<double> shift_per_dim, const uint N_per_eigen_dim)
         {
             const uint eigen_dim = manifold_indices.size();
@@ -507,10 +507,10 @@ namespace odesolver {
                         manifold_eigenvectors[i].push_back(eigen_vec[j].real());
                 }
             }
-        } */
+        }
 
 
-        /* void Visualization::compute_separatrizes_of_manifold(
+        void Visualization::compute_separatrizes_of_manifold(
                 const std::vector<double> saddle_point,
                 const std::vector<int> manifold_indices,
                 const std::vector<std::vector<cudaT>> manifold_eigenvectors,
@@ -524,10 +524,10 @@ namespace odesolver {
                 const std::vector<double> shift_per_dim,
                 std::ofstream &os,
                 std::vector< cudaT > fixed_variables
-                ) { */
+                ) {
             // ToDo: Reactivate
             // Perform computation of separatrix for stable manifold
-            /* odesolver::DevDatC sampled_coordinates;
+            odesolver::DevDatC sampled_coordinates;
             // Single line
             if(manifold_indices.size() == 1)
             {
@@ -569,7 +569,7 @@ namespace odesolver {
                 print_range("Initial point", sampled_coordinates.begin(), sampled_coordinates.end());
                 evaluator.evolve_observer_based(sampled_coordinates, delta_t);
                 print_range("End point", sampled_coordinates.begin(), sampled_coordinates.end());
-            } */
-        // }
+            }
+        }
     }
 }

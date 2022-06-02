@@ -125,4 +125,9 @@ class VFCoor:
 
     def write_to_file(self, rel_dir, filename):
         self._devdat.write_to_file(rel_dir, filename)
-        
+
+    def transpose(self, in_place=False):
+        if in_place:
+            self._devdat.transpose()
+        else:
+            return VFCoor(self._devdat.transposed())

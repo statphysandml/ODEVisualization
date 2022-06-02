@@ -7,25 +7,27 @@ add_library(odevisualization STATIC
     collection/collection.cpp
     collection/collection_expander.cu
     collection/leaf.cpp
-    grid_computation/dynamic_recursive_grid_computation.cu
+    recursive_search/dynamic_recursive_grid_computation.cu
+    recursive_search/static_recursive_grid_computation.cu
     grid_computation/grid_computation.cu
     grid_computation/grid_computation_wrapper.cu
-    grid_computation/static_recursive_grid_computation.cu
+    evolution/evolution_observer.cu
+    evolution/stepper.cu
     util/monitor.cu
     util/kmeans.cpp
-    util/kmeans_clustering.cu
     util/partial_ranges.cpp
     util/python_integration.cpp
     util/random.cu
     # modes/coordinate_operator.cu
-    modes/fixed_point_criterion.cu
-    modes/recursive_search.cu
-    # modes/visualization.cu
+    modes/evolution.cu
+    modes/jacobians.cpp
+    modes/jacobians.cu
+    modes/kmeans_clustering.cu
     modes/mesh.cu
+    modes/recursive_search.cu
+    modes/separatrizes.cu
+    recursive_search/fixed_point_criterion.cu
     boost/dev_dat_boost_integration.cu
-    eigen/jacobians.cpp
-    # observers/evolution.cu
-    # observers/conditional_range_observer.cu
     # observers/conditional_intersection_observer.cu
     # observers/tracking_observer.cu
 )

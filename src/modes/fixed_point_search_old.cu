@@ -166,7 +166,7 @@ namespace odesolver {
 
         void FixedPointSearch::evaluate_with_dynamic_memory()
         {
-            odesolver::gridcomputation::DynamicRecursiveGridComputation dynamic_recursive_grid_computation(
+            odesolver::recursivesearch::DynamicRecursiveGridComputation dynamic_recursive_grid_computation(
                 computation_parameters_.number_of_cubes_per_gpu_call_,
                 computation_parameters_.maximum_number_of_gpu_calls_
             );
@@ -178,7 +178,7 @@ namespace odesolver {
             
             dynamic_recursive_grid_computation.initialize(
                 odesolver::util::json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth")),
-                odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges")), odesolver::gridcomputation::DynamicRecursiveGridComputation::CubeVertices
+                odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges")), odesolver::recursivesearch::DynamicRecursiveGridComputation::CubeVertices
             );
 
             while(!dynamic_recursive_grid_computation.finished())
@@ -218,7 +218,7 @@ namespace odesolver {
             thrust::host_vector<int> host_indices_of_pot_fixed_points;
 
             // Initialize recursive grid computation
-            odesolver::gridcomputation::StaticRecursiveGridComputation static_recursive_grid_computation(
+            odesolver::recursivesearch::StaticRecursiveGridComputation static_recursive_grid_computation(
                 maximum_recursion_depth_,
                 computation_parameters_.number_of_cubes_per_gpu_call_,
                 computation_parameters_.maximum_number_of_gpu_calls_
@@ -226,7 +226,7 @@ namespace odesolver {
             
             static_recursive_grid_computation.initialize(
                 odesolver::util::json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth")),
-                odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges")), odesolver::gridcomputation::DynamicRecursiveGridComputation::CubeVertices
+                odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges")), odesolver::recursivesearch::DynamicRecursiveGridComputation::CubeVertices
             );
 
             while(!static_recursive_grid_computation.finished())

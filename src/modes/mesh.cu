@@ -5,7 +5,7 @@ namespace odesolver {
     namespace modes {
         Mesh::Mesh(
             const json params
-        ) : ODEVisualization(params, nullptr, nullptr),
+        ) : Parameters(params),
             n_branches_(get_entry<std::vector<int>>("n_branches")),
             partial_variable_ranges_(odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges"))),
             fixed_variables_(odesolver::util::json_to_vec_vec<double>(get_entry<json>("fixed_variables", std::vector<std::vector<cudaT>> {}))),

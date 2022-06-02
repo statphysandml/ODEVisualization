@@ -5,7 +5,7 @@
 
 #include <odesolver/modes/recursive_search.hpp>
 #include <odesolver/modes/fixed_point_criterion.hpp>
-#include <odesolver/util/kmeans_clustering.hpp>
+#include <odesolver/modes/kmeans_clustering.hpp>
 
 
 #include "../flow_equations/lorentz_attractor/lorentz_attractor_flow_equation.hpp"

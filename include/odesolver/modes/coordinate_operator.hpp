@@ -136,7 +136,7 @@ namespace odesolver {
             odesolver::DevDatC get_velocities() const;
             odesolver::DevDatC get_jacobian_elements() const;
 
-            odesolver::eigen::Jacobians get_jacobians() const;
+            odesolver::modes::Jacobians get_jacobians() const;
 
             //]
 
@@ -146,7 +146,7 @@ namespace odesolver {
             odesolver::DevDatC coordinates_;
             odesolver::DevDatC velocities_;
             odesolver::DevDatC jacobian_elements_;
-            odesolver::eigen::Jacobians jacobians_;
+            odesolver::modes::Jacobians jacobians_;
         };
 
         template<typename Observer>

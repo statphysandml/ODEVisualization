@@ -1,6 +1,7 @@
 #ifndef PROGRAM_MESH_HPP
 #define PROGRAM_MESH_HPP
 
+#include <param_helper/params.hpp>
 
 #include <odesolver/header.hpp>
 #include <odesolver/dev_dat.hpp>
@@ -9,12 +10,11 @@
 #include <odesolver/util/partial_ranges.hpp>
 #include <odesolver/collection/collection.hpp>
 #include <odesolver/grid_computation/grid_computation.hpp>
-#include <odesolver/modes/ode_visualization.hpp>
 
 
 namespace odesolver {
     namespace modes {
-        struct Mesh : public ODEVisualization
+        struct Mesh : public param_helper::params::Parameters
         {
             // From config
             explicit Mesh(

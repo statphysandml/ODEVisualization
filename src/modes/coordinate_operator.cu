@@ -101,7 +101,7 @@ namespace odesolver {
         void CoordinateOperator::compute_jacobians()
         {
             jacobian_elements_ = compute_jacobian_elements(coordinates_, jacobians_ptr_.get());
-            jacobians_ = odesolver::eigen::Jacobians(jacobian_elements_.transpose_device_data());
+            jacobians_ = odesolver::modes::Jacobians(jacobian_elements_.transpose_device_data());
             jacobians_.compute_characteristics();
         }
 
@@ -155,7 +155,7 @@ namespace odesolver {
             return jacobian_elements_;
         };
 
-        odesolver::eigen::Jacobians CoordinateOperator::get_jacobians() const
+        odesolver::modes::Jacobians CoordinateOperator::get_jacobians() const
         {
             return jacobians_;
         }

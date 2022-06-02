@@ -14,9 +14,9 @@
 #include <odesolver/collection/buffer.hpp>
 #include <odesolver/collection/collection.hpp>
 #include <odesolver/collection/leaf.hpp>
-#include <odesolver/grid_computation/dynamic_recursive_grid_computation.hpp>
+#include <odesolver/recursive_search/dynamic_recursive_grid_computation.hpp>
 #include <odesolver/grid_computation/grid_computation.hpp>
-#include <odesolver/grid_computation/static_recursive_grid_computation.hpp>
+#include <odesolver/recursive_search/static_recursive_grid_computation.hpp>
 #include <odesolver/modes/ode_visualization.hpp>
 #include <odesolver/modes/coordinate_operator.hpp>
 #include <odesolver/observers/evolution.hpp>
@@ -102,7 +102,7 @@ namespace odesolver {
 
             // void compute_flow_from_parameters(std::string rel_dir);
 
-            /* void compute_separatrizes(const std::string rel_dir,
+            void compute_separatrizes(const std::string rel_dir,
                                     const std::vector<std::pair<cudaT, cudaT>> boundary_variable_ranges,
                                     const std::vector<cudaT> minimum_change_of_state,
                                     const cudaT minimum_delta_t, const cudaT maximum_flow_val,
@@ -111,7 +111,7 @@ namespace odesolver {
                                     const uint N_per_eigen_dim,
                                     const std::vector<double> shift_per_dim);
 
-            void compute_separatrizes_from_parameters(const std::string rel_dir); */
+            void compute_separatrizes_from_parameters(const std::string rel_dir);
 
         private:
             const uint dim_;
@@ -122,7 +122,7 @@ namespace odesolver {
 
             std::vector<int> indices_of_fixed_variables_;
 
-            /* odesolver::DevDatC sample_around_saddle_point(const std::vector<double> coordinate, const std::vector<int> manifold_indices,
+            odesolver::DevDatC sample_around_saddle_point(const std::vector<double> coordinate, const std::vector<int> manifold_indices,
                                             const std::vector<std::vector<cudaT>> manifold_eigenvectors, const std::vector<double> shift_per_dim, const uint N_per_eigen_dim);
 
             odesolver::DevDatC get_initial_values_to_eigenvector(const std::vector<double> saddle_point, std::vector<cudaT> eigenvector, const std::vector<double> shift_per_dim);
@@ -150,7 +150,7 @@ namespace odesolver {
                     const std::vector<double> shift_per_dim,
                     std::ofstream &os,
                     std::vector<cudaT> fixed_variables
-            ); */
+            );
 
             std::vector<std::vector<cudaT>> get_fixed_points() const;
         };

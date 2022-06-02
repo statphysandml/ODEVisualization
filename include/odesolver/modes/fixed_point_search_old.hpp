@@ -11,9 +11,9 @@
 #include <odesolver/collection/buffer.hpp>
 #include <odesolver/collection/collection.hpp>
 #include <odesolver/collection/leaf.hpp>
-#include <odesolver/grid_computation/dynamic_recursive_grid_computation.hpp>
+#include <odesolver/recursive_search/dynamic_recursive_grid_computation.hpp>
 #include <odesolver/grid_computation/grid_computation.hpp>
-#include <odesolver/grid_computation/static_recursive_grid_computation.hpp>
+#include <odesolver/recursive_search/static_recursive_grid_computation.hpp>
 #include <odesolver/modes/ode_visualization.hpp>
 
 using json = nlohmann::json;

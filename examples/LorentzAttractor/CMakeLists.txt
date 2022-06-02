@@ -108,7 +108,9 @@ add_executable(
     src/dev_dat_t.cu
     src/full_example.cu
     src/flow_equations_t.cu
-    # src/evaluate_t.cu
+    src/evolution_t.cu
+    src/flow_observer_t.cu
+    src/separatrizes_t.cu
     flow_equations/lorentz_attractor/lorentz_attractor_flow_equation.cu
     flow_equations/lorentz_attractor/lorentz_attractor_jacobian_equation.cu
 )

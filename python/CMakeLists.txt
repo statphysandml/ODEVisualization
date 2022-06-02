@@ -1,4 +1,11 @@
-pybind11_add_module(odevisualization_python odevisualization_python.cu)
+pybind11_add_module(odevisualization_python
+    src/dev_dat_python.cu
+    src/evolution_python.cu
+    src/flow_equations_python.cu
+    src/modes_python.cu
+    src/odevisualization_python.cu
+    src/recursive_search_python.cu
+)
 
 target_link_libraries(odevisualization_python PUBLIC odevisualization paramhelper::paramhelper Eigen3::Eigen)
 set_target_properties(odevisualization_python PROPERTIES OUTPUT_NAME odevisualizationlib)

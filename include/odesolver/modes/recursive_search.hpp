@@ -11,11 +11,12 @@
 #include <odesolver/collection/buffer.hpp>
 #include <odesolver/collection/collection.hpp>
 #include <odesolver/collection/leaf.hpp>
-#include <odesolver/grid_computation/dynamic_recursive_grid_computation.hpp>
+#include <odesolver/recursive_search/dynamic_recursive_grid_computation.hpp>
 #include <odesolver/grid_computation/grid_computation.hpp>
-#include <odesolver/grid_computation/static_recursive_grid_computation.hpp>
+#include <odesolver/recursive_search/static_recursive_grid_computation.hpp>
+#include <odesolver/recursive_search/recursive_search_criterion.hpp>
+#include <odesolver/recursive_search/fixed_point_criterion.hpp>
 #include <odesolver/modes/ode_visualization.hpp>
-#include <odesolver/modes/fixed_point_criterion.hpp>
 
 using json = nlohmann::json;
 
@@ -28,7 +29,7 @@ namespace odesolver {
             // From config
             explicit RecursiveSearch(
                 const json params,
-                std::shared_ptr<odesolver::modes::RecursiveSearchCriterion> criterion_ptr,
+                std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr,
                 std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
                 std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
             );
@@ -38,7 +39,7 @@ namespace odesolver {
                 const int maximum_recursion_depth,
                 const std::vector<std::vector<int>> n_branches_per_depth,
                 const std::vector<std::pair<cudaT, cudaT>> variable_ranges,
-                std::shared_ptr<odesolver::modes::RecursiveSearchCriterion> criterion_ptr,
+                std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr,
                 std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
                 std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
                 const int number_of_cubes_per_gpu_call = 20000,
@@ -48,7 +49,7 @@ namespace odesolver {
             // From file
             static RecursiveSearch from_file(
                 const std::string rel_config_dir,
-                std::shared_ptr<odesolver::modes::RecursiveSearchCriterion> criterion_ptr,
+                std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr,
                 std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
                 std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
             );
@@ -82,7 +83,7 @@ namespace odesolver {
             std::vector<std::shared_ptr<odesolver::collections::Leaf>> leaves_;
             odesolver::DevDatC solutions_;
 
-            std::shared_ptr<RecursiveSearchCriterion> criterion_ptr_;
+            std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr_;
 
             // Iterate over collections and generate new collections based on the indices of pot fixed points
             void generate_new_collections_and_leaves(const thrust::host_vector<int> &host_indices_of_pot_solutions, const std::vector<odesolver::collections::Collection*> &collections, odesolver::collections::Buffer &buffer);

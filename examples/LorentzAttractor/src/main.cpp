@@ -2,22 +2,26 @@
 
 #include <odesolver/util/python_integration.hpp>
 
-// #include "../include/dev_dat_t.hpp"
+#include "../include/dev_dat_t.hpp"
 #include "../include/full_example.hpp"
 // #include "../include/flow_equations_t.hpp"
 
-#include "../include/evaluate_t.hpp"
+// #include "../include/evaluate_t.hpp"
 
 #include "../include/partial_ranges_t.hpp"
 #include "../include/jacobians_t.hpp"
+#include "../include/evolution_t.hpp"
+#include "../include/flow_observer_t.hpp"
+#include "../include/separatrizes_t.hpp"
+
 
 int main(int argc, char **argv) {
     // Initialize project dependent parameters
     param_helper::proj::set_relative_path_to_project_root_dir("../");
 
-#ifdef PYTHON_BACKEND
+/* #ifdef PYTHON_BACKEND
     odesolver::util::initialize_python(PYTHON_SCRIPTS_PATH);
-#endif
+#endif */
 
 #ifndef GPU
     std::cout << "Running without GPU" << std::endl;
@@ -40,12 +44,24 @@ int main(int argc, char **argv) {
     /* evaluate_fixed_points(); */
     // partial_ranges_t();
     // partial_ranges_t2();
-    jacobians_t();
+    // jacobians_t();
+    // evolution_t();
 
+    /* no_change_t();
+    divergent_flow_t();
+    out_of_range_t();
+    out_of_range_t2();
+    intersection_observer_t();
+    trajectory_observer_t():
+    evolution_observer_t(); */
+
+    // conditional_range_observer_t();
+
+    separatrizes_t();
 
     // Finalization
-#ifdef PYTHON_BACKEND
+/* #ifdef PYTHON_BACKEND
     odesolver::util::finalize_python();
-#endif
+#endif */
     return 0;
 }

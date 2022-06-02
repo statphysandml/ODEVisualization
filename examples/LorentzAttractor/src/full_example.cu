@@ -17,7 +17,7 @@ void find_fixed_points()
         std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-1.0, 31.0)};
 
 
-    std::shared_ptr<odesolver::modes::RecursiveSearchCriterion> recursive_search_criterion_ptr = std::make_unique<odesolver::modes::FixedPointCriterion>(3);
+    std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> recursive_search_criterion_ptr = std::make_unique<odesolver::recursivesearch::FixedPointCriterion>(3);
 
     auto fixed_point_search = odesolver::modes::RecursiveSearch::generate(
         maximum_recursion_depth,
@@ -53,12 +53,12 @@ void find_fixed_points()
         leaf->info();
 
     // Cluster solutions
-    odesolver::util::KMeansClustering kmeans_clustering(
+    auto kmeans_clustering = odesolver::modes::KMeansClustering::generate(
         80, // maximum_expected_number_of_clusters
         0.01, // upper_bound_for_min_distance
         1000 // maximum_number_of_iterations
     );
-    auto fixed_points = kmeans_clustering.cluster_device_data(fixed_point_search.solutions());
+    auto fixed_points = kmeans_clustering.eval(fixed_point_search.solutions());
     
     // fixed_points.write_to_file("data/fe_fixed_point_search", "fixed_points");
 }

@@ -15,7 +15,6 @@
 #include <odesolver/dev_dat.hpp>
 #include <odesolver/util/monitor.hpp>
 #include <odesolver/util/thrust_functors.hpp>
-#include <odesolver/flow_equations/flow_equation_system.hpp>
 #include <odesolver/collection/leaf.hpp>
 #include <odesolver/collection/collection.hpp>
 #include <odesolver/collection/collection_expander.hpp>

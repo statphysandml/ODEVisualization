@@ -42,5 +42,5 @@ odesolver::DevDatC compute_jacobians()
 std::vector<std::vector<double>> compute_jacobian_elements_t()
 {
     auto jacobian_elements = compute_jacobians();
-    return jacobian_elements.transpose_device_data();
+    return jacobian_elements.to_vec_vec();
 }

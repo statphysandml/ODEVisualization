@@ -65,7 +65,7 @@ void testing_devdat() {
     c.print_elem_by_elem();
 
     // Transpose data
-    auto transposed_vec_vec = c.transpose_device_data();
+    auto transposed_vec_vec = c.to_vec_vec();
     odesolver::DevDatC tranposed_dev_dat(transposed_vec_vec);
     tranposed_dev_dat.print_dim_by_dim();
     tranposed_dev_dat.print_elem_by_elem();
@@ -80,4 +80,28 @@ void testing_devdat() {
 
     // ...
     std::cout << "d.dim_size(): " << d.dim_size() << "; d.n_elems(): " << d.n_elems() << std::endl;
+
+    auto elem = a.get_nth_element(1);
+    for(auto &el: elem)
+        std::cout << el << " ";
+    std::cout << std::endl;
+
+    auto elem2 = a.get_nth_element(1, 1, 2);
+    for(auto &el: elem2)
+        std::cout << el << " ";
+    std::cout << std::endl;
+
+    std::vector<double> new_elem{3, 2};
+    a.set_nth_element(0, new_elem);
+    auto elem3 = a.get_nth_element(0);
+    for(auto &el: elem3)
+        std::cout << el << " ";
+    std::cout << std::endl;
+
+    std::vector<double> new_elem2{4};
+    a.set_nth_element(1, new_elem2, 1);
+    auto elem4 = a.get_nth_element(1);
+    for(auto &el: elem4)
+        std::cout << el << " ";
+    std::cout << std::endl;
 }

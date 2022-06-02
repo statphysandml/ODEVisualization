@@ -7,7 +7,7 @@ namespace odesolver {
 
         RecursiveSearch::RecursiveSearch(
             const json params,
-            std::shared_ptr<odesolver::modes::RecursiveSearchCriterion> criterion_ptr,
+            std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
             std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
         ) : ODEVisualization(params, flow_equations_ptr, jacobians_ptr),
@@ -54,7 +54,7 @@ namespace odesolver {
             const int maximum_recursion_depth,
             const std::vector<std::vector<int>> n_branches_per_depth,
             const std::vector<std::pair<cudaT, cudaT>> variable_ranges,
-            std::shared_ptr<odesolver::modes::RecursiveSearchCriterion> criterion_ptr,
+            std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
             std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr,
             const int number_of_cubes_per_gpu_call,
@@ -75,7 +75,7 @@ namespace odesolver {
 
         RecursiveSearch RecursiveSearch::from_file(
             const std::string rel_config_dir,
-            std::shared_ptr<odesolver::modes::RecursiveSearchCriterion> criterion_ptr,
+            std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr,
             std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
             std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
         )
@@ -109,7 +109,7 @@ namespace odesolver {
 
         void RecursiveSearch::evaluate_with_dynamic_memory()
         {
-            odesolver::gridcomputation::DynamicRecursiveGridComputation dynamic_recursive_grid_computation(number_of_cubes_per_gpu_call_, maximum_number_of_gpu_calls_
+            odesolver::recursivesearch::DynamicRecursiveGridComputation dynamic_recursive_grid_computation(number_of_cubes_per_gpu_call_, maximum_number_of_gpu_calls_
             );
 
             odesolver::DevDatC vertices;
@@ -119,7 +119,7 @@ namespace odesolver {
             
             dynamic_recursive_grid_computation.initialize(
                 odesolver::util::json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth")),
-                odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges")), odesolver::gridcomputation::DynamicRecursiveGridComputation::CubeVertices
+                odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges")), odesolver::recursivesearch::DynamicRecursiveGridComputation::CubeVertices
             );
 
             while(!dynamic_recursive_grid_computation.finished())
@@ -155,7 +155,7 @@ namespace odesolver {
             thrust::host_vector<int> host_indices_of_pot_solutions;
 
             // Initialize recursive grid computation
-            odesolver::gridcomputation::StaticRecursiveGridComputation static_recursive_grid_computation(
+            odesolver::recursivesearch::StaticRecursiveGridComputation static_recursive_grid_computation(
                 maximum_recursion_depth_,
                 number_of_cubes_per_gpu_call_,
                 maximum_number_of_gpu_calls_
@@ -163,7 +163,7 @@ namespace odesolver {
             
             static_recursive_grid_computation.initialize(
                 odesolver::util::json_to_vec_vec<int>(get_entry<json>("n_branches_per_depth")),
-                odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges")), odesolver::gridcomputation::DynamicRecursiveGridComputation::CubeVertices
+                odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges")), odesolver::recursivesearch::DynamicRecursiveGridComputation::CubeVertices
             );
 
             while(!static_recursive_grid_computation.finished())

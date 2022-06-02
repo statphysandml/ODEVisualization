@@ -20,6 +20,39 @@
 using json = nlohmann::json;
 
 namespace odesolver {
+
+    struct get_nth_element_idx
+    {
+        get_nth_element_idx(const int n, const int N) :
+            n_(n), N_(N)
+        {}
+
+        __host__ __device__
+        int operator()(const int &idx)
+        {
+            return idx * N_ + n_;
+        }
+
+        const int n_;
+        const int N_;
+    };
+
+    struct get_transposed_element_idx
+    {
+        get_transposed_element_idx(const int dim, const int N) :
+            dim_(dim), N_(N)
+        {}
+
+        __host__ __device__
+        int operator()(const int &idx)
+        {
+            return idx / dim_ + (idx % dim_) * N_;
+        }
+
+        const int dim_;
+        const int N_;
+    };
+
     template <typename Iterator>
     class DimensionIterator
     {
@@ -59,9 +92,7 @@ namespace odesolver {
     public:
         /** @brief Default constructor */
         DevDat() : DevDat(0, 0)
-        {
-            initialize_dimension_iterators();
-        }
+        {}
 
         /** @brief Constructor for DevDat
          * 
@@ -91,29 +122,26 @@ namespace odesolver {
          * 
          * @param data Vector of elements
          */
-        DevDat(std::vector<std::vector<double>> data) : DevDat(data[0].size(), data.size())
+        DevDat(std::vector<std::vector<double>> data) : DevDat(data.size(), data[0].size())
         {
-            // Fill iterators with data
-            for(auto j = 0; j < dim_; j++) {
-                dev_iterator it = (*this)[j].begin();
-                for (auto i = 0; i < N_; i++) {
-                    *it = data[i][j];
-                    it++;
-                }
+            for(auto n = 0; n < dim_; n++)
+            {
+                thrust::copy(data[n].begin(), data[n].end(), (*this)[n].begin());
             }
+            transpose();
         }
 
         // Copy constructor
         DevDat(const DevDat& other) : Vec(other), dim_(other.dim_), N_(other.N_)
         {
-            // std::cout << "Copy constructor is called" << std::endl;
+            // std::cout << "Copy constructor is called with other.N=" << other.N_ << ", other.dim_" << other.dim_ << ", other vec size" << other.size() << std::endl;
             initialize_dimension_iterators();
         }
 
         // Assignment - https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
         DevDat& operator=(DevDat other) {
-            /* std::cout << "Assignment operator is called" << std::endl;
-            print_range("This", this->begin(), this->end());
+            // std::cout << "Assignment operator is called" << std::endl;
+            /* print_range("This", this->begin(), this->end());
             print_range("Other", other.begin(), other.end()); */
             swapp(*this, other);
             return *this;
@@ -122,8 +150,8 @@ namespace odesolver {
         // Move constructor
         DevDat(DevDat&& other) noexcept : DevDat() // initialize via default constructor, C++11 only
         {
-            /* std::cout << "&& Move operator is called" << std::endl;
-            print_range("This", this->begin(), this->end());
+            // std::cout << "&& Move operator is called" << std::endl;
+            /* print_range("This", this->begin(), this->end());
             print_range("Other", other.begin(), other.end()); */
             swapp(*this, other);
         }
@@ -142,6 +170,11 @@ namespace odesolver {
             swap(first.const_dimension_iterators_, second.const_dimension_iterators_);
         }
         
+        Vec data() const
+        {
+            return static_cast<Vec>(*this);
+        }
+
         /** @brief Returns entries in i-th dimension of DevDat */
         const DimensionIterator<ConstVecIterator>& operator[] (int i) const
         {
@@ -192,17 +225,20 @@ namespace odesolver {
                 std::cerr << "error in get_nth_element: end_idx bigger than dim_size()" << std::endl;
                 std::exit(EXIT_FAILURE);
             }
+            
+            // map = {start_idx * N_ + n, (start_idx + 1) * N_ n, ....(start_idx + n_dims) * N_ + n}
+            Vec nth_element_cuda(n_dims);
+            thrust::gather(
+                thrust::make_transform_iterator(
+                    thrust::make_counting_iterator(start_idx), get_nth_element_idx(n, N_)),
+                thrust::make_transform_iterator(
+                    thrust::make_counting_iterator(start_idx + n_dims), get_nth_element_idx(n, N_)),
+                this->begin(),
+                nth_element_cuda.begin()
+            );
+
             std::vector<double> nth_element(n_dims, 0);
-            auto iterator = this->begin() + start_idx * N_;
-            // Jump to nth element in start_idx-th dimension
-            thrust::advance(iterator, n);
-            nth_element[0] = *iterator;
-            // Fill further dimensions
-            for(auto j = 1; j < n_dims; j++)
-            {
-                thrust::advance(iterator, N_);
-                nth_element[j] = *iterator;
-            }
+            thrust::copy(nth_element_cuda.begin(), nth_element_cuda.end(), nth_element.begin());
             return nth_element;
         }
 
@@ -214,16 +250,15 @@ namespace odesolver {
                 std::cerr << "error in set_nth_element: nth_element.size() - start_idx bigger than dim_size()" << std::endl;
                 std::exit(EXIT_FAILURE);
             }
-            auto iterator = this->begin() + start_idx * N_;
-            // Jump to nth element in zeroth dimension
-            thrust::advance(iterator, n);
-            *iterator = nth_element[0];
-            // Fill further dimensions
-            for(auto j = 1; j < nth_element.size(); j++)
-            {
-                thrust::advance(iterator, N_);
-                *iterator = nth_element[j];
-            }
+            Vec nth_element_cuda(nth_element.size());
+            thrust::copy(nth_element.begin(), nth_element.end(), nth_element_cuda.begin());
+            thrust::scatter(
+                nth_element_cuda.begin(),
+                nth_element_cuda.end(),
+                thrust::make_transform_iterator(
+                    thrust::make_counting_iterator(start_idx), get_nth_element_idx(n, N_)),
+                this->begin()
+            ); 
         }
 
         void set_N(const size_t N)
@@ -234,6 +269,11 @@ namespace odesolver {
                 dimension_iterators_[i].set_N(N);
                 const_dimension_iterators_[i].set_N(N);
             }
+        }
+
+        void set_dim(const size_t dim)
+        {
+            dim_ = dim;
         }
 
         void initialize_dimension_iterators()
@@ -254,20 +294,56 @@ namespace odesolver {
             }
         }
 
-        /** @brief Converts the given DevDat to a vector of N elements with each of size dim */
-        std::vector<std::vector<double>> transpose_device_data() const
+        void reshape(const size_t dim, const size_t N)
         {
-            // dim x total_number_of_coordinates (len = total_number_of_coordinates)
-            // vs. total_number_of_coordinates x dim (len = dim)
-            thrust::host_vector<cudaT> host_device_data(*this);
-
-            std::vector<std::vector<double>> transposed_device_data(N_, std::vector<double> (dim_, 0));
-            for(auto j = 0; j < dim_; j++) {
-                for (auto i = 0; i < N_; i++) {
-                    transposed_device_data[i][j] = host_device_data[j * N_ + i];
-                }
+            if(dim * N != dim_ * N_)
+            {
+                std::cerr << "error in reshape: cannot reshape DevDat of shape " << dim_ << " x " << N_ << " into DevDat of shape " << dim << " x " << N << std::endl;
+                std::exit(EXIT_FAILURE);
             }
-            return transposed_device_data;
+            dim_ = dim;
+            N_ = N;
+            initialize_dimension_iterators();
+        }
+
+        void resize(const size_t dim, const size_t N)
+        {
+            Vec::resize(dim * N);
+            dim_ = dim;
+            N_ = N;
+            initialize_dimension_iterators();
+        }
+
+        /** @brief Converts the given DevDat to a vector of N elements with each of size dim */
+        std::vector<std::vector<double>> to_vec_vec() const
+        {
+            auto transposed_device_data = transposed();
+            std::vector<std::vector<double>> data(N_, std::vector<double> (dim_, 0));
+            for(auto n = 0; n < n_elems(); n++)
+            {
+                thrust::copy(transposed_device_data[n].begin(), transposed_device_data[n].end(), data[n].begin());
+            }
+            return data;
+        }
+
+        DevDat transposed() const
+        {
+            // map = {start_idx * N_ + n, (start_idx + 1) * N_ n, ....(start_idx + n_dims) * N_ + n}
+            Vec transposed_device_data(N_ * dim_);
+            thrust::gather(
+                thrust::make_transform_iterator(
+                    thrust::make_counting_iterator(0), get_transposed_element_idx(dim_, N_)),
+                thrust::make_transform_iterator(
+                    thrust::make_counting_iterator(int(N_ * dim_)), get_transposed_element_idx(dim_, N_)),
+                this->begin(),
+                transposed_device_data.begin()
+            );
+            return DevDat(transposed_device_data, N_);
+        }
+
+        void transpose()
+        {
+            *this = transposed();
         }
 
         /** @brief Print dimension by dimension */
@@ -282,7 +358,7 @@ namespace odesolver {
         {
             for(auto n = 0; n < N_; n++)
             {
-                dev_vec nth_elem(get_nth_element(n));
+                Vec nth_elem(get_nth_element(n));
                 print_range("Elem " + std::to_string(n), nth_elem.begin(), nth_elem.end());
             }
         }

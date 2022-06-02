@@ -2,27 +2,16 @@
 
 namespace boost { namespace numeric { namespace odeint {
 
-    template<>
-    struct is_resizeable< odesolver::DevDatC >
+    bool same_size_impl<odesolver::DevDatC, odesolver::DevDatC>::same_size(const odesolver::DevDatC &v1,
+                               const odesolver::DevDatC &v2)
     {
-        typedef boost::true_type type;
-        static const bool value = type::value;
-    };
+        return (v1.size() == v2.size()) && (v1.dim_size() == v2.dim_size()) && (v1.n_elems() == v2.n_elems());
+    }
 
-    template<>
-    struct same_size_impl< odesolver::DevDatC, odesolver::DevDatC >
-    { // define how to check size
-        __host__ __device__
-        static bool same_size( const odesolver::DevDatC &v1,
-                               const odesolver::DevDatC &v2 );
-    };
-
-    template<>
-    struct resize_impl< odesolver::DevDatC, odesolver::DevDatC >
-    { // define how to resize
-        __host__ __device__
-        static void resize( odesolver::DevDatC &v1,
-                            const odesolver::DevDatC &v2 );
-    };
+    void resize_impl<odesolver::DevDatC, odesolver::DevDatC>::resize(odesolver::DevDatC &v1,
+                            const odesolver::DevDatC &v2)
+    {
+        v1.resize(v2.dim_size(), v2.n_elems());
+    }
 
 } } }
