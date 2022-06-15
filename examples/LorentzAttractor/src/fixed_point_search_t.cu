@@ -17,7 +17,7 @@ void find_fixed_points()
         std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-1.0, 31.0)};
 
 
-    std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> recursive_search_criterion_ptr = std::make_unique<odesolver::recursivesearch::FixedPointCriterion>(3);
+    std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> recursive_search_criterion_ptr = std::make_unique<odesolver::recursivesearch::FixedPointCriterion>();
 
     auto fixed_point_search = odesolver::modes::RecursiveSearch::generate(
         maximum_recursion_depth,

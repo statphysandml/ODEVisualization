@@ -68,15 +68,16 @@ namespace odesolver {
 
         thrust::host_vector<int> FixedPointCriterion::determine_potential_solutions(odesolver::DevDatC& vertices, odesolver::DevDatC& vertex_velocities)
         {
-            auto total_number_of_cubes = int(vertex_velocities.n_elems() / pow(2, dim_));
+            auto dim = vertex_velocities.dim_size();
+            auto total_number_of_cubes = int(vertex_velocities.n_elems() / pow(2, dim));
 
             auto number_of_vertices = vertex_velocities.n_elems(); // to avoid a pass of this within the lambda capture
-            thrust::host_vector<dev_vec_bool> velocity_sign_properties(dim_);
+            thrust::host_vector<dev_vec_bool> velocity_sign_properties(dim);
             thrust::generate(velocity_sign_properties.begin(), velocity_sign_properties.end(), [number_of_vertices]() { return dev_vec_bool (number_of_vertices, false); });
 
             // Initial potential fixed points -> at the beginning all cubes contain potential fixed points ( false = potential fixed point )
             dev_vec_bool pot_fixed_points(total_number_of_cubes, false);
-            for(auto dim_index = 0; dim_index < dim_; dim_index ++)
+            for(auto dim_index = 0; dim_index < dim; dim_index ++)
             {
                 // Turn vertex_velocities into an array with 1.0 and 0.0 for change in sign
                 thrust::transform(vertex_velocities[dim_index].begin(), vertex_velocities[dim_index].end(), velocity_sign_properties[dim_index].begin(), greater_than_zero());
@@ -90,7 +91,7 @@ namespace odesolver {
                     print_range("Summed positive signs in dim " + std::to_string(dim_index), summed_positive_signs.begin(), summed_positive_signs.end());
 
                 // Check if the sign has changed in this component (dimension), takes the previous status into account
-                thrust::transform(summed_positive_signs.begin(), summed_positive_signs.end(), pot_fixed_points.begin(), pot_fixed_points.begin(), check_for_no_fixed_point(pow(2, dim_)));
+                thrust::transform(summed_positive_signs.begin(), summed_positive_signs.end(), pot_fixed_points.begin(), pot_fixed_points.begin(), check_for_no_fixed_point(pow(2, dim)));
             }
 
             // Genereate mock fixed points

@@ -20,7 +20,7 @@ void find_fixed_points()
         std::pair<cudaT, cudaT> (0.05, 2.0)
     };
 
-    std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> recursive_search_criterion_ptr = std::make_unique<odesolver::recursivesearch::FixedPointCriterion>(3);
+    std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> recursive_search_criterion_ptr = std::make_unique<odesolver::recursivesearch::FixedPointCriterion>();
 
     auto fixed_point_search = odesolver::modes::RecursiveSearch::generate(
         maximum_recursion_depth,
@@ -30,7 +30,7 @@ void find_fixed_points()
         odesolver::flowequations::generate_flow_equations<FourPointSystemFlowEquations>(0),
         nullptr,
         400000,
-        100000
+        1000
     );
 
     // Find fixed point solutions
@@ -39,8 +39,8 @@ void find_fixed_points()
     typedef std::chrono::duration<float> fsec;
     auto t0 = Time::now();
 
-    // fixed_point_search.find_fixed_points_dynamic_memory();
-    fixed_point_search.eval("preallocated_memory");
+    fixed_point_search.eval();
+    // fixed_point_search.eval("preallocated_memory");
     auto t1 = Time::now();
     fsec fs = t1 - t0;
     ms d = std::chrono::duration_cast<ms>(fs);

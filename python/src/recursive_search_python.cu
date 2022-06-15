@@ -16,7 +16,7 @@ namespace odesolver {
             py::class_<odesolver::recursivesearch::RecursiveSearchCriterion, std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion>>(mrecursive_search, "RecursiveSearchCriterion");
 
             py::class_<odesolver::recursivesearch::FixedPointCriterion, std::shared_ptr<odesolver::recursivesearch::FixedPointCriterion>, odesolver::recursivesearch::RecursiveSearchCriterion>(mrecursive_search, "FixedPointCriterion")
-                .def(py::init<uint>(), "dim"_a);
+                .def(py::init());
         }
     }
 }
