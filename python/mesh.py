@@ -4,7 +4,7 @@ from collections.abc import Iterable
 
 import numpy as np
 
-from odesolver.vfcoor import VFCoor
+from odesolver.coordinates import Coordinates
 
 
 class Mesh:
@@ -36,12 +36,12 @@ class Mesh:
     higher dimensions, i.e. the scan starts in the first direction with fixed higher dimensions, and repreats this
     subsequently for respective values in higher dimensions."""
     def vertices(self, fixed_variable_idx: Optional[int] = 0):
-        return VFCoor(self._mesh.eval(fixed_variable_idx))
+        return Coordinates(self._mesh.eval(fixed_variable_idx))
 
-    """Emulates the behaviour of np.mgrid applied on given VFCoor or on an evaluated grid based on the provided fixed_variable_idx"""
-    def mgrid(self, fixed_variable_idx: Optional[int] = 0, data: Optional[VFCoor] = None):
+    """Emulates the behaviour of np.mgrid applied on given Coordinates or on an evaluated grid based on the provided fixed_variable_idx"""
+    def mgrid(self, fixed_variable_idx: Optional[int] = 0, data: Optional[Coordinates] = None):
         n_branch_idxs = [idx for idx, n_branch in enumerate(self.n_branches) if n_branch != 1]
         if data is None:
-            return VFCoor(self._mesh.eval(fixed_variable_idx)).data_in_dim(n_branch_idxs).reshape((len(n_branch_idxs), *np.array(self.n_branches)[n_branch_idxs][::-1]))[::-1]
+            return Coordinates(self._mesh.eval(fixed_variable_idx)).data_in_dim(n_branch_idxs).reshape((len(n_branch_idxs), *np.array(self.n_branches)[n_branch_idxs][::-1]))[::-1]
         else:
             return data.data_in_dim(n_branch_idxs).reshape((len(n_branch_idxs), *np.array(self.n_branches)[n_branch_idxs][::-1]))[::-1]

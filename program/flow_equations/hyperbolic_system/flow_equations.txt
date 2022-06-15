@@ -1,1 +1,0 @@
-List[Equal[Derivative[1][x][k], Plus[y[k], 2]], Equal[Derivative[1][y][k], Plus[x[k], y[k], -1]]]

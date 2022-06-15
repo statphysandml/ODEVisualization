@@ -430,7 +430,7 @@ namespace odesolver {
                                                                     accum_n_branches_per_dim_[dim_index]));
 
                 // Testing
-                if (monitor)
+                if(monitor)
                     print_range("Cube center vertices in dimension " + std::to_string(dim_index + 1),
                                 center_vertices[dim_index].begin(), center_vertices[dim_index].end());
             }

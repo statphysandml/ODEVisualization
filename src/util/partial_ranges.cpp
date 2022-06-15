@@ -13,7 +13,7 @@ namespace odesolver {
                 partial_variable_ranges_(partial_variable_ranges), fixed_variables_(fixed_variables),
                 extend_(extend)
         {
-            for (const auto &fixed_variable : fixed_variables_)
+            for(const auto &fixed_variable : fixed_variables_)
             {
                 if(fixed_variable.size() + partial_variable_ranges.size() != n_branches.size()) {
                     std::cout << "\nERROR: (Number of entries for at least one vector in fixed_variables) + variable_ranges.size() is inconsistent with the n_branches.size()." << std::endl;

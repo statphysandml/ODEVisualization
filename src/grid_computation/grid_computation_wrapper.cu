@@ -16,7 +16,7 @@ namespace odesolver {
         void GridComputationWrapper::print_expanded_vectors()
         {
             auto i = 0;
-            for (auto depth_index = 0; depth_index < expanded_element_indices_.dim_size(); depth_index++) {
+            for(auto depth_index = 0; depth_index < expanded_element_indices_.dim_size(); depth_index++) {
                 print_range(
                         "Expanded cube indices after filling with individual cube indices in depth " + std::to_string(i),
                         expanded_element_indices_[depth_index].begin(),

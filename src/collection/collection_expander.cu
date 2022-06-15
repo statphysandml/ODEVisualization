@@ -109,8 +109,8 @@ namespace odesolver {
                                                     thrust::make_counting_iterator(collection->get_internal_end_index()),
                                                     *depth_iterator[depth]);
                 // Increment all other depth iterators by the amount of vertices according to the number of elements in the considered collection
-                for (auto depth_index = 0; depth_index < expected_depth_ + 1; depth_index++) {
-                    if (depth_index != depth)
+                for(auto depth_index = 0; depth_index < expected_depth_ + 1; depth_index++) {
+                    if(depth_index != depth)
                         *depth_iterator[depth_index] = *depth_iterator[depth_index] + number_of_elements_per_collection_[collection_index]; // Equivalent to collection->size();
                 }
                 collection_index++;

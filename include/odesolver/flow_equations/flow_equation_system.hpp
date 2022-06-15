@@ -15,7 +15,7 @@ namespace odesolver {
             // https://www.boost.org/doc/libs/1_70_0/libs/numeric/odeint/doc/html/boost_numeric_odeint/odeint_in_detail/state_types__algebras_and_operations.html
             template<class State, class Deriv>
             void operator()( const State &x, Deriv &dxdt, cudaT t ) const {
-                for (auto dim_index = 0; dim_index < dim_; dim_index++) {
+                for(auto dim_index = 0; dim_index < dim_; dim_index++) {
                     (*flow_equations_)(dxdt[dim_index], x, dim_index);
                 }
             }

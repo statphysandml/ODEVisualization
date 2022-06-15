@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, Union, Callable
 
-from odesolver.vfcoor import VFCoor
+from odesolver.coordinates import Coordinates
 from odesolver.cube_index_path import CubeIndexPath
 
 
@@ -33,7 +33,7 @@ class RecursiveSearch:
 
     def solutions(self, return_type="vfcoor"):
         if return_type == "vfcoor":
-            return VFCoor(self._recursive_search.solutions())
+            return Coordinates(self._recursive_search.solutions())
         elif return_type == "cube_indices":
             return CubeIndexPath(self._recursive_search.leaves())
     
@@ -44,4 +44,4 @@ class RecursiveSearch:
     #         pass
     #     elif vertex_mode == "vertices":
     #         pass
-    #     return VFCoor(...)
+    #     return Coordinates(...)

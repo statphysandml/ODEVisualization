@@ -19,6 +19,8 @@
 
 using json = nlohmann::json;
 
+// ToDo: Replace eval by smaller functions to be able to compute separatrizes for one fixed only, etc. repulsive vs. attractive, etc...
+
 
 namespace odesolver {
     namespace modes {

@@ -4,13 +4,13 @@ from collections.abc import Iterable
 
 import numpy as np
 
-from odesolver.vfcoor import VFCoor
+from odesolver.coordinates import Coordinates
 
 
 class Jacobians:
-    def __init__(self, elements: Union[VFCoor, Iterable, Iterable[Iterable]], dim: Optional[int] = None):
+    def __init__(self, elements: Union[Coordinates, Iterable, Iterable[Iterable]], dim: Optional[int] = None):
         from odevisualizationlib.modes import Jacobians as VFJacobians
-        if isinstance(elements, VFCoor):
+        if isinstance(elements, Coordinates):
             self._jacobians = VFJacobians.from_devdat(elements.raw())
         elif isinstance(elements[0], Iterable):
             self._jacobians = VFJacobians.from_vec_vec(elements)
@@ -21,7 +21,7 @@ class Jacobians:
         self._jacobians.eval()
 
     @classmethod
-    def from_vfcoor(cls, elements: VFCoor):
+    def from_vfcoor(cls, elements: Coordinates):
         return cls(elements=elements)
 
     @classmethod

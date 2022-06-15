@@ -21,7 +21,7 @@ namespace odesolver {
             variable_ranges_ = odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges"));
             
             // Tests
-            if (n_branches_per_depth_.size() < maximum_recursion_depth_)
+            if(n_branches_per_depth_.size() < maximum_recursion_depth_)
             {
                 std::cout << "\nERROR: Maximum recursion depth " << maximum_recursion_depth_
                         << " is higher than the available number of branches per depth " << n_branches_per_depth_.size()
@@ -29,9 +29,9 @@ namespace odesolver {
                 std::exit(EXIT_FAILURE);
             }
 
-            for (const auto &n_branches : n_branches_per_depth_)
+            for(const auto &n_branches : n_branches_per_depth_)
             {
-                if (n_branches.size() != dim_) {
+                if(n_branches.size() != dim_) {
                     std::cout << "\nERROR: Number of branches per depth " << n_branches.size() << " do not coincide with dimension " << dim_ <<  std::endl;
                     std::exit(EXIT_FAILURE);
                 }

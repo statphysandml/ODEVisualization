@@ -1,9 +1,0 @@
-{
-    "dim": 2,
-    "theory": "hyperbolic_system",
-    "explicit_functions": [
-        "a",
-        "b"
-    ],
-    "k": 1
-}

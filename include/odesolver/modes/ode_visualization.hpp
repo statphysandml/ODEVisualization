@@ -6,7 +6,6 @@
 #include <param_helper/params.hpp>
 #include <param_helper/filesystem.hpp>
 
-#include <odesolver/util/computation_parameters.hpp>
 #include <odesolver/flow_equations/flow_equation.hpp>
 #include <odesolver/flow_equations/jacobian_equation.hpp>
 
@@ -32,17 +31,6 @@ namespace odesolver {
                 {
                     append_parameters(*flow_equations_ptr_.get());
                 }
-                
-                /* if(param_helper::fs::check_if_parameter_file_exists(computation_parameters_path_, "computation_parameters", false))
-                {
-                    std::cout << "Computations parameters are loaded from computation_parameters.json" << std::endl;
-                    json computation_params = param_helper::fs::read_parameter_file(computation_parameters_path_, "computation_parameters", false);
-                    computation_parameters_ = odesolver::util::ComputationParameters(computation_params);
-                }
-                else
-                {
-                    std::cout << "Computations are performed with default computation parameters - change them by providing a computation_parameters_path or with the member function: set_computation_parameters(), or in the automatically generated computation_parameters.json file." << std::endl;
-                } */
             }
 
             void write_configs_to_file(const std::string& rel_config_dir) {

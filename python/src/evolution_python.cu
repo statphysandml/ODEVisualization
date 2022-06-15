@@ -7,8 +7,6 @@ namespace odesolver {
         void init_evolution(py::module &m)
         {
             auto mevolution = m.def_submodule("evolution");
-            
-            py::class_<odesolver::evolution::EvolutionObserver, std::shared_ptr<odesolver::evolution::EvolutionObserver>>(mevolution, "EvolutionObserver");
 
             auto mstepper = mevolution.def_submodule("stepper");
 

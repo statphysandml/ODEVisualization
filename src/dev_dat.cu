@@ -2,7 +2,7 @@
 
 
 namespace odesolver {
-    void write_data_to_ofstream(const DevDatC &data, std::ofstream &os, std::vector<int> skip_iterators_in_dimensions, std::vector< dev_iterator > end_iterators)
+    void write_data_to_ofstream(const DevDatC &data, std::ofstream &os, std::vector<int> skip_iterators_in_dimensions, std::vector<dev_iterator> end_iterators)
     {
         std::vector< const_dev_iterator > data_iterators;
         for(auto i = 0; i < data.dim_size(); i++)

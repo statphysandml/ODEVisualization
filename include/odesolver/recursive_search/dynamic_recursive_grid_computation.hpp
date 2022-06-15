@@ -3,7 +3,6 @@
 
 #include <odesolver/header.hpp>
 #include <odesolver/dev_dat.hpp>
-#include <odesolver/util/computation_parameters.hpp>
 #include <odesolver/flow_equations/flow_equation.hpp>
 #include <odesolver/collection/buffer.hpp>
 #include <odesolver/collection/collection.hpp>

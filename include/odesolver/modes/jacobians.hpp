@@ -8,7 +8,7 @@
 #include <odesolver/header.hpp>
 #include <odesolver/dev_dat.hpp>
 
-#include <param_helper/json.hpp>
+#include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
 

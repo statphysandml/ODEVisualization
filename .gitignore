@@ -34,6 +34,8 @@ program/*
 build/*
 install/*
 .vscode/*
+.idea/*
+ODEVisualizationLib.egg-info/
 
 examples/LorentzAttractor/*
 !examples/LorentzAttractor/CMakeLists.txt

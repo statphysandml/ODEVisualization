@@ -11,7 +11,6 @@
 #include <odesolver/boost/dev_dat_boost_integration.hpp>
 #include <boost/numeric/odeint/integrate/integrate_const.hpp>
 #include <odesolver/evolution/evolution_observer.hpp>
-#include <odesolver/evolution/max_step_checker.hpp>
 #include <odesolver/modes/ode_visualization.hpp>
 
 
@@ -20,9 +19,6 @@ namespace odesolver {
 
         struct Evolution : public ODEVisualization
         {
-            // enum Stepper {runga_kutta4, runga_kutta_dopri5};
-            // static const std::map< std::string, Stepper> mode_resolver;
-
             // From config
             explicit Evolution(
                 const json params,

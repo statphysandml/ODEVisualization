@@ -15,7 +15,7 @@
 #include <algorithm>
 
 #include <param_helper/filesystem.hpp>
-#include <param_helper/json.hpp>
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 

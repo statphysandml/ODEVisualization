@@ -14,13 +14,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Compilation options
 set(BUILD_PYTHON_BINDINGS ON CACHE BOOL "Enable building of Python bindings")
-set(RUN_WITH_PYTHON_BACKEND ON CACHE BOOL "Use Python backend to compute expectation values, etc.")
 set(BUILD_DOCS ON CACHE BOOL "Enable building of documentation")
-
-# Additional compliation options to be able to activate the environment before the actual simulation in a generated bash script.
-# These are only required for runs with a queue-script. (used by include/cluster_support/config.h.in)
-### set(VIRTUAL_ENV "None" CACHE STRING "Name of the virtual environment")
-### set(CONDA_ACTIVATE_PATH "None" CACHE STRING "Path to conda activate path-to-conda-activate/bin/activate")
 
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
@@ -56,22 +50,6 @@ if(BUILD_PYTHON_BINDINGS)
     add_subdirectory(ext/pybind11)
     # Python wrapper
     add_subdirectory(python)
-elseif(RUN_WITH_PYTHON_BACKEND)
-    message("Load pybind11 module")
-    # Add Python bindings for correct binding of pybind11 without usage of pybind11_modules
-    add_subdirectory(ext/pybind11)
-    # Or without pybind11:
-    # set(Python3_FIND_VIRTUALENV "FIRST")
-    # find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
-    # include_directories(${Python3_INCLUDE_DIRS})
-endif()
-
-if(RUN_WITH_PYTHON_BACKEND)
-    set(target_link_libraries_python_appendix "pybind11::embed")
-    message("Running with python backend enabled.")
-else()
-    # Use library without the integration of python code
-    message("Running with python backend disabled.")
 endif()
 
 # compile the library
@@ -88,7 +66,7 @@ endif()
 
 if(BUILD_DOCS)
   # Add the documentation
-  ### add_subdirectory(doc)
+  add_subdirectory(doc)
 endif()
 
 

@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 
-#include <param_helper/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <odesolver/header.hpp>
 #include <odesolver/dev_dat.hpp>

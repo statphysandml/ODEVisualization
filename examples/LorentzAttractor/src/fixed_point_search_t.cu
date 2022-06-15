@@ -5,20 +5,17 @@ void find_fixed_points()
 {
     const int maximum_recursion_depth = 18;
     const std::vector< std::vector<int> > n_branches_per_depth = std::vector< std::vector<int> > {
-            std::vector<int> {10, 10, 10, 10, 10}, std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2},
-            std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2},
-            std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2},
-            std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2},
-            std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2},
-            std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}, std::vector<int> {2, 2, 2, 2, 2}};
-    // mu, Lam3, Lam4, g3, g4
-    const std::vector <std::pair<cudaT, cudaT> > variable_ranges = std::vector <std::pair<cudaT, cudaT> > {
-        std::pair<cudaT, cudaT> (-2.0, 2.0),
-        std::pair<cudaT, cudaT> (-1.0, 1.0),
-        std::pair<cudaT, cudaT> (-2.0, 2.0),
-        std::pair<cudaT, cudaT> (0.05, 2.0),
-        std::pair<cudaT, cudaT> (0.05, 2.0)
+        std::vector<int> {10, 10, 10}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
+        std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
+        std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
+        std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
+        std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2},
+        std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}, std::vector<int> {2, 2, 2}
     };
+
+    const std::vector <std::pair<cudaT, cudaT> > variable_ranges = std::vector <std::pair<cudaT, cudaT> > {
+        std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-12.0, 12.0), std::pair<cudaT, cudaT> (-1.0, 31.0)};
+
 
     std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> recursive_search_criterion_ptr = std::make_unique<odesolver::recursivesearch::FixedPointCriterion>(3);
 
@@ -27,9 +24,9 @@ void find_fixed_points()
         n_branches_per_depth,
         variable_ranges,
         recursive_search_criterion_ptr,
-        odesolver::flowequations::generate_flow_equations<FourPointSystemFlowEquations>(0),
+        odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0),
         nullptr,
-        400000,
+        100,
         100000
     );
 
@@ -40,7 +37,8 @@ void find_fixed_points()
     auto t0 = Time::now();
 
     // fixed_point_search.find_fixed_points_dynamic_memory();
-    fixed_point_search.eval("preallocated_memory");
+    fixed_point_search.eval("dynamic");
+
     auto t1 = Time::now();
     fsec fs = t1 - t0;
     ms d = std::chrono::duration_cast<ms>(fs);
@@ -53,10 +51,11 @@ void find_fixed_points()
     std::vector<std::shared_ptr<odesolver::collections::Leaf>> leaves = fixed_point_search.leaves();
     for(auto &leaf: leaves)
         leaf->info();
+    std::cout << "Found leaves " << fixed_point_search.leaves().size() << std::endl;
 
     // Cluster solutions
     auto kmeans_clustering = odesolver::modes::KMeansClustering::generate(
-        10, // maximum_expected_number_of_clusters
+        80, // maximum_expected_number_of_clusters
         0.01, // upper_bound_for_min_distance
         1000 // maximum_number_of_iterations
     );

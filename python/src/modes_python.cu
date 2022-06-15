@@ -8,16 +8,17 @@ namespace odesolver {
         {
             auto mmodes = m.def_submodule("modes");
             
-            py::class_<odesolver::modes::Evolution, std::shared_ptr<odesolver::modes::Evolution>>(mmodes, "Evolution")
-            .def(py::init(&odesolver::modes::Evolution::generate), "flow_equations"_a, "jacobian_equations"_a=nullptr);
+            py::class_<odesolver::modes::Evolution, std::shared_ptr<odesolver::modes::Evolution>> evolution(mmodes, "Evolution");
+            
+            evolution.def(py::init(&odesolver::modes::Evolution::generate), "flow_equations"_a, "jacobian_equations"_a=nullptr);
 
-            init_evolution<odesolver::evolution::stepper::RungaKutta4>(mmodes);
-            init_evolution<odesolver::evolution::stepper::RungaKuttaDopri5>(mmodes);
-            init_evolution<odesolver::evolution::stepper::ControlledRungaKutta<odesolver::evolution::stepper::RungaKuttaDopri5>>(mmodes);
+            init_evolution<odesolver::evolution::stepper::RungaKutta4>(mmodes, evolution);
+            init_evolution<odesolver::evolution::stepper::RungaKuttaDopri5>(mmodes, evolution);
+            init_evolution<odesolver::evolution::stepper::ControlledRungaKutta<odesolver::evolution::stepper::RungaKuttaDopri5>>(mmodes, evolution);
 
-            init_evolution_observer<odesolver::evolution::stepper::RungaKutta4>(mmodes);
-            init_evolution_observer<odesolver::evolution::stepper::RungaKuttaDopri5>(mmodes);
-            init_evolution_observer<odesolver::evolution::stepper::ControlledRungaKutta<odesolver::evolution::stepper::RungaKuttaDopri5>>(mmodes);
+            init_evolution_observer<odesolver::evolution::stepper::RungaKutta4>(mmodes, evolution);
+            init_evolution_observer<odesolver::evolution::stepper::RungaKuttaDopri5>(mmodes, evolution);
+            init_evolution_observer<odesolver::evolution::stepper::ControlledRungaKutta<odesolver::evolution::stepper::RungaKuttaDopri5>>(mmodes, evolution);
 
             py::class_<odesolver::modes::Jacobians, std::shared_ptr<odesolver::modes::Jacobians>>(mmodes, "Jacobians")
                 .def(py::init<std::vector<double>, uint>(), "jacobian_elements"_a, "dim"_a)

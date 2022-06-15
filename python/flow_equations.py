@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, Union, Callable
 
-from odesolver.vfcoor import VFCoor
+from odesolver.coordinates import Coordinates
 
 
 class FlowEquations:
@@ -25,10 +25,10 @@ class FlowEquations:
     def flow_parameters(self):
         return self._flow.flow_parameters
 
-    def flow(self, coordinates: VFCoor):
+    def flow(self, coordinates: Coordinates):
         from odevisualizationlib.flow import compute_flow
-        return VFCoor(compute_flow(coordinates.raw(), self._flow))
+        return Coordinates(compute_flow(coordinates.raw(), self._flow))
 
-    def jacobians(self, coordinates: VFCoor):
+    def jacobians(self, coordinates: Coordinates):
         from odevisualizationlib.flow import compute_jacobian_elements
-        return VFCoor(compute_jacobian_elements(coordinates.raw(), self._jacobians))
+        return Coordinates(compute_jacobian_elements(coordinates.raw(), self._jacobians))
