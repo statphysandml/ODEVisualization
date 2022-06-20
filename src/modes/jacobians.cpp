@@ -41,14 +41,14 @@ namespace odesolver {
             eigenvectors_.clear();
             eigenvalues_.clear();
             for(auto &jacobian : jacobians_) {
-                std::cout << "The jacobian matrix is:\n" << jacobian << std::endl;
+                /* std::cout << "The jacobian matrix is:\n" << jacobian << std::endl; */
                 Eigen::EigenSolver<MatXd> eigensolver(jacobian);
                 if(eigensolver.info() != Eigen::Success)
                     abort();
-                std::cout << "The eigenvalues of the jacobian matrix are:\n" << eigensolver.eigenvalues() << std::endl;
+                /* std::cout << "The eigenvalues of the jacobian matrix are:\n" << eigensolver.eigenvalues() << std::endl;
                 std::cout << "Here's a matrix whose columns are eigenvectors of the jacobian\n"
                         << "corresponding to these eigenvalues:\n"
-                        << eigensolver.eigenvectors() << "\n" << std::endl;
+                        << eigensolver.eigenvectors() << "\n" << std::endl; */
                 eigenvectors_.push_back(eigensolver.eigenvectors());
                 eigenvalues_.push_back(eigensolver.eigenvalues());
             }

@@ -1,0 +1,7 @@
+{
+    "project_name": "My Flow Equation System",
+    "project_slug": "{{ cookiecutter.project_name|replace('+', 'p')|slugify }}",
+    "full_name": "Your Name",
+    "python_bindings": ["Yes", "No"],
+    "license": ["None", "MIT", "BSD-2", "GPL-3.0", "LGPL-3.0"]
+}

@@ -1,0 +1,1 @@
+List[Equal[Derivative[1][x][t], Plus[-4, Power[x[t], 2], Times[-1, y[t]]]], Equal[Derivative[1][y][t], Times[Plus[-4, Power[x[t], 2], Times[-1, y[t]]], Power[y[t], -1]]]]

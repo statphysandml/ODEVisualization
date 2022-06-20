@@ -5,6 +5,7 @@ import subprocess
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
+from setuptools.command.install import install
 
 
 class CMakeExtension(Extension):
@@ -33,8 +34,9 @@ class CMakeBuild(build_ext):
         cmake_args = ['-DBUILD_DOCS=OFF',
                       '-DBUILD_TESTING=OFF',
                       '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable,
-                     ]
+                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+        if odevisualization_cmake_prefix_path is not None:
+            cmake_args += ['-DCMAKE_PREFIX_PATH=' + odevisualization_cmake_prefix_path]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -47,7 +49,8 @@ class CMakeBuild(build_ext):
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
             build_args += ['--', '-j12']
 
-        cmake_args += ['-DGPU=ON']
+        if gpu is not None:
+            cmake_args += ['-DGPU=' + gpu]
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
@@ -55,26 +58,56 @@ class CMakeBuild(build_ext):
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.', '--target', 'odevisualization_python'] + build_args, cwd=self.build_temp)
+        subprocess.check_call(['cmake', '--build', '.', '--target', 'threepointsystem_python'] + build_args, cwd=self.build_temp)
+
+
+class InstallCommand(install):
+    user_options = install.user_options + [
+        # ('someopt', None, None), # a 'flag' option
+        ('odevisualization-cmake-prefix-path=', None, "CMAKE_PREFIX_PATH to the ODEVisualizationLib"), # an option that takes a value
+        ('GPU=', None, "Running on GPU")
+    ]
+
+    def initialize_options(self):
+        install.initialize_options(self)
+        # self.someopt = None
+        self.odevisualization_cmake_prefix_path = None
+        self.gpu = "ON"
+
+    def finalize_options(self):
+        #print("value of someopt is", self.someopt)
+        print("odevisualization_cmake_prefix_path is", self.odevisualization_cmake_prefix_path)
+        print("running on GPU", self.gpu)
+        install.finalize_options(self)
+
+    def run(self):
+        global odevisualization_cmake_prefix_path
+        if self.odevisualization_cmake_prefix_path is None:
+            odevisualization_cmake_prefix_path = None
+        else:
+            odevisualization_cmake_prefix_path = self.odevisualization_cmake_prefix_path
+        global gpu
+        gpu = self.gpu
+        install.run(self)
 
 
 setup(
-    name='ODEVisualizationLib',
+    name='Three Point System',
     version='0.0.1',
-    author='Lukas Kades',
-    author_email='statphysandml@thphys.uni-heidelberg.de',
+    author='Your Name',
+    author_email='your@email.com',
     description='Add description here',
     long_description='',
-    ext_modules=[CMakeExtension('odevisualizationlib')],
-    cmdclass=dict(build_ext=CMakeBuild),
+    ext_modules=[CMakeExtension(
+        name='threepointsystemsimulation'
+    )],
+    cmdclass=dict(build_ext=CMakeBuild, install=InstallCommand),
     zip_safe=False,
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
-        "License :: OSI Approved :: MIT License",
     ],
-    url='https://github.com/statphysandml/odevisualization',
-    package_dir={"odesolver": "python"},
-    packages=["odesolver"],
-    include_package_data=True,
+    url='https://github.com/your_url',
+    package_dir={"threepointsystem": "python_pybind"},
+    packages=["threepointsystem"]
 )
