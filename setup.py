@@ -5,6 +5,7 @@ import subprocess
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
+from setuptools.command.install import install
 
 
 class CMakeExtension(Extension):
@@ -35,6 +36,8 @@ class CMakeBuild(build_ext):
                       '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable,
                      ]
+        if cmake_cuda_architectures is not None:
+            cmake_args += ['-DCMAKE_CUDA_ARCHITECTURES=' + cmake_cuda_architectures]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -47,7 +50,8 @@ class CMakeBuild(build_ext):
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
             build_args += ['--', '-j12']
 
-        cmake_args += ['-DGPU=ON']
+        if gpu is not None:
+            cmake_args += ['-DGPU=' + gpu]
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
@@ -58,6 +62,36 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.', '--target', 'odevisualization_python'] + build_args, cwd=self.build_temp)
 
 
+class InstallCommand(install):
+    user_options = install.user_options + [
+        # ('someopt', None, None), # a 'flag' option
+        ('cmake-cuda-architectures=', None, "CMAKE_CUDA_ARCHITECTURES"),
+        ('GPU=', None, "Running on GPU")
+    ]
+
+    def initialize_options(self):
+        install.initialize_options(self)
+        # self.someopt = None
+        self.cmake_cuda_architectures = None
+        self.gpu = "ON"
+
+    def finalize_options(self):
+        #print("value of someopt is", self.someopt)
+        print("cmake_cuda_architectures", self.cmake_cuda_architectures)
+        print("running on GPU", self.gpu)
+        install.finalize_options(self)
+
+    def run(self):
+        global cmake_cuda_architectures
+        if self.cmake_cuda_architectures is None:
+            cmake_cuda_architectures = None
+        else:
+            cmake_cuda_architectures = self.cmake_cuda_architectures
+        global gpu
+        gpu = self.gpu
+        install.run(self)
+
+
 setup(
     name='ODEVisualizationLib',
     version='0.0.1',
@@ -66,7 +100,7 @@ setup(
     description='Add description here',
     long_description='',
     ext_modules=[CMakeExtension('odevisualizationlib')],
-    cmdclass=dict(build_ext=CMakeBuild),
+    cmdclass=dict(build_ext=CMakeBuild, install=InstallCommand),
     zip_safe=False,
     classifiers=[
         "Programming Language :: Python :: 3",
