@@ -54,14 +54,14 @@ which can be set by adding `-D<var>=...` to the `cmake` call:
 leading, for example, to the following command for a local installation (based on a local installation of the ODEVisualization library):
 
 ```
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./../install -DCMAKE_PREFIX_PATH=~/ODEVisualisation/install -DBUILD_PYTHON_BINDINGS=ON ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./../install -DCMAKE_PREFIX_PATH=~/ODEVisualization/install -DBUILD_PYTHON_BINDINGS=ON ..
 ```
 
 {%- if cookiecutter.python_bindings == "Yes" -%}
 Similarly, the flow equations can be used in Python by executing:
 
 ```
-pip install --use-feature=in-tree-build --install-option="--odevisualization-cmake-prefix-path='~/ODEVisualisation/install/'" .
+pip install --use-feature=in-tree-build --install-option="--odevisualization-cmake-prefix-path='~/ODEVisualization/install/'" .
 ```
 
 where the `odevisualization-cmake-prefix-path` is only required if the ODEVisualization library has been installed locally.

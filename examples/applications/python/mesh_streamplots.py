@@ -110,7 +110,7 @@ if __name__ == '__main__':
     #
     # fixed_points = fixed_point_search.fixed_points_
     #
-    # from odevisualisation.utils import KMeansClustering
+    # from odevisualization.utils import KMeansClustering
     # kmeans_clustering = KMeansClustering(20, 0.1, 1000)
     # fixed_points = kmeans_clustering.compute(fixed_points)
     #
