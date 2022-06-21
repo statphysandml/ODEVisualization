@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.15)
 
 # Set a name and a version number for your project:
 project(LorentzAttractor VERSION 0.0.1 LANGUAGES CXX CUDA)

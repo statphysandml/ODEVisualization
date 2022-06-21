@@ -40,6 +40,7 @@ target_compile_options(odevisualization PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--exp
 set_target_properties(odevisualization PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_STANDARD 14)
 
 target_include_directories(odevisualization PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}>
   $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/ext/Eigen/>
   $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include/>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
