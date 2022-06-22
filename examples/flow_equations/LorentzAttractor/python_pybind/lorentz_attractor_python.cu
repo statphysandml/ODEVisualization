@@ -12,7 +12,7 @@ using namespace pybind11::literals;
 
 #include <lorentz_attractor/lorentz_attractor_flow_equation.hpp>
 #include <lorentz_attractor/lorentz_attractor_jacobian_equation.hpp>
-#include <odesolver/flow_equations/flow_equation.hpp>
+
 
 void init_lorentz_attractor(py::module &m)
 {

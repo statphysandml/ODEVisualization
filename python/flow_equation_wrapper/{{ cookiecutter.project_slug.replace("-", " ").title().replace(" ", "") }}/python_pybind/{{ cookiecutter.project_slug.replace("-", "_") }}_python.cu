@@ -12,7 +12,7 @@ using namespace pybind11::literals;
 
 #include <{{ cookiecutter.project_slug.replace("-", "_") }}/{{ cookiecutter.project_slug.replace("-", "_") }}_flow_equation.hpp>
 #include <{{ cookiecutter.project_slug.replace("-", "_") }}/{{ cookiecutter.project_slug.replace("-", "_") }}_jacobian_equation.hpp>
-#include <odesolver/flow_equations/flow_equation.hpp>
+
 
 void init_{{ cookiecutter.project_slug.replace("-", "_") }}(py::module &m)
 {

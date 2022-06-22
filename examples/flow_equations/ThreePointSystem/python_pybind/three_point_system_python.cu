@@ -12,7 +12,7 @@ using namespace pybind11::literals;
 
 #include <three_point_system/three_point_system_flow_equation.hpp>
 #include <three_point_system/three_point_system_jacobian_equation.hpp>
-#include <odesolver/flow_equations/flow_equation.hpp>
+
 
 void init_three_point_system(py::module &m)
 {
