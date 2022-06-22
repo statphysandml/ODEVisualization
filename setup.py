@@ -63,7 +63,7 @@ class CMakeBuild(build_ext):
 class InstallCommand(install):
     user_options = install.user_options + [
         # ('someopt', None, None), # a 'flag' option
-        ('GPU=', None, "Running on GPU")
+        ('GPU', None, "Running on GPU")
     ]
 
     def initialize_options(self):

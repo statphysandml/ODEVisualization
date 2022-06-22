@@ -65,7 +65,7 @@ class InstallCommand(install):
     user_options = install.user_options + [
         # ('someopt', None, None), # a 'flag' option
         ('odevisualization-cmake-prefix-path=', None, "CMAKE_PREFIX_PATH to the ODEVisualizationLib"), # an option that takes a value
-        ('GPU=', None, "Running on GPU")
+        ('GPU', None, "Running on GPU")
     ]
 
     def initialize_options(self):
