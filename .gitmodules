@@ -7,3 +7,9 @@
 [submodule "ext/eigen"]
 	path = ext/eigen
 	url = https://gitlab.com/libeigen/eigen.git
+[submodule "ext/FlowEquationInterface"]
+	path = ext/FlowEquationInterface
+	url = https://github.com/statphysandml/FlowEquationInterface.git
+[submodule "FlowEquationInterface"]
+	path = FlowEquationInterface
+	url = https://github.com/statphysandml/FlowEquationInterface.git
