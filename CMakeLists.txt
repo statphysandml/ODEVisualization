@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # Silence warnings about empty CUDA_ARCHITECTURES properties on example targets:
-if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
   cmake_policy(SET CMP0104 OLD)
 endif()
 

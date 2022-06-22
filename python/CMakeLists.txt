@@ -1,3 +1,8 @@
+# Silence warnings about empty CUDA_ARCHITECTURES properties on example targets:
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+  cmake_policy(SET CMP0104 OLD)
+endif()
+
 pybind11_add_module(odevisualization_python
     src/dev_dat_python.cu
     src/evolution_python.cu
