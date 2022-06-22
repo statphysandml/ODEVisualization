@@ -36,6 +36,8 @@ class CMakeBuild(build_ext):
                       '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable,
                      ]
+        if cmake_cuda_architectures is not None:
+            cmake_args += ['-DCMAKE_CUDA_ARCHITECTURES=' + cmake_cuda_architectures]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -63,20 +65,28 @@ class CMakeBuild(build_ext):
 class InstallCommand(install):
     user_options = install.user_options + [
         # ('someopt', None, None), # a 'flag' option
-        ('GPU', None, "Running on GPU")
+        ('cmake-cuda-architectures=', None, "CMAKE_CUDA_ARCHITECTURES"),
+        ('GPU=', None, "Running on GPU")
     ]
 
     def initialize_options(self):
         install.initialize_options(self)
         # self.someopt = None
+        self.cmake_cuda_architectures = None
         self.gpu = "ON"
 
     def finalize_options(self):
         #print("value of someopt is", self.someopt)
+        print("cmake_cuda_architectures", self.cmake_cuda_architectures)
         print("running on GPU", self.gpu)
         install.finalize_options(self)
 
     def run(self):
+        global cmake_cuda_architectures
+        if self.cmake_cuda_architectures is None:
+            cmake_cuda_architectures = None
+        else:
+            cmake_cuda_architectures = self.cmake_cuda_architectures
         global gpu
         gpu = self.gpu
         install.run(self)
