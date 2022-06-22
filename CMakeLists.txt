@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.15)
 
+# Silence warnings about empty CUDA_ARCHITECTURES properties on example targets:
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+  cmake_policy(SET CMP0104 OLD)
+endif()
+
 # Set a name and a version number for your project:
 project(ODEVisualization VERSION 0.0.1 LANGUAGES CXX CUDA)
 
