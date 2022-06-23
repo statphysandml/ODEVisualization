@@ -28,8 +28,6 @@ target_link_libraries(odevisualization PUBLIC paramhelper::paramhelper flowequat
 
 target_compile_options(odevisualization PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
 
-set_target_properties(odevisualization PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
 target_include_directories(odevisualization PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}>
   $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/ext/Eigen/>
