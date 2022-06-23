@@ -24,7 +24,7 @@ add_library(odevisualization STATIC
     boost/dev_dat_boost_integration.cu
 )
 
-target_link_libraries(odevisualization PUBLIC paramhelper::paramhelper flowequations::flowequations devdat::devdat Eigen3::Eigen)
+target_link_libraries(odevisualization PUBLIC stdc++fs paramhelper::paramhelper flowequations::flowequations devdat::devdat Eigen3::Eigen)
 
 target_compile_options(odevisualization PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
 
