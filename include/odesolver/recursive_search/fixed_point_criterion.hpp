@@ -4,8 +4,8 @@
 #include <sys/file.h>
 #include <tuple>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
 #include <odesolver/util/monitor.hpp>
 #include <odesolver/recursive_search/recursive_search_criterion.hpp>
 
@@ -22,7 +22,7 @@ namespace odesolver {
 
             static void compute_summed_positive_signs_per_cube(dev_vec_bool &velocity_sign_properties_in_dim, dev_vec_int &summed_positive_signs);
 
-            thrust::host_vector<int> determine_potential_solutions(odesolver::DevDatC& vertices, odesolver::DevDatC& vertex_velocities) override;
+            thrust::host_vector<int> determine_potential_solutions(devdat::DevDatC& vertices, devdat::DevDatC& vertex_velocities) override;
         };
     }
 }

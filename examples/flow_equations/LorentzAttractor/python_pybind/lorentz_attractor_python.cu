@@ -16,14 +16,14 @@ using namespace pybind11::literals;
 
 void init_lorentz_attractor(py::module &m)
 {
-    py::class_<LorentzAttractorFlowEquations, std::shared_ptr<LorentzAttractorFlowEquations>, odesolver::flowequations::FlowEquationsWrapper>(m, "LorentzAttractorFlow")
+    py::class_<LorentzAttractorFlowEquations, std::shared_ptr<LorentzAttractorFlowEquations>, flowequations::FlowEquationsWrapper>(m, "LorentzAttractorFlow")
     .def(py::init<cudaT>(), "k"_a=0.0)
     .def("dim", &LorentzAttractorFlowEquations::get_dim)
     .def_readonly_static("model", &LorentzAttractorFlowEquations::model_)
     .def_readonly_static("flow_variable", &LorentzAttractorFlowEquations::explicit_variable_)
     .def_readonly_static("flow_parameters", &LorentzAttractorFlowEquations::explicit_functions_);
 
-    py::class_<LorentzAttractorJacobianEquations, std::shared_ptr<LorentzAttractorJacobianEquations>, odesolver::flowequations::JacobianEquationsWrapper>(m, "LorentzAttractorJacobians")
+    py::class_<LorentzAttractorJacobianEquations, std::shared_ptr<LorentzAttractorJacobianEquations>, flowequations::JacobianEquationsWrapper>(m, "LorentzAttractorJacobians")
     .def(py::init<cudaT>(), "k"_a=0.0)
     .def("dim", &LorentzAttractorJacobianEquations::get_dim)
     .def_readonly_static("model", &LorentzAttractorJacobianEquations::model_);

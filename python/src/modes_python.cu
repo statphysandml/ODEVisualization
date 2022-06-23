@@ -33,7 +33,7 @@ namespace odesolver {
             
             py::class_<odesolver::modes::KMeansClustering, std::shared_ptr<odesolver::modes::KMeansClustering>>(mmodes, "KMeansClustering")
                 .def(py::init(&odesolver::modes::KMeansClustering::generate), "maximum_expected_number_of_clusters"_a, "upper_bound_for_min_distance"_a, "maximum_number_of_iterations"_a=1000)
-                .def("eval", [](odesolver::modes::KMeansClustering &kmeans_clustering, const odesolver::DevDatC &coordinates, int k=-1) {
+                .def("eval", [](odesolver::modes::KMeansClustering &kmeans_clustering, const devdat::DevDatC &coordinates, int k=-1) {
                     if(k == -1)
                         return kmeans_clustering.eval(coordinates);
                     else

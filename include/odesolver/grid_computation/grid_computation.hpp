@@ -11,10 +11,10 @@
 #include <tuple>
 #include <vector>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
+#include <devdat/util/thrust_functors.hpp>
 #include <odesolver/util/monitor.hpp>
-#include <odesolver/util/thrust_functors.hpp>
 #include <odesolver/collection/leaf.hpp>
 #include <odesolver/collection/collection.hpp>
 #include <odesolver/collection/collection_expander.hpp>
@@ -37,7 +37,7 @@ namespace odesolver {
             // Functions for generating grid computation wrapper from other resources)
 
             // Compute expanded cube indices and expanded depth per cube from coordinates
-            GridComputationWrapper project_coordinates_on_expanded_cube_and_depth_per_cube_indices(const odesolver::DevDatC &coordinates, bool coordinates_on_grid=false, int depth=-1) const;
+            GridComputationWrapper project_coordinates_on_expanded_cube_and_depth_per_cube_indices(const devdat::DevDatC &coordinates, bool coordinates_on_grid=false, int depth=-1) const;
             
             // Compute expanded cube indices and expanded depth per cube from leaves
             GridComputationWrapper project_leaves_on_expanded_cube_and_depth_per_cube_indices(std::vector<odesolver::collections::Leaf*> &leaves, int depth=-1) const;
@@ -45,14 +45,14 @@ namespace odesolver {
             // Compute expanded cube indices and expanded depth per cube from collections
             GridComputationWrapper  project_collection_package_on_expanded_cube_and_depth_per_cube_indices(std::vector<odesolver::collections::Collection*> &collection_package, int expected_number_of_cubes, int expected_maximum_depth_) const;
 
-            void compute_reference_vertices(odesolver::DevDatC &reference_vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
-            odesolver::DevDatC compute_reference_vertices(GridComputationWrapper &grcompwrap);
+            void compute_reference_vertices(devdat::DevDatC &reference_vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
+            devdat::DevDatC compute_reference_vertices(GridComputationWrapper &grcompwrap);
 
-            void compute_cube_vertices(odesolver::DevDatC &cube_vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
-            odesolver::DevDatC compute_cube_vertices(GridComputationWrapper &grcompwrap);
+            void compute_cube_vertices(devdat::DevDatC &cube_vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
+            devdat::DevDatC compute_cube_vertices(GridComputationWrapper &grcompwrap);
 
-            void compute_cube_center_vertices(odesolver::DevDatC &center_vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
-            odesolver::DevDatC compute_cube_center_vertices(GridComputationWrapper &grcompwrap);
+            void compute_cube_center_vertices(devdat::DevDatC &center_vertices, GridComputationWrapper &grcompwrap, int maximum_depth=0);
+            devdat::DevDatC compute_cube_center_vertices(GridComputationWrapper &grcompwrap);
 
             const std::vector<std::vector<int>> n_branches_per_depth() const;
 
@@ -70,7 +70,7 @@ namespace odesolver {
             std::vector<std::pair<cudaT, cudaT>> variable_ranges_;
 
             // Helper functions
-            void compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices, GridComputationWrapper &grcompwrap, int dim_index, int maximum_depth=0) const;
+            void compute_reference_vertex_in_dim(devdat::DimensionIteratorC &reference_vertices, GridComputationWrapper &grcompwrap, int dim_index, int maximum_depth=0) const;
         };
     }
 }

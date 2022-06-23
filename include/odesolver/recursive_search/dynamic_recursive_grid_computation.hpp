@@ -1,9 +1,9 @@
 #ifndef PROGRAM_DYNAMIC_RECURSIVE_GRID_COMPUTATION_HPP
 #define PROGRAM_DYNAMIC_RECURSIVE_GRID_COMPUTATION_HPP
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
-#include <odesolver/flow_equations/flow_equation.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
+#include <flowequations/flow_equation.hpp>
 #include <odesolver/collection/buffer.hpp>
 #include <odesolver/collection/collection.hpp>
 #include <odesolver/collection/collection_expander.hpp>
@@ -34,7 +34,7 @@ namespace odesolver {
                 VertexMode vertex_mode
             );
 
-            virtual void next(odesolver::DevDatC &vertices);
+            virtual void next(devdat::DevDatC &vertices);
 
             bool finished();
 

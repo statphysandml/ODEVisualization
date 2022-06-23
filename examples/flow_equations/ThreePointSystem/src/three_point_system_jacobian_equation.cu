@@ -20,7 +20,7 @@ struct comp_func_three_point_system3
 };
 
 
-void ThreePointSystemJacobianEquation0::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemJacobianEquation0::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_three_point_system3(const_expr0_));
 }
@@ -42,7 +42,7 @@ struct comp_func_three_point_system4
 };
 
 
-void ThreePointSystemJacobianEquation1::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemJacobianEquation1::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_three_point_system4(const_expr0_));
 }
@@ -63,7 +63,7 @@ struct comp_func_three_point_system5
 };
 
 
-void ThreePointSystemJacobianEquation2::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemJacobianEquation2::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::transform(variables[1].begin(), variables[1].end(), variables[0].begin(), derivatives.begin(), comp_func_three_point_system5(const_expr0_));
 }
@@ -85,7 +85,7 @@ struct comp_func_three_point_system6
 };
 
 
-void ThreePointSystemJacobianEquation3::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemJacobianEquation3::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_three_point_system6(const_expr0_));
 }
@@ -108,7 +108,7 @@ struct comp_func_three_point_system7
 };
 
 
-void ThreePointSystemJacobianEquation4::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemJacobianEquation4::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_three_point_system7(const_expr0_, const_expr1_));
 }
@@ -129,7 +129,7 @@ struct comp_func_three_point_system8
 };
 
 
-void ThreePointSystemJacobianEquation5::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemJacobianEquation5::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::transform(variables[1].begin(), variables[1].end(), variables[0].begin(), derivatives.begin(), comp_func_three_point_system8(const_expr0_));
 }
@@ -151,7 +151,7 @@ struct comp_func_three_point_system9
 };
 
 
-void ThreePointSystemJacobianEquation6::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemJacobianEquation6::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_three_point_system9(const_expr0_));
 }
@@ -173,7 +173,7 @@ struct comp_func_three_point_system10
 };
 
 
-void ThreePointSystemJacobianEquation7::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemJacobianEquation7::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_three_point_system10(const_expr0_));
 }
@@ -196,7 +196,7 @@ struct comp_func_three_point_system11
 };
 
 
-void ThreePointSystemJacobianEquation8::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemJacobianEquation8::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_three_point_system11(const_expr0_, const_expr1_));
 }

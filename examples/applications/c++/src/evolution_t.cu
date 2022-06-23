@@ -3,9 +3,9 @@
 
 void evolution_t()
 {
-    auto flow_equations_ptr = odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
+    auto flow_equations_ptr = flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
 
-    odesolver::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
+    devdat::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
 
     auto evolution = odesolver::modes::Evolution::generate(flow_equations_ptr);
 
@@ -20,9 +20,9 @@ void evolution_t()
 
 void conditional_range_observer_t()
 {
-    odesolver::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
+    devdat::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
 
-    auto flow_equations_ptr = odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
+    auto flow_equations_ptr = flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
 
     std::shared_ptr<odesolver::evolution::FlowObserver> no_change_condition_ptr = std::make_shared<odesolver::evolution::NoChange>(odesolver::evolution::NoChange::generate({0.0001, 0.0001, 0.0001}));
 

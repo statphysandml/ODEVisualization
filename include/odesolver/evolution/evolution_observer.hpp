@@ -6,12 +6,12 @@
 #include <param_helper/params.hpp>
 #include <param_helper/filesystem.hpp>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
+#include <devdat/util/json_conversions.hpp>
 #include <odesolver/util/monitor.hpp>
-#include <odesolver/util/json_conversions.hpp>
 #include <odesolver/evolution/evolution_observer.hpp>
-#include <odesolver/flow_equations/flow_equation.hpp>
+#include <flowequations/flow_equation.hpp>
 
 
 namespace odesolver {
@@ -40,9 +40,9 @@ namespace odesolver {
         {
             FlowObserver(const json params={});
 
-            virtual void operator() (const odesolver::DevDatC &coordinates, cudaT t);
+            virtual void operator() (const devdat::DevDatC &coordinates, cudaT t);
 
-            virtual void initialize(const odesolver::DevDatC &coordinates, cudaT t);
+            virtual void initialize(const devdat::DevDatC &coordinates, cudaT t);
 
             virtual dev_vec_bool& valid_coordinates_mask();
 
@@ -61,20 +61,20 @@ namespace odesolver {
 
         struct DivergentFlow : FlowObserver
         {
-            explicit DivergentFlow(const json params, std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr);
+            explicit DivergentFlow(const json params, std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr);
 
             // From parameters
             static DivergentFlow generate(
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
                 const cudaT maximum_abs_flow_val = 1e10
             );
 
-            void operator() (const odesolver::DevDatC &coordinates, cudaT t) override;
+            void operator() (const devdat::DevDatC &coordinates, cudaT t) override;
 
             std::string name() override { return "divergent_flow"; }
 
             const cudaT maximum_abs_flow_val_;
-            std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr_;
+            std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr_;
         };
 
         struct NoChange : FlowObserver
@@ -88,16 +88,16 @@ namespace odesolver {
                 const std::vector<cudaT> minimum_change_of_state = std::vector<cudaT> {}
             );
 
-            void operator() (const odesolver::DevDatC &coordinates, cudaT t) override;
+            void operator() (const devdat::DevDatC &coordinates, cudaT t) override;
 
-            void initialize(const odesolver::DevDatC &coordinates, cudaT t) override;
+            void initialize(const devdat::DevDatC &coordinates, cudaT t) override;
 
             std::string name() override { return "no_change"; }
 
             const std::vector<cudaT> minimum_change_of_state_;
 
             dev_vec_bool detected_changes_;
-            odesolver::DevDatC previous_coordinates_;
+            devdat::DevDatC previous_coordinates_;
         };
 
         struct OutOfRangeCondition : FlowObserver
@@ -110,7 +110,7 @@ namespace odesolver {
                 const std::vector<int> observed_dimension_indices = std::vector<int>{}
             );
 
-            void operator() (const odesolver::DevDatC &coordinates, cudaT t) override;
+            void operator() (const devdat::DevDatC &coordinates, cudaT t) override;
 
             std::string name() override { return "out_of_range_condition"; }
 
@@ -133,9 +133,9 @@ namespace odesolver {
                 const bool remember_intersections
             );
 
-            void operator() (const odesolver::DevDatC &coordinates, cudaT t) override;
+            void operator() (const devdat::DevDatC &coordinates, cudaT t) override;
 
-            void initialize(const odesolver::DevDatC &coordinates, cudaT t) override;
+            void initialize(const devdat::DevDatC &coordinates, cudaT t) override;
 
             std::string name() override { return "intersection"; }
 
@@ -148,7 +148,7 @@ namespace odesolver {
             std::vector<bool> detected_intersection_types() const;
 
 
-            odesolver::DevDatC previous_coordinates_;
+            devdat::DevDatC previous_coordinates_;
 
             std::vector<cudaT> vicinity_distances_;
             std::vector<cudaT> fixed_variables_;
@@ -173,7 +173,7 @@ namespace odesolver {
 
             static TrajectoryObserver generate(std::string file);
 
-            void operator() (const odesolver::DevDatC &coordinates, cudaT t) override;
+            void operator() (const devdat::DevDatC &coordinates, cudaT t) override;
 
             std::string name() override { return "trajectory_observer"; }
 
@@ -191,9 +191,9 @@ namespace odesolver {
 
             static EvolutionObserver generate(const std::vector<std::shared_ptr<FlowObserver>> observers);
             
-            void operator() (const odesolver::DevDatC &coordinates, cudaT t) override;
+            void operator() (const devdat::DevDatC &coordinates, cudaT t) override;
 
-            void initialize(const odesolver::DevDatC &coordinates, cudaT t) override;
+            void initialize(const devdat::DevDatC &coordinates, cudaT t) override;
 
             std::string name() override { return "evolution_observer"; }
 

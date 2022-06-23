@@ -19,7 +19,7 @@
             maximum_recursion_depth,
             n_branches_per_depth,
             variable_ranges,
-            odesolver::flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0)
+            flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0)
     );
 
     // Setting gpu specfic computation parameters (optional) - parameters are already set default
@@ -47,7 +47,7 @@ void add_cluster_parameters_to_fixed_point_search_to_file()
     const std::string rel_dir = "data/example_fixed_point_search/";
 
     // Load existing fixed_point_search parameter file
-    auto fixed_point_search = FixedPointSearch::from_file(rel_dir, odesolver::flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0));
+    auto fixed_point_search = FixedPointSearch::from_file(rel_dir, flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0));
 
     // Parameters for clustering the resulting solutions - Represent parameters of a function
     FixedPointSearch::ClusterParameters cluster_parameters = build_cluster_parameters();
@@ -69,7 +69,7 @@ void run_fixed_point_search_from_file()
     
 
     // Load existing fixed_point_search parameter file
-    auto fixed_point_search = FixedPointSearch::from_file(rel_dir, odesolver::flowequations::<ThreePointSystemFlowEquations>(0));
+    auto fixed_point_search = FixedPointSearch::from_file(rel_dir, flowequations::<ThreePointSystemFlowEquations>(0));
 
     fixed_point_search.find_fixed_point_solutions();
     const std::string mode = "fixed_point_search"; // -> ToDo: Allow for adding a mode to the config file <-> allows for the computation with executer
@@ -159,7 +159,7 @@ void find_fixed_points()
         n_branches_per_depth,
         variable_ranges,
         recursive_search_criterion_ptr,
-        odesolver::flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0),
+        flowequations::generate_flow_equations<ThreePointSystemFlowEquations>(0),
         nullptr,
         100,
         100000

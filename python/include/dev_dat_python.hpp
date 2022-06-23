@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include <odesolver/dev_dat.hpp>
+#include <devdat/devdat.hpp>
 
 namespace py = pybind11;
 using namespace pybind11::literals;

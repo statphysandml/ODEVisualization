@@ -1,10 +1,10 @@
 #ifndef PROJECT_COLLECTIONSEXPANDER_HPP
 #define PROJECT_COLLECTIONSEXPANDER_HPP
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
+#include <devdat/util/thrust_functors.hpp>
 #include <odesolver/util/monitor.hpp>
-#include <odesolver/util/thrust_functors.hpp>
 #include <odesolver/collection/collection.hpp>
 
 
@@ -68,8 +68,8 @@ namespace odesolver {
              */
             void expand_collection_information(
                 const std::vector<Collection*> &collection_package,
-                odesolver::DevDatInt& expanded_element_indices,
-                odesolver::DimensionIteratorInt& expanded_depth_per_element
+                devdat::DevDatInt& expanded_element_indices,
+                devdat::DimensionIteratorInt& expanded_depth_per_element
             );
 
         private:

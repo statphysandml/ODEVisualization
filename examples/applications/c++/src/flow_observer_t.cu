@@ -2,7 +2,7 @@
 
 void no_change_t()
 {
-    odesolver::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
+    devdat::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
 
     auto no_change_condition = odesolver::evolution::NoChange::generate({0.1, 0.0001, 0.02});
     no_change_condition.initialize(sampled_coordinates, 0.0);
@@ -24,11 +24,11 @@ void no_change_t()
 
 void divergent_flow_t()
 {
-    odesolver::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
+    devdat::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
 
-    auto flow_equations_ptr = odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
+    auto flow_equations_ptr = flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
 
-    auto flow = odesolver::flowequations::compute_flow(sampled_coordinates, flow_equations_ptr.get());
+    auto flow = flowequations::compute_flow(sampled_coordinates, flow_equations_ptr.get());
 
     flow.print_dim_by_dim();
 
@@ -43,7 +43,7 @@ void divergent_flow_t()
 
 void out_of_range_t()
 {
-    odesolver::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
+    devdat::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
     sampled_coordinates.print_dim_by_dim();
 
     const std::vector<std::pair<cudaT, cudaT>> variable_ranges = std::vector <std::pair<cudaT, cudaT>>{
@@ -69,7 +69,7 @@ void out_of_range_t()
 
 void out_of_range_t2()
 {
-    odesolver::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
+    devdat::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
     sampled_coordinates.print_dim_by_dim();
 
     const std::vector<std::pair<cudaT, cudaT>> variable_ranges = std::vector <std::pair<cudaT, cudaT>>{
@@ -95,7 +95,7 @@ void out_of_range_t2()
 
 void trajectory_observer_t()
 {
-    odesolver::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
+    devdat::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
     sampled_coordinates.print_dim_by_dim();
 
     auto trajectory_observer = odesolver::evolution::TrajectoryObserver::generate("test.txt");
@@ -111,7 +111,7 @@ void trajectory_observer_t()
 
 void intersection_observer_t()
 {
-    odesolver::DevDatC coordinates(4, 10, 0.0);
+    devdat::DevDatC coordinates(4, 10, 0.0);
     coordinates.print_dim_by_dim();
 
     auto intersection = odesolver::evolution::Intersection::generate(
@@ -124,7 +124,7 @@ void intersection_observer_t()
 
     intersection(coordinates, 0.1);
 
-    coordinates = odesolver::DevDatC(4, 10, -1.0);
+    coordinates = devdat::DevDatC(4, 10, -1.0);
 
     coordinates.set_nth_element(3, {0.05, 0.05, 0.05, 0.05});
     coordinates.set_nth_element(4, {0.05, -0.02, 0.05, 0.05});
@@ -156,9 +156,9 @@ void intersection_observer_t()
 
 void evolution_observer_t()
 {
-    odesolver::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
+    devdat::DevDatC sampled_coordinates = gen_normal_devdat(3, 10);
 
-    auto flow_equations_ptr = odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
+    auto flow_equations_ptr = flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
 
     std::shared_ptr<odesolver::evolution::FlowObserver> no_change_condition_ptr = std::make_shared<odesolver::evolution::NoChange>(odesolver::evolution::NoChange::generate({0.1, 0.0001, 0.02}));
 
@@ -173,7 +173,7 @@ void evolution_observer_t()
     auto evolution_observer = odesolver::evolution::EvolutionObserver::generate({no_change_condition_ptr, divergent_flow_condition_ptr, out_of_range_condition_ptr});
     evolution_observer.initialize(sampled_coordinates, 0.0);
 
-    auto flow = odesolver::flowequations::compute_flow(sampled_coordinates, flow_equations_ptr.get());
+    auto flow = flowequations::compute_flow(sampled_coordinates, flow_equations_ptr.get());
     flow.print_dim_by_dim();
 
     auto condition = evolution_observer.valid_coordinates_mask();

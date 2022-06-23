@@ -3,8 +3,8 @@
 
 #include <param_helper/params.hpp>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
 #include <odesolver/util/kmeans.hpp>
 
 
@@ -27,9 +27,9 @@ namespace odesolver {
                 return "kmeans_clustering";
             }
 
-            odesolver::DevDatC eval(const odesolver::DevDatC &device_data) const;
+            devdat::DevDatC eval(const devdat::DevDatC &device_data) const;
 
-            odesolver::DevDatC eval(const odesolver::DevDatC &device_data, const uint k) const;
+            devdat::DevDatC eval(const devdat::DevDatC &device_data, const uint k) const;
 
             uint maximum_expected_number_of_clusters_;
             double upper_bound_for_min_distance_;

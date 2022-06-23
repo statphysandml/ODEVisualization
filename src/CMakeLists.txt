@@ -1,7 +1,4 @@
 add_library(odevisualization STATIC
-    dev_dat.cu
-    flow_equations/flow_equation.cu
-    flow_equations/jacobian_equation.cu
     collection/buffer.cpp
     collection/collection.cpp
     collection/collection_expander.cu
@@ -27,17 +24,9 @@ add_library(odevisualization STATIC
     boost/dev_dat_boost_integration.cu
 )
 
-SET(GPU ON CACHE BOOL "Running on GPU")
-
-if(GPU)
-    target_compile_definitions(odevisualization PUBLIC -D GPU)
-endif()
-
-target_link_libraries(odevisualization PUBLIC paramhelper::paramhelper Eigen3::Eigen)
+target_link_libraries(odevisualization PUBLIC paramhelper::paramhelper flowequations::flowequations devdat::devdat Eigen3::Eigen)
 
 target_compile_options(odevisualization PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
-
-set_target_properties(odevisualization PROPERTIES CUDA_SEPARABLE_COMPILATION ON CUDA_STANDARD 14)
 
 target_include_directories(odevisualization PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}>

@@ -5,16 +5,16 @@
 
 #include <thrust/transform.h>
 
-#include <odesolver/dev_dat.hpp>
+#include <devdat/devdat.hpp>
 
 #include <lorentz_attractor/lorentz_attractor_flow_equation.hpp>
 #include <lorentz_attractor/lorentz_attractor_jacobian_equation.hpp>
 
-odesolver::DevDatC get_fixed_points();
+devdat::DevDatC get_fixed_points();
 
 void compute_flow_t();
 
-odesolver::DevDatC compute_jacobians();
+devdat::DevDatC compute_jacobians();
 
 std::vector<std::vector<double>> compute_jacobian_elements_t();
 

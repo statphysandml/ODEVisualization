@@ -1,11 +1,11 @@
 #include "../include/flow_equations_t.hpp"
 
-odesolver::DevDatC get_fixed_points()
+devdat::DevDatC get_fixed_points()
 {
     // double sigma = 10.0;
     double beta = 8.0/3.0;
     double rho = 28.0;
-    odesolver::DevDatC fixed_points(std::vector<std::vector<double>>{
+    devdat::DevDatC fixed_points(std::vector<std::vector<double>>{
         {0.0, 0.0, 0.0},
         {std::sqrt(beta * (rho - 1)), std::sqrt(beta * (rho - 1)), rho - 1},
         {-std::sqrt(beta * (rho - 1)), -std::sqrt(beta * (rho - 1)), rho - 1}
@@ -15,19 +15,19 @@ odesolver::DevDatC get_fixed_points()
 
 void compute_flow_t()
 {
-    auto flow_equations_ptr = odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
+    auto flow_equations_ptr = flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
     auto fixed_points = get_fixed_points();
     fixed_points.print_dim_by_dim();
 
-    auto vertex_velocities = odesolver::flowequations::compute_flow(fixed_points, flow_equations_ptr.get());
+    auto vertex_velocities = flowequations::compute_flow(fixed_points, flow_equations_ptr.get());
 
     vertex_velocities.print_dim_by_dim();
 }
 
-odesolver::DevDatC compute_jacobians()
+devdat::DevDatC compute_jacobians()
 {
 
-    auto jacobian_equations_ptr = odesolver::flowequations::generate_jacobian_equations<LorentzAttractorJacobianEquations>(0);
+    auto jacobian_equations_ptr = flowequations::generate_jacobian_equations<LorentzAttractorJacobianEquations>(0);
 
     auto fixed_points = get_fixed_points();
     fixed_points.print_elem_by_elem();

@@ -24,11 +24,10 @@ Building {{ cookiecutter.project_name }} requires the following software install
 
 * A C++17-compliant compiler
 * CMake `>= 3.15`
-* CUDA
-* ODEVisualizationLib
-{%- if cookiecutter.python_bindings == "Yes" -%}
+* CUDA ('Tested with Version 10.1)
+{% if cookiecutter.python_bindings == "Yes" -%}
 * Python `>= 3.6` for building Python bindings
-{% endif -%}
+{% endif %}
 
 # Building {{ cookiecutter.project_name }}
 
@@ -46,25 +45,23 @@ The build process can be customized with the following CMake variables,
 which can be set by adding `-D<var>=...` to the `cmake` call:
 
 * `CMAKE_INSTALL_PREFIX`: Local install path
-* `CMAKE_PREFIX_PATH`: Installation path of the ODEVisualization library
-{%- if cookiecutter.python_bindings == "Yes" -%}
-* `BUILD_PYTHON_BINDINGS=ON`: Whether the python bindings are supposed to be built.
-{% endif -%}
-
-leading, for example, to the following command for a local installation (based on a local installation of the ODEVisualization library):
+{% if cookiecutter.python_bindings == "Yes" -%}
+* `BUILD_PYTHON_BINDINGS=ON`: Whether the python bindings are supposed to be built,
+{% endif %}
+leading, for example, to the following command for a local installation:
 
 ```
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./../install -DCMAKE_PREFIX_PATH=~/ODEVisualization/install -DBUILD_PYTHON_BINDINGS=ON ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./../install ..
 ```
 
-{%- if cookiecutter.python_bindings == "Yes" -%}
+{% if cookiecutter.python_bindings == "Yes" -%}
+
 Similarly, the flow equations can be used in Python by executing:
 
 ```
-pip install --use-feature=in-tree-build --install-option="--odevisualization-cmake-prefix-path='~/ODEVisualization/install/'" .
+pip install --use-feature=in-tree-build .
 ```
 
-where the `odevisualization-cmake-prefix-path` is only required if the ODEVisualization library has been installed locally.
 {% endif -%}
 
 # Integration

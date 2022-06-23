@@ -3,10 +3,10 @@
 
 #include <param_helper/params.hpp>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
+#include <devdat/util/json_conversions.hpp>
 #include <odesolver/util/monitor.hpp>
-#include <odesolver/util/json_conversions.hpp>
 #include <odesolver/util/partial_ranges.hpp>
 #include <odesolver/collection/collection.hpp>
 #include <odesolver/grid_computation/grid_computation.hpp>
@@ -33,7 +33,7 @@ namespace odesolver {
                 const std::string rel_config_dir
             );
 
-            odesolver::DevDatC eval(int fixed_variable_idx);
+            devdat::DevDatC eval(int fixed_variable_idx);
 
             std::vector<int> n_branches_;
             std::vector<std::pair<cudaT, cudaT>> partial_variable_ranges_;

@@ -4,16 +4,16 @@
 #include <math.h>
 #include <tuple>
 
-#include <odesolver/flow_equations/jacobian_equation.hpp>
+#include <flowequations/jacobian_equation.hpp>
 
 
-struct ThreePointSystemJacobianEquation0 : public odesolver::flowequations::JacobianEquation
+struct ThreePointSystemJacobianEquation0 : public flowequations::JacobianEquation
 {
 	ThreePointSystemJacobianEquation0(const cudaT k) : k_(k),
 		const_expr0_((1*1.0/2) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -21,13 +21,13 @@ private:
 };
 
 
-struct ThreePointSystemJacobianEquation1 : public odesolver::flowequations::JacobianEquation
+struct ThreePointSystemJacobianEquation1 : public flowequations::JacobianEquation
 {
 	ThreePointSystemJacobianEquation1(const cudaT k) : k_(k),
 		const_expr0_((4*1.0/3) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -35,13 +35,13 @@ private:
 };
 
 
-struct ThreePointSystemJacobianEquation2 : public odesolver::flowequations::JacobianEquation
+struct ThreePointSystemJacobianEquation2 : public flowequations::JacobianEquation
 {
 	ThreePointSystemJacobianEquation2(const cudaT k) : k_(k),
 		const_expr0_((1*1.0/6) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -49,13 +49,13 @@ private:
 };
 
 
-struct ThreePointSystemJacobianEquation3 : public odesolver::flowequations::JacobianEquation
+struct ThreePointSystemJacobianEquation3 : public flowequations::JacobianEquation
 {
 	ThreePointSystemJacobianEquation3(const cudaT k) : k_(k),
 		const_expr0_((1*1.0/285) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -63,14 +63,14 @@ private:
 };
 
 
-struct ThreePointSystemJacobianEquation4 : public odesolver::flowequations::JacobianEquation
+struct ThreePointSystemJacobianEquation4 : public flowequations::JacobianEquation
 {
 	ThreePointSystemJacobianEquation4(const cudaT k) : k_(k),
 		const_expr0_(-1140 * M_PI),
 		const_expr1_((1*1.0/570) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -79,13 +79,13 @@ private:
 };
 
 
-struct ThreePointSystemJacobianEquation5 : public odesolver::flowequations::JacobianEquation
+struct ThreePointSystemJacobianEquation5 : public flowequations::JacobianEquation
 {
 	ThreePointSystemJacobianEquation5(const cudaT k) : k_(k),
 		const_expr0_((1*1.0/1140) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -93,13 +93,13 @@ private:
 };
 
 
-struct ThreePointSystemJacobianEquation6 : public odesolver::flowequations::JacobianEquation
+struct ThreePointSystemJacobianEquation6 : public flowequations::JacobianEquation
 {
 	ThreePointSystemJacobianEquation6(const cudaT k) : k_(k),
 		const_expr0_((2*1.0/57) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -107,13 +107,13 @@ private:
 };
 
 
-struct ThreePointSystemJacobianEquation7 : public odesolver::flowequations::JacobianEquation
+struct ThreePointSystemJacobianEquation7 : public flowequations::JacobianEquation
 {
 	ThreePointSystemJacobianEquation7(const cudaT k) : k_(k),
 		const_expr0_((8*1.0/285) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -121,14 +121,14 @@ private:
 };
 
 
-struct ThreePointSystemJacobianEquation8 : public odesolver::flowequations::JacobianEquation
+struct ThreePointSystemJacobianEquation8 : public flowequations::JacobianEquation
 {
 	ThreePointSystemJacobianEquation8(const cudaT k) : k_(k),
 		const_expr0_(570 * M_PI),
 		const_expr1_((1*1.0/285) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -137,12 +137,12 @@ private:
 };
 
 
-class ThreePointSystemJacobianEquations : public odesolver::flowequations::JacobianEquationsWrapper
+class ThreePointSystemJacobianEquations : public flowequations::JacobianEquationsWrapper
 {
 public:
 	ThreePointSystemJacobianEquations(const cudaT k) : k_(k)
 	{
-		jacobian_equations_ = std::vector<std::shared_ptr<odesolver::flowequations::JacobianEquation>> {
+		jacobian_equations_ = std::vector<std::shared_ptr<flowequations::JacobianEquation>> {
 			std::make_shared<ThreePointSystemJacobianEquation0>(k),
 			std::make_shared<ThreePointSystemJacobianEquation1>(k),
 			std::make_shared<ThreePointSystemJacobianEquation2>(k),
@@ -155,12 +155,12 @@ public:
 		};
 	}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables, const int row_idx, const int col_idx) override
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables, const int row_idx, const int col_idx) override
 	{
 		(*jacobian_equations_[row_idx * dim_ + col_idx])(derivatives, variables);
 	}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables, const int matrix_idx) override
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables, const int matrix_idx) override
 	{
 		(*jacobian_equations_[matrix_idx])(derivatives, variables);
 	}
@@ -175,7 +175,7 @@ public:
 
 private:
 	const cudaT k_;
-	std::vector<std::shared_ptr<odesolver::flowequations::JacobianEquation>> jacobian_equations_;
+	std::vector<std::shared_ptr<flowequations::JacobianEquation>> jacobian_equations_;
 };
 
 #endif //PROJECT_THREEPOINTSYSTEMJACOBIANEQUATION_HPP

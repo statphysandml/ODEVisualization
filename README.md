@@ -8,7 +8,7 @@ ODEVisualization is a C++/Thrust/Cuda library that has a focus on fast evaluatio
 The library can be used to:
 
 - Find and valuate fixed points (attractive and repulsive) in the high-dimensional flow field.
-- Visualise two dimensional views of the high-dimensional flow field.
+- Visualize two dimensional views of the high-dimensional flow field.
 - Integrate the set of ODEs.
 
 Support and Development

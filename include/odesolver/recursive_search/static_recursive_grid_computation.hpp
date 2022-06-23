@@ -15,7 +15,7 @@ namespace odesolver {
                 const int maximum_number_of_gpu_calls=1000
             );
 
-            void next(odesolver::DevDatC &vertices) override;
+            void next(devdat::DevDatC &vertices) override;
 
         private:
             odesolver::gridcomputation::GridComputationWrapper grid_computation_wrapper_;

@@ -206,7 +206,7 @@ namespace odesolver {
 
         //]
 
-        GridComputationWrapper GridComputation::project_coordinates_on_expanded_cube_and_depth_per_cube_indices(const odesolver::DevDatC &coordinates, bool coordinates_on_grid, int depth) const
+        GridComputationWrapper GridComputation::project_coordinates_on_expanded_cube_and_depth_per_cube_indices(const devdat::DevDatC &coordinates, bool coordinates_on_grid, int depth) const
         {
             if(depth == -1)
                 depth = n_branches_per_depth_.size() - 1;
@@ -313,7 +313,7 @@ namespace odesolver {
             return grid_computation_wrapper;
         }
 
-        void GridComputation::compute_reference_vertices(odesolver::DevDatC &reference_vertices, GridComputationWrapper &grcompwrap, int maximum_depth)
+        void GridComputation::compute_reference_vertices(devdat::DevDatC &reference_vertices, GridComputationWrapper &grcompwrap, int maximum_depth)
         {
             for(auto dim_index = 0; dim_index < dim_; dim_index++) {
                 compute_reference_vertex_in_dim(reference_vertices[dim_index], grcompwrap, dim_index, maximum_depth);
@@ -328,11 +328,11 @@ namespace odesolver {
             }
         }
 
-        odesolver::DevDatC GridComputation::compute_reference_vertices(GridComputationWrapper &grcompwrap)
+        devdat::DevDatC GridComputation::compute_reference_vertices(GridComputationWrapper &grcompwrap)
         {
             // Initialize reference_vertices
             auto total_number_of_cubes = grcompwrap.expanded_depth_per_element_.size();
-            auto reference_vertices = odesolver::DevDatC(dim_, total_number_of_cubes);
+            auto reference_vertices = devdat::DevDatC(dim_, total_number_of_cubes);
             
             // Compute reference_vertices
             compute_reference_vertices(reference_vertices, grcompwrap);
@@ -340,15 +340,15 @@ namespace odesolver {
             return std::move(reference_vertices);
         }
 
-        void GridComputation::compute_cube_vertices(odesolver::DevDatC &cube_vertices, GridComputationWrapper &grcompwrap, int maximum_depth)
+        void GridComputation::compute_cube_vertices(devdat::DevDatC &cube_vertices, GridComputationWrapper &grcompwrap, int maximum_depth)
         {
             auto total_number_of_cubes = grcompwrap.expanded_depth_per_element_.size();
 
             for(auto dim_index = 0; dim_index < dim_; dim_index++)
             {
                 // Generate device vector of reference vertices for each vector
-                odesolver::DevDatC reference_vertices_wrapper(1, total_number_of_cubes, 0.0);
-                odesolver::DimensionIteratorC& reference_vertices = reference_vertices_wrapper[0];
+                devdat::DevDatC reference_vertices_wrapper(1, total_number_of_cubes, 0.0);
+                devdat::DimensionIteratorC& reference_vertices = reference_vertices_wrapper[0];
                 compute_reference_vertex_in_dim(reference_vertices, grcompwrap, dim_index, maximum_depth);
 
                 // Testing -> Can be used as test without regarding the correct reference vertices
@@ -399,11 +399,11 @@ namespace odesolver {
             }
         }
 
-        odesolver::DevDatC GridComputation::compute_cube_vertices(GridComputationWrapper &grcompwrap)
+        devdat::DevDatC GridComputation::compute_cube_vertices(GridComputationWrapper &grcompwrap)
         {
             // Initialize vertices
             auto total_number_of_cubes = grcompwrap.expanded_depth_per_element_.size();
-            auto cube_vertices = odesolver::DevDatC(dim_, total_number_of_cubes * pow(2, dim_));
+            auto cube_vertices = devdat::DevDatC(dim_, total_number_of_cubes * pow(2, dim_));
             
             // Compute vertices
             compute_cube_vertices(cube_vertices, grcompwrap);
@@ -411,7 +411,7 @@ namespace odesolver {
             return std::move(cube_vertices);
         }
 
-        void GridComputation::compute_cube_center_vertices(odesolver::DevDatC &center_vertices, GridComputationWrapper &grcompwrap, int maximum_depth)
+        void GridComputation::compute_cube_center_vertices(devdat::DevDatC &center_vertices, GridComputationWrapper &grcompwrap, int maximum_depth)
         {
             for(auto dim_index = 0; dim_index < dim_; dim_index++) {
                 // Generate device vector of reference vertices for each vector
@@ -436,11 +436,11 @@ namespace odesolver {
             }
         }
 
-        odesolver::DevDatC GridComputation::compute_cube_center_vertices(GridComputationWrapper &grcompwrap)
+        devdat::DevDatC GridComputation::compute_cube_center_vertices(GridComputationWrapper &grcompwrap)
         {
             // Initialize center_vertices
             auto total_number_of_cubes = grcompwrap.expanded_depth_per_element_.size();
-            auto center_vertices = odesolver::DevDatC(dim_, total_number_of_cubes);
+            auto center_vertices = devdat::DevDatC(dim_, total_number_of_cubes);
                 
             // Compute center_vertices
             compute_cube_center_vertices(center_vertices, grcompwrap);
@@ -467,7 +467,7 @@ namespace odesolver {
 
         // Protected functions
 
-        void GridComputation::compute_reference_vertex_in_dim(odesolver::DimensionIteratorC &reference_vertices, GridComputationWrapper &grcompwrap, int dim_index, int maximum_depth) const
+        void GridComputation::compute_reference_vertex_in_dim(devdat::DimensionIteratorC &reference_vertices, GridComputationWrapper &grcompwrap, int dim_index, int maximum_depth) const
         {
             if(maximum_depth == 0)
                 maximum_depth = grcompwrap.expanded_element_indices_.dim_size();

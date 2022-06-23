@@ -6,15 +6,15 @@ namespace odesolver {
 
         void init_devdat(py::module &m)
         {
-            py::class_<DevDatC>(m, "DevDat")
+            py::class_<devdat::DevDatC>(m, "DevDat")
                 .def(py::init<size_t, size_t, cudaT>(), "dim"_a=3, "N"_a=1000, "init_val"_a=0.0)
                 .def(py::init<std::vector<cudaT>, size_t>(), "data"_a, "dim"_a)
                 .def(py::init<std::vector<std::vector<cudaT>>>(), "data"_a)
-                .def("dim_size", &DevDatC::dim_size)
-                .def("n_elems", &DevDatC::n_elems)
-                .def("set_nth_element", &DevDatC::set_nth_element)
-                .def("get_nth_element", &DevDatC::get_nth_element)
-                .def("fill_dim", [] (DevDatC &devdat, unsigned dim, std::vector<cudaT> data, const int start_idx=0) { 
+                .def("dim_size", &devdat::DevDatC::dim_size)
+                .def("n_elems", &devdat::DevDatC::n_elems)
+                .def("set_nth_element", &devdat::DevDatC::set_nth_element)
+                .def("get_nth_element", &devdat::DevDatC::get_nth_element)
+                .def("fill_dim", [] (devdat::DevDatC &devdat, unsigned dim, std::vector<cudaT> data, const int start_idx=0) { 
                     if(int(data.size()) - start_idx > int(devdat.n_elems()))
                     {
                         std::cerr << "error in fill_dim: data.size() - start_idx bigger than n_elems" << std::endl;
@@ -22,7 +22,7 @@ namespace odesolver {
                     }
                     thrust::copy(data.begin(), data.end(), devdat[dim].begin() + start_idx);
                 })
-                .def("data_in_dim", [] (DevDatC &devdat, unsigned dim, const int start_idx=0, const int end_idx=-1) {
+                .def("data_in_dim", [] (devdat::DevDatC &devdat, unsigned dim, const int start_idx=0, const int end_idx=-1) {
                     int n_elems;
                     if(end_idx == -1)
                         n_elems = devdat.n_elems() - start_idx;
@@ -42,12 +42,11 @@ namespace odesolver {
                     thrust::copy(devdat[dim].begin() + start_idx, devdat[dim].begin() + start_idx + n_elems, data.begin());
                     return data;
                 })
-                .def("reshape", &DevDatC::reshape)
-                .def("resize", &DevDatC::resize)
-                .def("to_vec_vec", &DevDatC::to_vec_vec)
-                .def("transposed", &DevDatC::transposed)
-                .def("transpose", &DevDatC::transpose)
-                .def("write_to_file", &DevDatC::write_to_file);
+                .def("reshape", &devdat::DevDatC::reshape)
+                .def("resize", &devdat::DevDatC::resize)
+                .def("to_vec_vec", &devdat::DevDatC::to_vec_vec)
+                .def("transposed", &devdat::DevDatC::transposed)
+                .def("transpose", &devdat::DevDatC::transpose);
         }
     }
 }

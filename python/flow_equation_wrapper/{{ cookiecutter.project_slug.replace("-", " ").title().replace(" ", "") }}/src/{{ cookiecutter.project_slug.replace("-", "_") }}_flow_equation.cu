@@ -6,7 +6,7 @@ std::string {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", 
 std::vector<std::string> {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquations::explicit_functions_ = {"x", "y", "z"};
 
 
-void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquation0::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquation0::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::transform(variables[1].begin(), variables[1].end(), variables[0].begin(), derivatives.begin(), [] __host__ __device__ (const cudaT &val1, const cudaT &val2) { return 10 * ((-1 * val2) + val1); });
 }
@@ -26,7 +26,7 @@ struct comp_func_{{ cookiecutter.project_slug.replace("-", "_") }}0
 };
 
 
-void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquation1::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquation1::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_{{ cookiecutter.project_slug.replace("-", "_") }}0());
 }
@@ -48,7 +48,7 @@ struct comp_func_{{ cookiecutter.project_slug.replace("-", "_") }}1
 };
 
 
-void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquation2::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquation2::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_{{ cookiecutter.project_slug.replace("-", "_") }}1(const_expr0_));
 }

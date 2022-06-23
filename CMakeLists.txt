@@ -15,6 +15,9 @@ include(GNUInstallDirs)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CUDA_STANDARD 14)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Compilation options
@@ -36,7 +39,7 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     endif()
 endif()
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/ext/ParamHelper/CMakeLists.txt")
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/ext/ParamHelper/CMakeLists.txt" OR NOT EXISTS "${PROJECT_SOURCE_DIR}/ext/FlowEquationInterface/CMakeLists.txt")
     message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
 
@@ -45,6 +48,10 @@ endif()
 # compile the external submodule
 include_directories(ext/ParamHelper/include)
 add_subdirectory(ext/ParamHelper)
+
+include_directories(ext/FlowEquationInterface/ext/DevDat/include)
+include_directories(ext/FlowEquationInterface/include)
+add_subdirectory(ext/FlowEquationInterface)
 
 include_directories(ext/eigen/Eigen)
 add_subdirectory(ext/eigen)
@@ -64,8 +71,6 @@ add_subdirectory(src)
 # compile the tests
 include(CTest)
 if(BUILD_TESTING)
-  # add_subdirectory(ext/ParamHelper/ext/Catch2)
-  include(./ext/ParamHelper/ext/Catch2/contrib/Catch.cmake)
   add_subdirectory(tests)
 endif()
 

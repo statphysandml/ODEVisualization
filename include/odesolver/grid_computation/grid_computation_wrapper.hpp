@@ -1,8 +1,8 @@
 #ifndef PROGRAM_GRIDCOMPUTATIONWRAPPER_HPP
 #define PROGRAM_GRIDCOMPUTATIONWRAPPER_HPP
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
 
 
 namespace odesolver {
@@ -22,10 +22,10 @@ namespace odesolver {
             );
 
             // For parent cube indices
-            odesolver::DevDatInt expanded_element_indices_;
+            devdat::DevDatInt expanded_element_indices_;
             // For depths
-            odesolver::DevDatInt expanded_depth_per_element_wrapper_;
-            odesolver::DimensionIteratorInt& expanded_depth_per_element_;
+            devdat::DevDatInt expanded_depth_per_element_wrapper_;
+            devdat::DimensionIteratorInt& expanded_depth_per_element_;
 
             void print_expanded_vectors();
         };

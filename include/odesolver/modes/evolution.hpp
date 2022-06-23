@@ -3,11 +3,11 @@
 
 #include <param_helper/params.hpp>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
+#include <devdat/util/json_conversions.hpp>
 #include <odesolver/util/monitor.hpp>
-#include <odesolver/util/json_conversions.hpp>
-#include <odesolver/flow_equations/flow_equation_system.hpp>
+#include <flowequations/flow_equation_system.hpp>
 #include <odesolver/boost/dev_dat_boost_integration.hpp>
 #include <boost/numeric/odeint/integrate/integrate_const.hpp>
 #include <odesolver/evolution/evolution_observer.hpp>
@@ -22,31 +22,31 @@ namespace odesolver {
             // From config
             explicit Evolution(
                 const json params,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
             );
 
             // From parameters
             static Evolution generate(
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
             );
             
             // From file
             static Evolution from_file(
                 const std::string rel_config_dir,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr
             );
 
             template<typename StepperClass>
-            void evolve_const(StepperClass &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t)
+            void evolve_const(StepperClass &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t)
             {
                 integrate_const(stepper.stepper_, coordinates, start_t, end_t, delta_t);
             }
 
             template<typename StepperClass, typename Observer>
-            void evolve_const(StepperClass &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t, Observer &observer, bool equidistant_time_observations=true, const uint observe_every_ith_time_step=1)
+            void evolve_const(StepperClass &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t, Observer &observer, bool equidistant_time_observations=true, const uint observe_every_ith_time_step=1)
             {
                 // Constant step size
                 if(stepper.concept() == "stepper" || stepper.concept() == "error_stepper")
@@ -95,13 +95,13 @@ namespace odesolver {
             }
 
             template<typename StepperClass>
-            void evolve_n_steps(StepperClass &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT delta_t, const uint n)
+            void evolve_n_steps(StepperClass &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT delta_t, const uint n)
             {
                 integrate_n_steps(stepper.stepper_, coordinates, start_t, delta_t, n);
             }
 
             template<typename StepperClass, typename Observer>
-            void evolve_n_steps(StepperClass &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT delta_t, const uint n, Observer &observer, bool equidistant_time_observations=true, const uint observe_every_ith_time_step=1)
+            void evolve_n_steps(StepperClass &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT delta_t, const uint n, Observer &observer, bool equidistant_time_observations=true, const uint observe_every_ith_time_step=1)
             {
                 // Constant step size
                 if(stepper.concept() == "stepper" || stepper.concept() == "error_stepper")
@@ -147,7 +147,7 @@ namespace odesolver {
             }
 
             template<typename StepperClass, typename Observer>
-            cudaT integrate_n_steps_observe_every_ith_step(StepperClass &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT delta_t, const uint n, Observer &observer, const uint observe_every_ith_time_step=1)
+            cudaT integrate_n_steps_observe_every_ith_step(StepperClass &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT delta_t, const uint n, Observer &observer, const uint observe_every_ith_time_step=1)
             {
                 cudaT t0 = start_t;
                 uint total_n = 0;
@@ -163,13 +163,13 @@ namespace odesolver {
             }
 
             template<typename Stepper>
-            void integrate_const(Stepper &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t)
+            void integrate_const(Stepper &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t)
             {
                 boost::numeric::odeint::integrate_const(stepper, flow_equations_system_, coordinates, start_t, end_t, delta_t);
             }
 
             template<typename Stepper, typename Observer>
-            void integrate_const(Stepper &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t, Observer &observer)
+            void integrate_const(Stepper &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t, Observer &observer)
             {
                 try
                 {
@@ -182,13 +182,13 @@ namespace odesolver {
             }
 
             template<typename Stepper>
-            cudaT integrate_n_steps(Stepper &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT delta_t, const uint n)
+            cudaT integrate_n_steps(Stepper &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT delta_t, const uint n)
             {
                 return boost::numeric::odeint::integrate_n_steps(stepper, flow_equations_system_, coordinates, start_t, delta_t, n);
             }
 
             template<typename Stepper, typename Observer>
-            cudaT integrate_n_steps(Stepper &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT delta_t, const uint n, Observer &observer)
+            cudaT integrate_n_steps(Stepper &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT delta_t, const uint n, Observer &observer)
             {
                 try
                 {
@@ -202,13 +202,13 @@ namespace odesolver {
             }
 
             template<typename Stepper>
-            void integrate_adaptive(Stepper &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t)
+            void integrate_adaptive(Stepper &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t)
             {
                 boost::numeric::odeint::integrate_adaptive(stepper, flow_equations_system_, coordinates, start_t, end_t, delta_t);
             }
 
             template<typename Stepper, typename Observer>
-            void integrate_adaptive(Stepper &stepper, odesolver::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t, Observer &observer)
+            void integrate_adaptive(Stepper &stepper, devdat::DevDatC &coordinates, const cudaT start_t, const cudaT end_t, const cudaT delta_t, Observer &observer)
             {
                 try
                 {
@@ -220,7 +220,7 @@ namespace odesolver {
                 }
             }
 
-            odesolver::flowequations::FlowEquationSystem flow_equations_system_;
+            flowequations::FlowEquationSystem flow_equations_system_;
         };
     }
 }

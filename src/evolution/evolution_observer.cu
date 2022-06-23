@@ -7,10 +7,10 @@ namespace odesolver {
             valid_coordinates_mask_ptr_(std::make_shared<dev_vec_bool>())
         {}
 
-        void FlowObserver::operator() (const odesolver::DevDatC &coordinates, cudaT t)
+        void FlowObserver::operator() (const devdat::DevDatC &coordinates, cudaT t)
         {}
         
-        void FlowObserver::initialize(const odesolver::DevDatC &coordinates, cudaT t)
+        void FlowObserver::initialize(const devdat::DevDatC &coordinates, cudaT t)
         {
             this->valid_coordinates_mask_ptr_->resize(coordinates.n_elems());
             thrust::fill(this->valid_coordinates_mask_ptr_->begin(), this->valid_coordinates_mask_ptr_->end(), true);
@@ -52,14 +52,14 @@ namespace odesolver {
         }
 
         DivergentFlow::DivergentFlow(
-            const json params, std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr
+            const json params, std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr
         ) : FlowObserver(params),
             flow_equations_ptr_(flow_equations_ptr),
             maximum_abs_flow_val_(get_entry<cudaT>("maximum_abs_flow_val"))
         {}
         
         DivergentFlow DivergentFlow::generate(
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
                 const cudaT maximum_abs_flow_val
         )
         {
@@ -69,7 +69,7 @@ namespace odesolver {
             );
         }
 
-        void DivergentFlow::operator() (const odesolver::DevDatC &coordinates, cudaT t)
+        void DivergentFlow::operator() (const devdat::DevDatC &coordinates, cudaT t)
         {
             // Check if evaluated flow is too large - makes use of maximum_abs_flow_val
             auto flow = compute_flow(coordinates, flow_equations_ptr_.get());
@@ -122,7 +122,7 @@ namespace odesolver {
             const cudaT minimum_change_of_state_in_dim_;
         };
 
-        void NoChange::operator() (const odesolver::DevDatC &coordinates, cudaT t)
+        void NoChange::operator() (const devdat::DevDatC &coordinates, cudaT t)
         {
             detected_changes_.resize(coordinates.n_elems());
             
@@ -152,7 +152,7 @@ namespace odesolver {
             previous_coordinates_ = coordinates;
         }
 
-        void NoChange::initialize(const odesolver::DevDatC &coordinates, cudaT t)
+        void NoChange::initialize(const devdat::DevDatC &coordinates, cudaT t)
         {
             FlowObserver::initialize(coordinates, t);
             previous_coordinates_ = coordinates;
@@ -161,7 +161,7 @@ namespace odesolver {
         OutOfRangeCondition::OutOfRangeCondition(
             const json params
         ) : FlowObserver(params),
-            variable_ranges_(odesolver::util::json_to_vec_pair(get_entry<json>("variable_ranges"))),
+            variable_ranges_(devdat::util::json_to_vec_pair(get_entry<json>("variable_ranges"))),
             observed_dimension_indices_(get_entry<std::vector<int>>("observed_dimension_indices"))
         {
             if(observed_dimension_indices_.size() == 0)
@@ -189,7 +189,7 @@ namespace odesolver {
             );
         }
 
-        void OutOfRangeCondition::operator() (const odesolver::DevDatC &coordinates, cudaT t)
+        void OutOfRangeCondition::operator() (const devdat::DevDatC &coordinates, cudaT t)
         {
             out_of_range_.resize(coordinates.n_elems());
             
@@ -271,7 +271,7 @@ namespace odesolver {
             const cudaT vicinity_distance_;
         };
 
-        void Intersection::operator() (const odesolver::DevDatC &coordinates, cudaT t)
+        void Intersection::operator() (const devdat::DevDatC &coordinates, cudaT t)
         {
             // Reset true
             thrust::fill(intersections_.begin(), intersections_.end(), true);
@@ -322,7 +322,7 @@ namespace odesolver {
                 }
 
                 // Copy intersection coordinates to std::vector (by transposing and conversion to std::vector)
-                DevDatC intersection_coordinates(flattened_intersection_coordinates_, coordinates.dim_size());
+                devdat::DevDatC intersection_coordinates(flattened_intersection_coordinates_, coordinates.dim_size());
                 auto transposed_intersection_coordinates = intersection_coordinates.transposed();
 
                 detected_intersections_ptr_->resize(n_total + n_intersections_and_vicinities, std::vector<cudaT>(coordinates.dim_size()));
@@ -340,7 +340,7 @@ namespace odesolver {
             previous_coordinates_ = coordinates;
         }
         
-        void Intersection::initialize(const odesolver::DevDatC &coordinates, cudaT t)
+        void Intersection::initialize(const devdat::DevDatC &coordinates, cudaT t)
         {
             FlowObserver::initialize(coordinates, t);
 
@@ -387,7 +387,7 @@ namespace odesolver {
             );
         }
 
-        void TrajectoryObserver::operator() (const odesolver::DevDatC &coordinates, cudaT t)
+        void TrajectoryObserver::operator() (const devdat::DevDatC &coordinates, cudaT t)
         {
             os_ << t << " ";
             print_range_in_os(coordinates.begin(), coordinates.end(), os_);
@@ -417,7 +417,7 @@ namespace odesolver {
             );
         }
 
-        void EvolutionObserver::operator() (const odesolver::DevDatC &coordinates, cudaT t)
+        void EvolutionObserver::operator() (const devdat::DevDatC &coordinates, cudaT t)
         {
             for(auto observer : observers_)
             {
@@ -429,7 +429,7 @@ namespace odesolver {
             }
         }
 
-        void EvolutionObserver::initialize(const odesolver::DevDatC &coordinates, cudaT t)
+        void EvolutionObserver::initialize(const devdat::DevDatC &coordinates, cudaT t)
         {
             FlowObserver::initialize(coordinates, t);
             for(auto observer : observers_)

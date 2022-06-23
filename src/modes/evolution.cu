@@ -5,15 +5,15 @@ namespace odesolver {
     namespace modes {
         Evolution::Evolution(
             const json params,
-            std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
+            std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+            std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr
         ) : ODEVisualization(params, flow_equations_ptr, jacobians_ptr),
             flow_equations_system_(flow_equations_ptr.get())
         {}
 
         Evolution Evolution::generate(
-            std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
+            std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+            std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr
         )
         {
             return Evolution(
@@ -25,8 +25,8 @@ namespace odesolver {
 
         Evolution Evolution::from_file(
             const std::string rel_config_dir,
-            std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
+            std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+            std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr
         )
         {
             return Evolution(

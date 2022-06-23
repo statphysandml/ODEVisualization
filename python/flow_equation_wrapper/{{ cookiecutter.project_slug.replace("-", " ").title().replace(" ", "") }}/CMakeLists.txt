@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.15)
 
+# Silence warnings about empty CUDA_ARCHITECTURES properties on example targets:
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+  cmake_policy(SET CMP0104 OLD)
+endif()
+
 # Set a name and a version number for your project:
 project({{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }} VERSION 0.0.1 LANGUAGES CXX CUDA)
 
@@ -10,16 +15,35 @@ include(GNUInstallDirs)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CUDA_STANDARD 14)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Compilation options
 set(BUILD_PYTHON_BINDINGS ON CACHE BOOL "Enable building of Python bindings")
-SET(GPU ON CACHE BOOL "Running on GPU")
 
-# Include libraries
-find_package(ParamHelper CONFIG REQUIRED)
-find_package(Eigen3 CONFIG REQUIRED)
-find_package(ODEVisualization CONFIG REQUIRED)
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ext/FlowEquationInterface")
+find_package(Git QUIET)
+    if(GIT_FOUND)
+        message("Downloading FlowEquationInterface into ${CMAKE_CURRENT_SOURCE_DIR}/ext")
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext")
+        execute_process(COMMAND ${GIT_EXECUTABLE} clone https://github.com/statphysandml/FlowEquationInterface.git
+                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext"
+                RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+            message(FATAL_ERROR "git clone https://github.com/statphysandml/FlowEquationInterface.git failed with ${GIT_SUBMOD_RESULT}.")
+        endif()
+    endif()
+endif()
+
+include_directories(ext/FlowEquationInterface/ext/DevDat/include)
+include_directories(ext/FlowEquationInterface/include)
+add_subdirectory(ext/FlowEquationInterface)
+
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ext/FlowEquationInterface")
+    message(FATAL_ERROR "FlowEquationInterface was not added to ${CMAKE_CURRENT_SOURCE_DIR}/ext/FlowEquationInterface. Please install git or add FlowEquationInterface manually.")
+endif()
 
 if(BUILD_PYTHON_BINDINGS AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11")
     find_package(Git QUIET)

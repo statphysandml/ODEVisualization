@@ -43,7 +43,7 @@ namespace odesolver {
         }
         
 
-        odesolver::DevDatC KMeansClustering::eval(const odesolver::DevDatC &device_data) const
+        devdat::DevDatC KMeansClustering::eval(const devdat::DevDatC &device_data) const
         {
             auto transposed_data = device_data.to_vec_vec();
             auto maximum_k = std::min(maximum_expected_number_of_clusters_, uint(transposed_data.size()));
@@ -96,7 +96,7 @@ namespace odesolver {
             return eval(device_data, appropriate_k);
         }
 
-        odesolver::DevDatC KMeansClustering::eval(const odesolver::DevDatC &device_data, const uint k) const
+        devdat::DevDatC KMeansClustering::eval(const devdat::DevDatC &device_data, const uint k) const
         {
             auto transposed_data = device_data.to_vec_vec();
             odesolver::util::KMeans kmeans(k, transposed_data);
@@ -110,7 +110,7 @@ namespace odesolver {
                     std::cout << " " << elem;
                 std::cout << std::endl;
             }
-            return odesolver::DevDatC(cluster_centers);
+            return devdat::DevDatC(cluster_centers);
         }
     }
 }

@@ -16,14 +16,14 @@ using namespace pybind11::literals;
 
 void init_three_point_system(py::module &m)
 {
-    py::class_<ThreePointSystemFlowEquations, std::shared_ptr<ThreePointSystemFlowEquations>, odesolver::flowequations::FlowEquationsWrapper>(m, "ThreePointSystemFlow")
+    py::class_<ThreePointSystemFlowEquations, std::shared_ptr<ThreePointSystemFlowEquations>, flowequations::FlowEquationsWrapper>(m, "ThreePointSystemFlow")
     .def(py::init<cudaT>(), "k"_a=0.0)
     .def("dim", &ThreePointSystemFlowEquations::get_dim)
     .def_readonly_static("model", &ThreePointSystemFlowEquations::model_)
     .def_readonly_static("flow_variable", &ThreePointSystemFlowEquations::explicit_variable_)
     .def_readonly_static("flow_parameters", &ThreePointSystemFlowEquations::explicit_functions_);
 
-    py::class_<ThreePointSystemJacobianEquations, std::shared_ptr<ThreePointSystemJacobianEquations>, odesolver::flowequations::JacobianEquationsWrapper>(m, "ThreePointSystemJacobians")
+    py::class_<ThreePointSystemJacobianEquations, std::shared_ptr<ThreePointSystemJacobianEquations>, flowequations::JacobianEquationsWrapper>(m, "ThreePointSystemJacobians")
     .def(py::init<cudaT>(), "k"_a=0.0)
     .def("dim", &ThreePointSystemJacobianEquations::get_dim)
     .def_readonly_static("model", &ThreePointSystemJacobianEquations::model_);

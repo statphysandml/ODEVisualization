@@ -4,10 +4,10 @@
 #include <math.h>
 #include <tuple>
 
-#include <odesolver/flow_equations/flow_equation.hpp>
+#include <flowequations/flow_equation.hpp>
 
 
-struct ThreePointSystemFlowEquation0 : public odesolver::flowequations::FlowEquation
+struct ThreePointSystemFlowEquation0 : public flowequations::FlowEquation
 {
 	ThreePointSystemFlowEquation0(const cudaT k) : k_(k),
 		const_expr0_(-2 * (pow(M_PI, -1))),
@@ -15,7 +15,7 @@ struct ThreePointSystemFlowEquation0 : public odesolver::flowequations::FlowEqua
 		const_expr2_((1*1.0/12) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -25,7 +25,7 @@ private:
 };
 
 
-struct ThreePointSystemFlowEquation1 : public odesolver::flowequations::FlowEquation
+struct ThreePointSystemFlowEquation1 : public flowequations::FlowEquation
 {
 	ThreePointSystemFlowEquation1(const cudaT k) : k_(k),
 		const_expr0_((6*1.0/5) * (pow(M_PI, -1))),
@@ -42,7 +42,7 @@ struct ThreePointSystemFlowEquation1 : public odesolver::flowequations::FlowEqua
 		const_expr11_((-47*1.0/19) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -61,7 +61,7 @@ private:
 };
 
 
-struct ThreePointSystemFlowEquation2 : public odesolver::flowequations::FlowEquation
+struct ThreePointSystemFlowEquation2 : public flowequations::FlowEquation
 {
 	ThreePointSystemFlowEquation2(const cudaT k) : k_(k),
 		const_expr0_((-5*1.0/19) * (pow(M_PI, -1))),
@@ -72,7 +72,7 @@ struct ThreePointSystemFlowEquation2 : public odesolver::flowequations::FlowEqua
 		const_expr5_((-47*1.0/19) * (pow(M_PI, -1)))
 	{}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables) override;
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables) override;
 
 private:
 	const cudaT k_;
@@ -85,19 +85,19 @@ private:
 };
 
 
-class ThreePointSystemFlowEquations : public odesolver::flowequations::FlowEquationsWrapper
+class ThreePointSystemFlowEquations : public flowequations::FlowEquationsWrapper
 {
 public:
 	ThreePointSystemFlowEquations(const cudaT k) : k_(k)
 	{
-		flow_equations_ = std::vector<std::shared_ptr<odesolver::flowequations::FlowEquation>> {
+		flow_equations_ = std::vector<std::shared_ptr<flowequations::FlowEquation>> {
 			std::make_shared<ThreePointSystemFlowEquation0>(k_),
 			std::make_shared<ThreePointSystemFlowEquation1>(k_),
 			std::make_shared<ThreePointSystemFlowEquation2>(k_)
 		};
 	}
 
-	void operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables, const int dim_index) override
+	void operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables, const int dim_index) override
 	{
 		(*flow_equations_[dim_index])(derivatives, variables);
 	}
@@ -124,7 +124,7 @@ public:
 
 private:
 	const cudaT k_;
-	std::vector<std::shared_ptr<odesolver::flowequations::FlowEquation>> flow_equations_;
+	std::vector<std::shared_ptr<flowequations::FlowEquation>> flow_equations_;
 };
 
 #endif //PROJECT_THREEPOINTSYSTEMFLOWEQUATION_HPP

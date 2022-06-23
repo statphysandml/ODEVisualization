@@ -6,7 +6,7 @@ std::string LorentzAttractorFlowEquations::explicit_variable_ = "k";
 std::vector<std::string> LorentzAttractorFlowEquations::explicit_functions_ = {"x", "y", "z"};
 
 
-void LorentzAttractorFlowEquation0::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void LorentzAttractorFlowEquation0::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::transform(variables[1].begin(), variables[1].end(), variables[0].begin(), derivatives.begin(), [] __host__ __device__ (const cudaT &val1, const cudaT &val2) { return 10 * ((-1 * val2) + val1); });
 }
@@ -26,7 +26,7 @@ struct comp_func_lorentz_attractor0
 };
 
 
-void LorentzAttractorFlowEquation1::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void LorentzAttractorFlowEquation1::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_lorentz_attractor0());
 }
@@ -48,7 +48,7 @@ struct comp_func_lorentz_attractor1
 };
 
 
-void LorentzAttractorFlowEquation2::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void LorentzAttractorFlowEquation2::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_lorentz_attractor1(const_expr0_));
 }

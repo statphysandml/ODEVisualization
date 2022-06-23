@@ -5,9 +5,10 @@
 
 #include <thrust/transform.h>
 
-#include <odesolver/dev_dat.hpp>
+#include <devdat/devdat.hpp>
+#include <devdat/util/thrust_functors.hpp>
+
 #include <odesolver/evolution/evolution_observer.hpp>
-#include <odesolver/util/thrust_functors.hpp>
 
 #include <lorentz_attractor/lorentz_attractor_flow_equation.hpp>
 #include <lorentz_attractor/lorentz_attractor_jacobian_equation.hpp>

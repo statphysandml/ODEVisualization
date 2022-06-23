@@ -12,12 +12,6 @@ int main(int argc, char **argv) {
     // Initialize project dependent parameters
     param_helper::proj::set_relative_path_to_project_root_dir("../");
 
-#ifndef GPU
-    std::cout << "Running without GPU" << std::endl;
-#else
-    std::cout << "Running with GPU" << std::endl;
-#endif
-
     testing_devdat();
     find_fixed_points();
     compute_flow_t();

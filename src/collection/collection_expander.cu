@@ -69,8 +69,8 @@ namespace odesolver {
 
         void CollectionExpander::expand_collection_information(
             const std::vector<Collection*> &collection_package,
-            odesolver::DevDatInt& expanded_element_indices,
-            odesolver::DimensionIteratorInt& expanded_depth_per_element
+            devdat::DevDatInt& expanded_element_indices,
+            devdat::DimensionIteratorInt& expanded_depth_per_element
         )
         {
             if(expected_number_of_elements_ > expanded_element_indices.n_elems())

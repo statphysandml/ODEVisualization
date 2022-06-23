@@ -3,8 +3,8 @@
 
 #include <param_helper/params.hpp>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
 #include <odesolver/boost/dev_dat_boost_integration.hpp>
 #include <boost/numeric/odeint/stepper/generation/make_dense_output.hpp>
 #include <boost/numeric/odeint/stepper/runge_kutta4.hpp>
@@ -18,7 +18,7 @@ namespace odesolver {
 
             struct RungaKutta4
             {
-                typedef boost::numeric::odeint::runge_kutta4<odesolver::DevDatC, cudaT, odesolver::DevDatC, cudaT> stepper_type;
+                typedef boost::numeric::odeint::runge_kutta4<devdat::DevDatC, cudaT, devdat::DevDatC, cudaT> stepper_type;
 
                 RungaKutta4();
 
@@ -32,7 +32,7 @@ namespace odesolver {
 
             struct SymplecticRKNSB3McLachlan
             {
-                typedef boost::numeric::odeint::symplectic_rkn_sb3a_mclachlan<odesolver::DevDatC, odesolver::DevDatC, cudaT, odesolver::DevDatC, odesolver::DevDatC, cudaT> stepper_type;
+                typedef boost::numeric::odeint::symplectic_rkn_sb3a_mclachlan<devdat::DevDatC, devdat::DevDatC, cudaT, devdat::DevDatC, devdat::DevDatC, cudaT> stepper_type;
 
                 SymplecticRKNSB3McLachlan();
 
@@ -46,7 +46,7 @@ namespace odesolver {
 
             struct RungaKuttaDopri5
             {
-                typedef boost::numeric::odeint::runge_kutta_dopri5<odesolver::DevDatC, cudaT, odesolver::DevDatC, cudaT> stepper_type; // stepper
+                typedef boost::numeric::odeint::runge_kutta_dopri5<devdat::DevDatC, cudaT, devdat::DevDatC, cudaT> stepper_type; // stepper
 
                 RungaKuttaDopri5();
 

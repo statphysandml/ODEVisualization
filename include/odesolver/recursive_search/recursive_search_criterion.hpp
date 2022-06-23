@@ -4,8 +4,8 @@
 #include <sys/file.h>
 #include <tuple>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
 #include <odesolver/util/monitor.hpp>
 
 
@@ -16,7 +16,7 @@ namespace odesolver {
     namespace recursivesearch {
         struct RecursiveSearchCriterion
         {
-            virtual thrust::host_vector<int> determine_potential_solutions(odesolver::DevDatC& vertices, odesolver::DevDatC& vertex_velocities) = 0;
+            virtual thrust::host_vector<int> determine_potential_solutions(devdat::DevDatC& vertices, devdat::DevDatC& vertex_velocities) = 0;
         };
     }
 }

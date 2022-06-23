@@ -6,7 +6,7 @@ using json = nlohmann::json;
 namespace odesolver {
     namespace modes {
         
-        Jacobians Jacobians::from_devdat(odesolver::DevDatC jacobian_elements)
+        Jacobians Jacobians::from_devdat(devdat::DevDatC jacobian_elements)
         {
             auto transposed_elements = jacobian_elements.transposed();
             std::vector<double> jacobians(jacobian_elements.size());

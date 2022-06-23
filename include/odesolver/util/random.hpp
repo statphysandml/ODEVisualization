@@ -4,7 +4,7 @@
 #include <random>
 #include <thrust/random.h>
 
-#include <odesolver/header.hpp>
+#include <devdat/header.hpp>
 
 
 namespace odesolver {

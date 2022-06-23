@@ -24,7 +24,7 @@ struct comp_func_three_point_system0
 };
 
 
-void ThreePointSystemFlowEquation0::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemFlowEquation0::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_three_point_system0(const_expr0_, const_expr1_, const_expr2_));
 }
@@ -57,7 +57,7 @@ struct comp_func_three_point_system1
 };
 
 
-void ThreePointSystemFlowEquation1::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemFlowEquation1::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_three_point_system1(const_expr0_, const_expr10_, const_expr11_, const_expr1_, const_expr2_, const_expr3_, const_expr4_, const_expr5_, const_expr6_, const_expr7_, const_expr8_, const_expr9_));
 }
@@ -84,7 +84,7 @@ struct comp_func_three_point_system2
 };
 
 
-void ThreePointSystemFlowEquation2::operator() (odesolver::DimensionIteratorC &derivatives, const odesolver::DevDatC &variables)
+void ThreePointSystemFlowEquation2::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
 	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(variables[2].begin(), variables[1].begin(), variables[0].begin(), derivatives.begin())),thrust::make_zip_iterator(thrust::make_tuple(variables[2].end(), variables[1].end(), variables[0].end(), derivatives.end())), comp_func_three_point_system2(const_expr0_, const_expr1_, const_expr2_, const_expr3_, const_expr4_, const_expr5_));
 }

@@ -55,8 +55,8 @@ namespace odesolver {
 
         Separatrizes::Separatrizes(
             const json params,
-            std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
+            std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+            std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr
         ) : ODEVisualization(params, flow_equations_ptr, jacobians_ptr),
             N_per_eigen_dim_(get_entry<uint>("N_per_eigen_dim")),
             shift_per_dim_(get_entry<std::vector<double>>("shift_per_dim")),
@@ -67,8 +67,8 @@ namespace odesolver {
             const uint N_per_eigen_dim,
             const std::vector<double> shift_per_dim,
             const uint n_max_steps,
-            std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
+            std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+            std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr
         )
         {
             return Separatrizes(
@@ -82,8 +82,8 @@ namespace odesolver {
 
         Separatrizes Separatrizes::from_file(
             const std::string rel_config_dir,
-            std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-            std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
+            std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+            std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr
         )
         {
             return Separatrizes(
@@ -140,10 +140,10 @@ namespace odesolver {
             }
         }
 
-        DevDatC Separatrizes::get_initial_values_to_eigenvector(const std::vector<double> &saddle_point, const std::vector<cudaT> &manifold_eigenvector)
+        devdat::DevDatC Separatrizes::get_initial_values_to_eigenvector(const std::vector<double> &saddle_point, const std::vector<cudaT> &manifold_eigenvector)
         {
             const size_t dim = saddle_point.size();
-            DevDatC points(dim, 2, 0);
+            devdat::DevDatC points(dim, 2, 0);
 
             for(auto dim_index=0; dim_index < dim; dim_index++)
             {
@@ -155,16 +155,16 @@ namespace odesolver {
             return points;
         }
 
-        DevDatC Separatrizes::sample_around_saddle_point(const std::vector<double> &saddle_point, const std::vector<std::vector<cudaT>> &manifold_eigenvectors, const std::vector<int> &manifold_indices)
+        devdat::DevDatC Separatrizes::sample_around_saddle_point(const std::vector<double> &saddle_point, const std::vector<std::vector<cudaT>> &manifold_eigenvectors, const std::vector<int> &manifold_indices)
         {
             const uint eigen_dim = manifold_indices.size();
             const int N = pow(N_per_eigen_dim_, eigen_dim);
             const size_t dim = saddle_point.size();
-            DevDatC sampled_points(dim, N, 0);
+            devdat::DevDatC sampled_points(dim, N, 0);
 
             // Generate (eigen_dim x N) random numbers
             int discard = 0;
-            DevDatC random_numbers(eigen_dim, N, 0);
+            devdat::DevDatC random_numbers(eigen_dim, N, 0);
             for(auto eigen_dim_index = 0; eigen_dim_index < eigen_dim; eigen_dim_index++) {
                 thrust::transform(
                         thrust::make_counting_iterator(0 + discard),

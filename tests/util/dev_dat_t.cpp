@@ -2,8 +2,8 @@
 #include "catch2/catch.hpp"
 
 
-#include <odesolver/dev_dat.hpp>
-#include <odesolver/util/thrust_functors.hpp>
+#include <devdat/devdat.hpp>
+#include <devdat/util/thrust_functors.hpp>
 
 /* std::tuple< DevDatC > test_for_move_operators()
 {

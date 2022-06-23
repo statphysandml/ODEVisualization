@@ -66,7 +66,7 @@ namespace odesolver {
             }
         }
 
-        thrust::host_vector<int> FixedPointCriterion::determine_potential_solutions(odesolver::DevDatC& vertices, odesolver::DevDatC& vertex_velocities)
+        thrust::host_vector<int> FixedPointCriterion::determine_potential_solutions(devdat::DevDatC& vertices, devdat::DevDatC& vertex_velocities)
         {
             auto dim = vertex_velocities.dim_size();
             auto total_number_of_cubes = int(vertex_velocities.n_elems() / pow(2, dim));

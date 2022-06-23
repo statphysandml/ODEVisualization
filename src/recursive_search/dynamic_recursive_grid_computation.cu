@@ -23,7 +23,7 @@ namespace odesolver {
             c_ = 0;
         }
 
-        void DynamicRecursiveGridComputation::next(odesolver::DevDatC &vertices)
+        void DynamicRecursiveGridComputation::next(devdat::DevDatC &vertices)
         {
             // Get collections for the gpu from buffer
             std::tie(collection_package_, expected_number_of_cubes_, expected_maximum_depth_) = buffer_.pop_collection_package(number_of_cubes_per_gpu_call_);
@@ -59,17 +59,17 @@ namespace odesolver {
             // Compute vertices
             if(vertex_mode_ == CenterVertices)
             {
-                vertices = odesolver::DevDatC(hypercubes_.dim(),expected_number_of_cubes_);
+                vertices = devdat::DevDatC(hypercubes_.dim(),expected_number_of_cubes_);
                 hypercubes_.compute_cube_center_vertices(vertices, grid_computation_wrapper);
             }
             else if(vertex_mode_ == CubeVertices)
             {
-                vertices = odesolver::DevDatC(hypercubes_.dim(), expected_number_of_cubes_ * pow(2, hypercubes_.dim()));
+                vertices = devdat::DevDatC(hypercubes_.dim(), expected_number_of_cubes_ * pow(2, hypercubes_.dim()));
                 hypercubes_.compute_cube_vertices(vertices, grid_computation_wrapper);
             }
             else
             {
-                vertices = odesolver::DevDatC(hypercubes_.dim(),expected_number_of_cubes_);
+                vertices = devdat::DevDatC(hypercubes_.dim(),expected_number_of_cubes_);
                 hypercubes_.compute_reference_vertices(vertices, grid_computation_wrapper);
             }
 

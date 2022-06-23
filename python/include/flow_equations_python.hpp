@@ -8,9 +8,9 @@
 
 #include <iostream>
 
-#include <odesolver/dev_dat.hpp>
-#include <odesolver/flow_equations/flow_equation.hpp>
-#include <odesolver/flow_equations/jacobian_equation.hpp>
+#include <devdat/devdat.hpp>
+#include <flowequations/flow_equation.hpp>
+#include <flowequations/jacobian_equation.hpp>
 
 namespace py = pybind11;
 using namespace pybind11::literals;

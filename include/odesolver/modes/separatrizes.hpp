@@ -4,13 +4,13 @@
 #include <sys/file.h>
 #include <tuple>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
+#include <devdat/util/json_conversions.hpp>
 #include <odesolver/util/monitor.hpp>
-#include <odesolver/util/json_conversions.hpp>
 #include <odesolver/util/random.hpp>
-#include <odesolver/flow_equations/flow_equation.hpp>
-#include <odesolver/flow_equations/jacobian_equation.hpp>
+#include <flowequations/flow_equation.hpp>
+#include <flowequations/jacobian_equation.hpp>
 #include <odesolver/modes/jacobians.hpp>
 #include <odesolver/modes/evolution.hpp>
 #include <odesolver/modes/ode_visualization.hpp>
@@ -30,8 +30,8 @@ namespace odesolver {
             // From config
             explicit Separatrizes(
                 const json params,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr
             );
 
             // From parameters
@@ -39,23 +39,23 @@ namespace odesolver {
                 const uint N_per_eigen_dim,
                 const std::vector<double> shift_per_dim,
                 const uint n_max_steps,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr
             );
 
             // From file
             static Separatrizes from_file(
                 const std::string rel_config_dir,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr
             );
 
             // Main function
 
             template<typename StepperClass, typename Observer>
-            void eval(DevDatC &fixed_points, cudaT delta_t, odesolver::modes::Evolution &evolution, StepperClass &stepper, Observer &observer)
+            void eval(devdat::DevDatC &fixed_points, cudaT delta_t, odesolver::modes::Evolution &evolution, StepperClass &stepper, Observer &observer)
             {
-                auto jacobian_elements = odesolver::flowequations::compute_jacobian_elements(fixed_points, jacobians_ptr_.get());
+                auto jacobian_elements = flowequations::compute_jacobian_elements(fixed_points, jacobians_ptr_.get());
 
                 auto jacobians = odesolver::modes::Jacobians::from_devdat(jacobian_elements);
 
@@ -83,9 +83,9 @@ namespace odesolver {
 
             void extract_stable_and_unstable_manifolds(odesolver::modes::Jacobians &jacobians, int saddle_point_index, std::vector<int> &stable_manifold_indices, std::vector<int> &unstable_manifold_indices, std::vector<std::vector<cudaT>> &manifold_eigenvectors);
 
-            DevDatC get_initial_values_to_eigenvector(const std::vector<double> &saddle_point, const std::vector<cudaT> &manifold_eigenvector);
+            devdat::DevDatC get_initial_values_to_eigenvector(const std::vector<double> &saddle_point, const std::vector<cudaT> &manifold_eigenvector);
 
-            DevDatC sample_around_saddle_point(const std::vector<double> &saddle_point, const std::vector<std::vector<cudaT>> &manifold_eigenvectors, const std::vector<int> &manifold_indices);
+            devdat::DevDatC sample_around_saddle_point(const std::vector<double> &saddle_point, const std::vector<std::vector<cudaT>> &manifold_eigenvectors, const std::vector<int> &manifold_indices);
 
             template<typename StepperClass, typename Observer>
             void compute_separatrizes_of_manifold(
@@ -99,7 +99,7 @@ namespace odesolver {
             )
             {
                 // Perform computation of separatrix for stable manifold
-                odesolver::DevDatC sampled_coordinates;
+                devdat::DevDatC sampled_coordinates;
                 // Single line
                 if(manifold_indices.size() == 1)
                 {

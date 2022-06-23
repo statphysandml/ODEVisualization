@@ -8,8 +8,8 @@ namespace odesolver {
             const int maximum_depth,
             const cudaT init_depth_val
         ):
-            expanded_element_indices_(odesolver::DevDatInt(maximum_depth, maximum_number_of_cubes)),
-            expanded_depth_per_element_wrapper_(odesolver::DevDatInt(1, maximum_number_of_cubes, init_depth_val)),
+            expanded_element_indices_(devdat::DevDatInt(maximum_depth, maximum_number_of_cubes)),
+            expanded_depth_per_element_wrapper_(devdat::DevDatInt(1, maximum_number_of_cubes, init_depth_val)),
             expanded_depth_per_element_(expanded_depth_per_element_wrapper_[0])
         {}
 

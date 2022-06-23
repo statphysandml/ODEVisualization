@@ -81,4 +81,4 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./../install -DCMAKE_PRE
 python python/gen_ode_system.py -o "./examples/flow_equations/" -n "Four Point System" -fep "./examples/notebooks/four_point_system/"
 
 
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./../install -DCMAKE_PREFIX_PATH="~/ODEVisualization/install;~/ODEVisualization/examples/flow_equations/LorentzAttractor/install" ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="~/ODEVisualization/install;~/ODEVisualization/examples/flow_equations/LorentzAttractor/install" ..

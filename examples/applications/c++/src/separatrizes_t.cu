@@ -11,12 +11,12 @@ void separatrizes_t()
         3, // N_per_eigen_dim
         {0.01, 0.01, 0.01}, // shift_per_dim
         10000, // n_max_steps
-        odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0),
-        odesolver::flowequations::generate_jacobian_equations<LorentzAttractorJacobianEquations>(0)
+        flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0),
+        flowequations::generate_jacobian_equations<LorentzAttractorJacobianEquations>(0)
     );
 
     // Building the different observers
-    auto flow_equations_ptr = odesolver::flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
+    auto flow_equations_ptr = flowequations::generate_flow_equations<LorentzAttractorFlowEquations>(0);
 
     std::shared_ptr<odesolver::evolution::NoChange> no_change_condition_ptr = std::make_shared<odesolver::evolution::NoChange>(odesolver::evolution::NoChange::generate({1e-6, 1e-6, 1e-6}));
 
@@ -51,7 +51,7 @@ void separatrizes_t()
         {-std::sqrt(beta * (rho - 1)), -std::sqrt(beta * (rho - 1)), rho - 1}
     };
 
-    odesolver::DevDatC fixed_points(fixed_points_);
+    devdat::DevDatC fixed_points(fixed_points_);
 
     separatrizes.eval(fixed_points, 0.001, evolution, stepper, evolution_observer);
 

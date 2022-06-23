@@ -12,7 +12,7 @@ namespace odesolver {
             number_of_cubes_per_gpu_call_, maximum_recursion_depth))
         {}
 
-        void StaticRecursiveGridComputation::next(odesolver::DevDatC &vertices)
+        void StaticRecursiveGridComputation::next(devdat::DevDatC &vertices)
         {
             // Get collections for the gpu from buffer
             std::tie(collection_package_, expected_number_of_cubes_, expected_maximum_depth_) = buffer_.pop_collection_package(number_of_cubes_per_gpu_call_);

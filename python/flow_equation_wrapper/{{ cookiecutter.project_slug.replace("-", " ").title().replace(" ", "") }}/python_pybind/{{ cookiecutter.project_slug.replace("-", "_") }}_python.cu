@@ -16,14 +16,14 @@ using namespace pybind11::literals;
 
 void init_{{ cookiecutter.project_slug.replace("-", "_") }}(py::module &m)
 {
-    py::class_<{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquations, std::shared_ptr<{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquations>, odesolver::flowequations::FlowEquationsWrapper>(m, "{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}Flow")
+    py::class_<{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquations, std::shared_ptr<{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquations>, flowequations::FlowEquationsWrapper>(m, "{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}Flow")
     .def(py::init<cudaT>(), "k"_a=0.0)
     .def("dim", &{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquations::get_dim)
     .def_readonly_static("model", &{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquations::model_)
     .def_readonly_static("flow_variable", &{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquations::explicit_variable_)
     .def_readonly_static("flow_parameters", &{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}FlowEquations::explicit_functions_);
 
-    py::class_<{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquations, std::shared_ptr<{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquations>, odesolver::flowequations::JacobianEquationsWrapper>(m, "{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}Jacobians")
+    py::class_<{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquations, std::shared_ptr<{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquations>, flowequations::JacobianEquationsWrapper>(m, "{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}Jacobians")
     .def(py::init<cudaT>(), "k"_a=0.0)
     .def("dim", &{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquations::get_dim)
     .def_readonly_static("model", &{{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquations::model_);

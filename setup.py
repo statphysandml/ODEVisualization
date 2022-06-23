@@ -8,6 +8,9 @@ from setuptools.command.build_ext import build_ext
 from setuptools.command.install import install
 
 
+cmake_cuda_architectures = None
+
+
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
@@ -50,9 +53,6 @@ class CMakeBuild(build_ext):
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
             build_args += ['--', '-j12']
 
-        if gpu is not None:
-            cmake_args += ['-DGPU=' + gpu]
-
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
                                                               self.distribution.get_version())
@@ -66,29 +66,22 @@ class InstallCommand(install):
     user_options = install.user_options + [
         # ('someopt', None, None), # a 'flag' option
         ('cmake-cuda-architectures=', None, "CMAKE_CUDA_ARCHITECTURES"),
-        ('GPU=', None, "Running on GPU")
     ]
 
     def initialize_options(self):
         install.initialize_options(self)
         # self.someopt = None
         self.cmake_cuda_architectures = None
-        self.gpu = "ON"
 
     def finalize_options(self):
         #print("value of someopt is", self.someopt)
         print("cmake_cuda_architectures", self.cmake_cuda_architectures)
-        print("running on GPU", self.gpu)
         install.finalize_options(self)
 
     def run(self):
         global cmake_cuda_architectures
-        if self.cmake_cuda_architectures is None:
-            cmake_cuda_architectures = None
-        else:
+        if self.cmake_cuda_architectures is not None:
             cmake_cuda_architectures = self.cmake_cuda_architectures
-        global gpu
-        gpu = self.gpu
         install.run(self)
 
 

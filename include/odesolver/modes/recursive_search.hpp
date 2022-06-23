@@ -4,10 +4,10 @@
 #include <sys/file.h>
 #include <tuple>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
+#include <devdat/util/json_conversions.hpp>
 #include <odesolver/util/monitor.hpp>
-#include <odesolver/util/json_conversions.hpp>
 #include <odesolver/collection/buffer.hpp>
 #include <odesolver/collection/collection.hpp>
 #include <odesolver/collection/leaf.hpp>
@@ -30,8 +30,8 @@ namespace odesolver {
             explicit RecursiveSearch(
                 const json params,
                 std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
             );
 
             // From parameters
@@ -40,8 +40,8 @@ namespace odesolver {
                 const std::vector<std::vector<int>> n_branches_per_depth,
                 const std::vector<std::pair<cudaT, cudaT>> variable_ranges,
                 std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr,
                 const int number_of_cubes_per_gpu_call = 20000,
                 const int maximum_number_of_gpu_calls = 1000
             );
@@ -50,8 +50,8 @@ namespace odesolver {
             static RecursiveSearch from_file(
                 const std::string rel_config_dir,
                 std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr,
-                std::shared_ptr<odesolver::flowequations::FlowEquationsWrapper> flow_equations_ptr,
-                std::shared_ptr<odesolver::flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
+                std::shared_ptr<flowequations::FlowEquationsWrapper> flow_equations_ptr,
+                std::shared_ptr<flowequations::JacobianEquationsWrapper> jacobians_ptr=nullptr
             );
 
             // Main function
@@ -69,7 +69,7 @@ namespace odesolver {
 
             const std::vector<std::shared_ptr<odesolver::collections::Leaf>> leaves() const;
             
-            const odesolver::DevDatC solutions() const;
+            const devdat::DevDatC solutions() const;
 
         private:
             uint dim_;
@@ -81,7 +81,7 @@ namespace odesolver {
             std::vector<std::pair<cudaT, cudaT>> variable_ranges_;
 
             std::vector<std::shared_ptr<odesolver::collections::Leaf>> leaves_;
-            odesolver::DevDatC solutions_;
+            devdat::DevDatC solutions_;
 
             std::shared_ptr<odesolver::recursivesearch::RecursiveSearchCriterion> criterion_ptr_;
 

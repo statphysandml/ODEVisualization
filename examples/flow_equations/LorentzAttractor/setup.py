@@ -8,6 +8,9 @@ from setuptools.command.build_ext import build_ext
 from setuptools.command.install import install
 
 
+cmake_cuda_architectures = None
+
+
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
@@ -35,8 +38,8 @@ class CMakeBuild(build_ext):
                       '-DBUILD_TESTING=OFF',
                       '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable]
-        if odevisualization_cmake_prefix_path is not None:
-            cmake_args += ['-DCMAKE_PREFIX_PATH=' + odevisualization_cmake_prefix_path]
+        if cmake_cuda_architectures is not None:
+            cmake_args += ['-DCMAKE_CUDA_ARCHITECTURES=' + cmake_cuda_architectures]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -48,9 +51,6 @@ class CMakeBuild(build_ext):
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
             build_args += ['--', '-j12']
-
-        if gpu is not None:
-            cmake_args += ['-DGPU=' + gpu]
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
@@ -64,30 +64,23 @@ class CMakeBuild(build_ext):
 class InstallCommand(install):
     user_options = install.user_options + [
         # ('someopt', None, None), # a 'flag' option
-        ('odevisualization-cmake-prefix-path=', None, "CMAKE_PREFIX_PATH to the ODEVisualizationLib"), # an option that takes a value
-        ('GPU'=, None, "Running on GPU")
+        ('cmake-cuda-architectures=', None, "CMAKE_CUDA_ARCHITECTURES"),
     ]
 
     def initialize_options(self):
         install.initialize_options(self)
         # self.someopt = None
-        self.odevisualization_cmake_prefix_path = None
-        self.gpu = "ON"
+        self.cmake_cuda_architectures = None
 
     def finalize_options(self):
         #print("value of someopt is", self.someopt)
-        print("odevisualization_cmake_prefix_path is", self.odevisualization_cmake_prefix_path)
-        print("running on GPU", self.gpu)
+        print("cmake_cuda_architectures", self.cmake_cuda_architectures)
         install.finalize_options(self)
 
     def run(self):
-        global odevisualization_cmake_prefix_path
-        if self.odevisualization_cmake_prefix_path is None:
-            odevisualization_cmake_prefix_path = None
-        else:
-            odevisualization_cmake_prefix_path = self.odevisualization_cmake_prefix_path
-        global gpu
-        gpu = self.gpu
+        global cmake_cuda_architectures
+        if self.cmake_cuda_architectures is not None:
+            cmake_cuda_architectures = self.cmake_cuda_architectures
         install.run(self)
 
 

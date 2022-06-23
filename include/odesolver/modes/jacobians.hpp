@@ -5,8 +5,8 @@
 #include <numeric>
 #include <Eigen/Dense>
 
-#include <odesolver/header.hpp>
-#include <odesolver/dev_dat.hpp>
+#include <devdat/header.hpp>
+#include <devdat/devdat.hpp>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -28,7 +28,7 @@ namespace odesolver {
             */
             static Jacobians from_vec_vec(std::vector<std::vector<double>> jacobian_elements);
 
-            static Jacobians from_devdat(odesolver::DevDatC jacobian_elements);
+            static Jacobians from_devdat(devdat::DevDatC jacobian_elements);
 
             const std::vector<double> get_jacobian_elements() const;
 

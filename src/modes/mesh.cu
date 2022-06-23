@@ -7,8 +7,8 @@ namespace odesolver {
             const json params
         ) : Parameters(params),
             n_branches_(get_entry<std::vector<int>>("n_branches")),
-            partial_variable_ranges_(odesolver::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges"))),
-            fixed_variables_(odesolver::util::json_to_vec_vec<double>(get_entry<json>("fixed_variables", std::vector<std::vector<cudaT>> {}))),
+            partial_variable_ranges_(devdat::util::json_to_vec_pair<double>(get_entry<json>("variable_ranges"))),
+            fixed_variables_(devdat::util::json_to_vec_vec<double>(get_entry<json>("fixed_variables", std::vector<std::vector<cudaT>> {}))),
             partial_ranges_(odesolver::util::PartialRanges(n_branches_, partial_variable_ranges_, fixed_variables_, true))
         {
             // Check consistent definition of n_branches, variable_ranges and fixed_variables
@@ -54,7 +54,7 @@ namespace odesolver {
             );
         }
 
-        odesolver::DevDatC Mesh::eval(int fixed_variable_idx=0)
+        devdat::DevDatC Mesh::eval(int fixed_variable_idx=0)
         {
             /* std::vector<std::pair<cudaT, cudaT>> variable_ranges;
             if(partial_ranges_.size() == 0)

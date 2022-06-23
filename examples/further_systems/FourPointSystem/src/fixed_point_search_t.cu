@@ -27,7 +27,7 @@ void find_fixed_points()
         n_branches_per_depth,
         variable_ranges,
         recursive_search_criterion_ptr,
-        odesolver::flowequations::generate_flow_equations<FourPointSystemFlowEquations>(0),
+        flowequations::generate_flow_equations<FourPointSystemFlowEquations>(0),
         nullptr,
         400000,
         1000

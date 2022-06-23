@@ -6,29 +6,29 @@
 // Dispatchers
 #include <boost/numeric/odeint/algebra/algebra_dispatcher.hpp>
 
-#include <odesolver/dev_dat.hpp>
+#include <devdat/devdat.hpp>
 
 namespace boost { namespace numeric { namespace odeint {
 
     template<>
-    struct is_resizeable<odesolver::DevDatC>
+    struct is_resizeable<devdat::DevDatC>
     {
         typedef boost::true_type type;
         static const bool value = type::value;
     };
 
     template<>
-    struct same_size_impl<odesolver::DevDatC, odesolver::DevDatC>
+    struct same_size_impl<devdat::DevDatC, devdat::DevDatC>
     { // define how to check size
-        static bool same_size(const odesolver::DevDatC &v1,
-                              const odesolver::DevDatC &v2);
+        static bool same_size(const devdat::DevDatC &v1,
+                              const devdat::DevDatC &v2);
     };
 
     template<>
-    struct resize_impl<odesolver::DevDatC, odesolver::DevDatC>
+    struct resize_impl<devdat::DevDatC, devdat::DevDatC>
     { // define how to resize
-        static void resize(odesolver::DevDatC &v1,
-                           const odesolver::DevDatC &v2);
+        static void resize(devdat::DevDatC &v1,
+                           const devdat::DevDatC &v2);
     };
 
 } } }
@@ -39,7 +39,7 @@ namespace boost {
     namespace numeric {
         namespace odeint {
             template<typename Vec, typename VecIterator, typename ConstVecIterator>
-            struct algebra_dispatcher<odesolver::DevDat<Vec, VecIterator, ConstVecIterator>>
+            struct algebra_dispatcher<devdat::DevDat<Vec, VecIterator, ConstVecIterator>>
         {
             typedef thrust_algebra algebra_type;
         };
@@ -55,7 +55,7 @@ namespace boost {
     namespace numeric {
         namespace odeint {
             template<typename Vec, typename VecIterator, typename ConstVecIterator>
-            struct operations_dispatcher< odesolver::DevDat<Vec, VecIterator, ConstVecIterator>>
+            struct operations_dispatcher< devdat::DevDat<Vec, VecIterator, ConstVecIterator>>
         {
             typedef thrust_operations operations_type;
         };
