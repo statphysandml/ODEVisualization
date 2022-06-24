@@ -15,6 +15,7 @@
 #include <odesolver/modes/kmeans_clustering.hpp>
 #include <odesolver/modes/mesh.hpp>
 #include <odesolver/modes/recursive_search.hpp>
+#include <odesolver/modes/separatrizes.hpp>
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -47,6 +48,24 @@ namespace odesolver {
             // init_evolution_observer<StepperClass, 
             // odesolver::evolution::TrajectoryObserver>(m);
             init_evolution_observer<StepperClass, odesolver::evolution::EvolutionObserver>(m, evolution);
+        }
+
+        template<typename StepperClass, typename Observer>
+        void init_separatrizes(py::module &m, py::class_<odesolver::modes::Separatrizes, std::shared_ptr<odesolver::modes::Separatrizes>> &separatrizes)
+        {
+            separatrizes.def("eval", &odesolver::modes::Separatrizes::eval<StepperClass, Observer>, "fixed_points"_a, "delta_t"_a, "evolution"_a, "stepper"_a, "observer"_a);
+        }
+
+        template<typename StepperClass>
+        void init_separatrizes(py::module &m, py::class_<odesolver::modes::Separatrizes, std::shared_ptr<odesolver::modes::Separatrizes>> &separatrizes)
+        {
+            init_separatrizes<StepperClass, odesolver::evolution::DivergentFlow>(m, separatrizes);
+            init_separatrizes<StepperClass, odesolver::evolution::NoChange>(m, separatrizes);
+            init_separatrizes<StepperClass, odesolver::evolution::OutOfRangeCondition>(m, separatrizes);
+            init_separatrizes<StepperClass, odesolver::evolution::Intersection>(m, separatrizes);
+            // init_separatrizes<StepperClass, 
+            // odesolver::evolution::TrajectoryObserver>(m);
+            init_separatrizes<StepperClass, odesolver::evolution::EvolutionObserver>(m, separatrizes);
         }
 
         void init_modes(py::module &m);

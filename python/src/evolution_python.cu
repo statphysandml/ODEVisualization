@@ -30,22 +30,22 @@ namespace odesolver {
                 .def("n_valid_coordinates", &odesolver::evolution::FlowObserver::n_valid_coordinates)
                 .def("valid_coordinates", &odesolver::evolution::FlowObserver::valid_coordinates);
             
-            py::class_<odesolver::evolution::DivergentFlow, std::shared_ptr<odesolver::evolution::DivergentFlow>>(mobserver, "DivergentFlow")
+            py::class_<odesolver::evolution::DivergentFlow, std::shared_ptr<odesolver::evolution::DivergentFlow>, odesolver::evolution::FlowObserver>(mobserver, "DivergentFlow")
                 .def(py::init(&odesolver::evolution::DivergentFlow::generate), "flow_equations"_a, "maximum_abs_flow_val"_a=1e10)
                 .def("name", &odesolver::evolution::DivergentFlow::name)
                 .def("eval", &odesolver::evolution::DivergentFlow::operator());
 
-            py::class_<odesolver::evolution::NoChange, std::shared_ptr<odesolver::evolution::NoChange>>(mobserver, "NoChange")
+            py::class_<odesolver::evolution::NoChange, std::shared_ptr<odesolver::evolution::NoChange>, odesolver::evolution::FlowObserver>(mobserver, "NoChange")
                 .def(py::init(&odesolver::evolution::NoChange::generate), "minimum_change_of_state"_a=std::vector<cudaT>{})
                 .def("name", &odesolver::evolution::NoChange::name)
                 .def("eval", &odesolver::evolution::NoChange::operator());
             
-            py::class_<odesolver::evolution::OutOfRangeCondition, std::shared_ptr<odesolver::evolution::OutOfRangeCondition>>(mobserver, "OutOfRangeCondition")
+            py::class_<odesolver::evolution::OutOfRangeCondition, std::shared_ptr<odesolver::evolution::OutOfRangeCondition>, odesolver::evolution::FlowObserver>(mobserver, "OutOfRangeCondition")
                 .def(py::init(&odesolver::evolution::OutOfRangeCondition::generate), "variable_ranges"_a=std::vector<std::pair<cudaT, cudaT>>{}, "observed_dimension_indices"_a=std::vector<int>{})
                 .def("name", &odesolver::evolution::OutOfRangeCondition::name)
                 .def("eval", &odesolver::evolution::OutOfRangeCondition::operator());
 
-            py::class_<odesolver::evolution::Intersection, std::shared_ptr<odesolver::evolution::Intersection>>(mobserver, "Intersection")
+            py::class_<odesolver::evolution::Intersection, std::shared_ptr<odesolver::evolution::Intersection>, odesolver::evolution::FlowObserver>(mobserver, "Intersection")
                 .def(py::init(&odesolver::evolution::Intersection::generate))
                 .def("name", &odesolver::evolution::Intersection::name)
                 .def("eval", &odesolver::evolution::Intersection::operator())
@@ -53,12 +53,12 @@ namespace odesolver {
                 .def("detected_intersections", &odesolver::evolution::Intersection::detected_intersections)
                 .def("detected_intersection_types", &odesolver::evolution::Intersection::detected_intersection_types);
 
-            py::class_<odesolver::evolution::TrajectoryObserver, std::shared_ptr<odesolver::evolution::TrajectoryObserver>>(mobserver, "TrajectoryObserver")
+            py::class_<odesolver::evolution::TrajectoryObserver, std::shared_ptr<odesolver::evolution::TrajectoryObserver>, odesolver::evolution::FlowObserver>(mobserver, "TrajectoryObserver")
                 .def(py::init(&odesolver::evolution::TrajectoryObserver::generate), "file")
                 .def("name", &odesolver::evolution::TrajectoryObserver::name)
                 .def("eval", &odesolver::evolution::TrajectoryObserver::operator());
             
-            py::class_<odesolver::evolution::EvolutionObserver, std::shared_ptr<odesolver::evolution::EvolutionObserver>>(mobserver, "EvolutionObserver")
+            py::class_<odesolver::evolution::EvolutionObserver, std::shared_ptr<odesolver::evolution::EvolutionObserver>, odesolver::evolution::FlowObserver>(mobserver, "EvolutionObserver")
                 .def(py::init(&odesolver::evolution::EvolutionObserver::generate), "observers"_a)
                 .def("name", &odesolver::evolution::EvolutionObserver::name)
                 .def("eval", &odesolver::evolution::EvolutionObserver::operator());

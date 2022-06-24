@@ -21,7 +21,7 @@ class RecursiveSearch:
             maximum_recursion_depth,
             n_branches_per_depth,
             variable_ranges,
-            criterion,
+            criterion._criterion,
             flow_equations._flow,
             flow_equations._jacobians,
             number_of_cubes_per_gpu_call,
@@ -35,7 +35,7 @@ class RecursiveSearch:
         if return_type == "vfcoor":
             return Coordinates(self._recursive_search.solutions())
         elif return_type == "cube_indices":
-            return CubeIndexPath(self._recursive_search.leaves())
+            return [CubeIndexPath(leaf) for leaf in self._recursive_search.leaves()]
     
     # def project_cube_index_path_on_vertices(self, vertex_mode: str = "center")
     #     if vertex_mode == "center":

@@ -52,6 +52,14 @@ namespace odesolver {
                 .def("eval", &odesolver::modes::RecursiveSearch::eval)
                 .def("solutions", &odesolver::modes::RecursiveSearch::solutions)
                 .def("leaves", &odesolver::modes::RecursiveSearch::leaves);
+            
+                py::class_<odesolver::modes::Separatrizes, std::shared_ptr<odesolver::modes::Separatrizes>> separatrizes(mmodes, "Separatrizes");
+        
+            separatrizes.def(py::init(&odesolver::modes::Separatrizes::generate));
+
+            init_separatrizes<odesolver::evolution::stepper::RungaKutta4>(mmodes, separatrizes);
+            init_separatrizes<odesolver::evolution::stepper::RungaKuttaDopri5>(mmodes, separatrizes);
+            init_separatrizes<odesolver::evolution::stepper::ControlledRungaKutta<odesolver::evolution::stepper::RungaKuttaDopri5>>(mmodes, separatrizes);
         }
     }
 }

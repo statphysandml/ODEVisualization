@@ -6,7 +6,7 @@ from lorentzattractor.lorentz_attractor import LorentzAttractor
 from odesolver.recursive_search import RecursiveSearch
 from odesolver.kmeans_clustering import KMeansClustering
 
-from odevisualizationlib.recursive_search import FixedPointCriterion
+from odesolver.fixed_point_criterion import FixedPointCriterion
 
 
 if __name__ == '__main__':

@@ -1,6 +1,5 @@
 - Correctly Integrate pybind11_json
 
-- Speed check for new project_collection_package_on_expanded_cube_and_depth_per_cube_indices function and rename ending (also in ofther functions)
 - Project cube index... <-> think about using an own function for this
 - Write pybind11 wrapper for KMeans clustering
 - Write pybind11 wrapper for Evolution <-> Integrate Boost and all its functionalities
@@ -82,3 +81,9 @@ python python/gen_ode_system.py -o "./examples/flow_equations/" -n "Four Point S
 
 
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="~/ODEVisualization/install;~/ODEVisualization/examples/flow_equations/LorentzAttractor/install" ..
+
+
+- Extend Fixed Point Search to detect infinities
+- Extend to further generation methods of equations
+- New ways to find fixed point
+- Interface to pytorch / RL frameworks

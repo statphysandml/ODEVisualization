@@ -21,7 +21,7 @@ class Jacobians:
         self._jacobians.eval()
 
     @classmethod
-    def from_vfcoor(cls, elements: Coordinates):
+    def from_coor(cls, elements: Coordinates):
         return cls(elements=elements)
 
     @classmethod

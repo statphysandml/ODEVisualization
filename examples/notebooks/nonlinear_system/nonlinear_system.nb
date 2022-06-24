@@ -1,0 +1,158 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 13.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      5214,        148]
+NotebookOptionsPosition[      4546,        129]
+NotebookOutlinePosition[      4947,        145]
+CellTagsIndexPosition[      4904,        142]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"exportFlowEquations", "[", 
+   RowBox[{"FPEqs_", ",", "couplings_"}], "]"}], ":=", " ", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{
+     "CouplingsExpr", ",", "\[IndentingNewLine]", "VisibleCouplingsFPEqs", 
+      ",", "\[IndentingNewLine]", "CoupledSystem", ",", "\[IndentingNewLine]",
+       "Output"}], "\[IndentingNewLine]", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"CouplingsExpr", " ", "=", " ", 
+      RowBox[{"Table", "[", 
+       RowBox[{
+        RowBox[{"coup", "\[Rule]", 
+         RowBox[{"coup", "[", "t", "]"}]}], ",", " ", 
+        RowBox[{"{", 
+         RowBox[{"coup", ",", " ", "couplings"}], "}"}]}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"VisibleCouplingsFPEqs", " ", "=", " ", 
+      RowBox[{"FPEqs", "/.", "CouplingsExpr"}]}], ";", "\[IndentingNewLine]", 
+     
+     RowBox[{"CoupledSystem", " ", "=", " ", 
+      RowBox[{"Table", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"D", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"coupviseq", "[", 
+             RowBox[{"[", "1", "]"}], "]"}], "[", "t", "]"}], ",", " ", "t"}],
+           "]"}], " ", "\[Equal]", " ", 
+         RowBox[{"coupviseq", "[", 
+          RowBox[{"[", "2", "]"}], "]"}]}], ",", 
+        RowBox[{"{", 
+         RowBox[{"coupviseq", ",", " ", 
+          RowBox[{"Transpose", "[", 
+           RowBox[{"List", "[", 
+            RowBox[{"couplings", ",", " ", "VisibleCouplingsFPEqs"}], "]"}], 
+           "]"}]}], "}"}]}], "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"Output", " ", "=", 
+      RowBox[{"ToString", "[", 
+       RowBox[{"FullForm", "[", "CoupledSystem", "]"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Export", "[", 
+      RowBox[{"\"\<flow_equations.txt\>\"", ",", " ", "Output"}], "]"}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Output", " ", "=", " ", 
+      RowBox[{"ToString", "[", 
+       RowBox[{"FullForm", "[", 
+        RowBox[{
+         RowBox[{"FullSimplify", "[", 
+          RowBox[{"D", "[", 
+           RowBox[{"FPEqs", ",", " ", 
+            RowBox[{"{", "couplings", "}"}]}], "]"}], "]"}], "/.", 
+         "CouplingsExpr"}], "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"Export", "[", 
+      RowBox[{"\"\<jacobian.txt\>\"", ",", " ", "Output"}], "]"}], ";"}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input",
+ CellLabel->
+  "(Debug) In[9]:=",ExpressionUUID->"f5f8b677-3c3a-4f52-9163-1c3413dc92ff"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"du", " ", "=", " ", 
+   RowBox[{"1", " ", "-", " ", "v"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"dv", " ", "=", " ", 
+   RowBox[{
+    RowBox[{"u", "^", "2"}], " ", "-", "  ", 
+    RowBox[{"v", "^", "2"}]}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"ODEs", "=", 
+  RowBox[{"{", 
+   RowBox[{"du", ",", " ", "dv"}], "}"}]}]}], "Input",
+ CellChangeTimes->{{3.865012978146462*^9, 3.865013021018065*^9}},
+ CellLabel->
+  "(Debug) In[10]:=",ExpressionUUID->"4f60bcf7-03cd-43eb-b642-34f7492863c3"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"1", "-", "v"}], ",", 
+   RowBox[{
+    SuperscriptBox["u", "2"], "-", 
+    SuperscriptBox["v", "2"]}]}], "}"}]], "Output",
+ CellChangeTimes->{{3.865013021531768*^9, 3.865013035446834*^9}},
+ CellLabel->
+  "(Debug) Out[12]=",ExpressionUUID->"f1356a8e-b794-4719-b171-a2a50f4a4f35"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", " ", 
+   RowBox[{"Export", " ", "to", " ", "file"}], " ", "*)"}], 
+  "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"variables", " ", "=", " ", 
+     RowBox[{"{", 
+      RowBox[{"u", ",", " ", "v"}], "}"}]}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{"exportFlowEquations", "[", 
+    RowBox[{"ODEs", ",", " ", "variables"}], "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.865013028802228*^9, 3.865013030250328*^9}},
+ CellLabel->
+  "(Debug) In[13]:=",ExpressionUUID->"d3708fe1-6199-40b8-a217-ed29c6497a65"]
+},
+WindowSize->{687.75, 723.75},
+WindowMargins->{{78.75, Automatic}, {0, Automatic}},
+FrontEndVersion->"13.0 for Linux x86 (64-bit) (February 4, 2022)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"0f131c0a-605e-436f-96f0-efe36a6b449f"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 2518, 61, 373, "Input",ExpressionUUID->"f5f8b677-3c3a-4f52-9163-1c3413dc92ff"],
+Cell[CellGroupData[{
+Cell[3101, 85, 541, 14, 84, "Input",ExpressionUUID->"4f60bcf7-03cd-43eb-b642-34f7492863c3"],
+Cell[3645, 101, 329, 9, 48, "Output",ExpressionUUID->"f1356a8e-b794-4719-b171-a2a50f4a4f35"]
+}, Open  ]],
+Cell[3989, 113, 553, 14, 84, "Input",ExpressionUUID->"d3708fe1-6199-40b8-a217-ed29c6497a65"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

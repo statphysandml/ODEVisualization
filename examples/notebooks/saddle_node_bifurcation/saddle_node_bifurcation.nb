@@ -1,0 +1,172 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 13.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      5799,        164]
+NotebookOptionsPosition[      5133,        145]
+NotebookOutlinePosition[      5530,        161]
+CellTagsIndexPosition[      5487,        158]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"exportFlowEquations", "[", 
+   RowBox[{"FPEqs_", ",", "couplings_"}], "]"}], ":=", " ", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{
+     "CouplingsExpr", ",", "\[IndentingNewLine]", "VisibleCouplingsFPEqs", 
+      ",", "\[IndentingNewLine]", "CoupledSystem", ",", "\[IndentingNewLine]",
+       "Output"}], "\[IndentingNewLine]", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"CouplingsExpr", " ", "=", " ", 
+      RowBox[{"Table", "[", 
+       RowBox[{
+        RowBox[{"coup", "\[Rule]", 
+         RowBox[{"coup", "[", "t", "]"}]}], ",", " ", 
+        RowBox[{"{", 
+         RowBox[{"coup", ",", " ", "couplings"}], "}"}]}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"VisibleCouplingsFPEqs", " ", "=", " ", 
+      RowBox[{"FPEqs", "/.", "CouplingsExpr"}]}], ";", "\[IndentingNewLine]", 
+     
+     RowBox[{"CoupledSystem", " ", "=", " ", 
+      RowBox[{"Table", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"D", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"coupviseq", "[", 
+             RowBox[{"[", "1", "]"}], "]"}], "[", "t", "]"}], ",", " ", "t"}],
+           "]"}], " ", "\[Equal]", " ", 
+         RowBox[{"coupviseq", "[", 
+          RowBox[{"[", "2", "]"}], "]"}]}], ",", 
+        RowBox[{"{", 
+         RowBox[{"coupviseq", ",", " ", 
+          RowBox[{"Transpose", "[", 
+           RowBox[{"List", "[", 
+            RowBox[{"couplings", ",", " ", "VisibleCouplingsFPEqs"}], "]"}], 
+           "]"}]}], "}"}]}], "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"Output", " ", "=", 
+      RowBox[{"ToString", "[", 
+       RowBox[{"FullForm", "[", "CoupledSystem", "]"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Export", "[", 
+      RowBox[{"\"\<flow_equations.txt\>\"", ",", " ", "Output"}], "]"}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Output", " ", "=", " ", 
+      RowBox[{"ToString", "[", 
+       RowBox[{"FullForm", "[", 
+        RowBox[{
+         RowBox[{"FullSimplify", "[", 
+          RowBox[{"D", "[", 
+           RowBox[{"FPEqs", ",", " ", 
+            RowBox[{"{", "couplings", "}"}]}], "]"}], "]"}], "/.", 
+         "CouplingsExpr"}], "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"Export", "[", 
+      RowBox[{"\"\<jacobian.txt\>\"", ",", " ", "Output"}], "]"}], ";"}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input",
+ CellChangeTimes->{{3.864296338066209*^9, 3.864296376145153*^9}, {
+  3.864296930463832*^9, 3.864296934580572*^9}},
+ CellLabel->
+  "(Debug) In[14]:=",ExpressionUUID->"a0df67c2-0c63-47c8-b5cf-0b4119d0536e"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", " ", 
+   RowBox[{"Setting", " ", "up", " ", "the", " ", "ODEs"}], " ", "*)"}], 
+  "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"dx", " ", "=", " ", 
+     RowBox[{
+      RowBox[{"x", "^", "2"}], " ", "-", " ", "y", " ", "-", " ", "\[Mu]"}]}],
+     ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"dy", " ", "=", " ", 
+     RowBox[{"dx", " ", "/", " ", "y"}]}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{"ODEs", "=", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"dx", ",", " ", "dy"}], "}"}], "/.", 
+     RowBox[{"{", 
+      RowBox[{"\[Mu]", "\[Rule]", "4"}], "}"}]}]}]}]}]], "Input",
+ CellChangeTimes->{{3.864296458839967*^9, 3.864296534424775*^9}, {
+  3.864296601974209*^9, 3.8642966113153133`*^9}, {3.864297042493285*^9, 
+  3.864297043687788*^9}},
+ CellLabel->
+  "(Debug) In[20]:=",ExpressionUUID->"6879be6b-9cb1-42c3-9497-d0a2294a31f5"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"-", "4"}], "+", 
+    SuperscriptBox["x", "2"], "-", "y"}], ",", 
+   FractionBox[
+    RowBox[{
+     RowBox[{"-", "4"}], "+", 
+     SuperscriptBox["x", "2"], "-", "y"}], "y"]}], "}"}]], "Output",
+ CellChangeTimes->{3.864296529504492*^9, 3.86429661219732*^9, 
+  3.8642969369707737`*^9, 3.8642970440979023`*^9},
+ CellLabel->
+  "(Debug) Out[22]=",ExpressionUUID->"b55b12c8-7cce-446d-86be-59090b43fa90"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", " ", 
+   RowBox[{"Export", " ", "to", " ", "file"}], " ", "*)"}], 
+  "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"variables", " ", "=", " ", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", " ", "y"}], "}"}]}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{"exportFlowEquations", "[", 
+    RowBox[{"ODEs", ",", " ", "variables"}], "]"}]}]}]], "Input",
+ CellChangeTimes->{3.8642966455370483`*^9},
+ CellLabel->
+  "(Debug) In[23]:=",ExpressionUUID->"a3340324-ced4-4d81-b9b3-997d10c764d5"]
+},
+WindowSize->{687.75, 723.75},
+WindowMargins->{{0, Automatic}, {0, Automatic}},
+FrontEndVersion->"13.0 for Linux x86 (64-bit) (February 4, 2022)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"fa371c91-28ce-4872-bc89-a15cbf715b7f"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 2634, 63, 373, "Input",ExpressionUUID->"a0df67c2-0c63-47c8-b5cf-0b4119d0536e"],
+Cell[CellGroupData[{
+Cell[3217, 87, 901, 24, 104, "Input",ExpressionUUID->"6879be6b-9cb1-42c3-9497-d0a2294a31f5"],
+Cell[4121, 113, 462, 13, 65, "Output",ExpressionUUID->"b55b12c8-7cce-446d-86be-59090b43fa90"]
+}, Open  ]],
+Cell[4598, 129, 531, 14, 84, "Input",ExpressionUUID->"a3340324-ced4-4d81-b9b3-997d10c764d5"]
+}
+]
+*)
+
