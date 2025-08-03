@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.18)
 
 project(ODEVisualization VERSION 0.0.1 LANGUAGES CXX CUDA)
 
+# Set policy for compatibility with older CMake versions in dependencies
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif()
+
+# Set minimum policy version for dependencies
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
 # Include necessary modules
 include(GNUInstallDirs)
 include(ExternalProject)
@@ -38,7 +46,7 @@ find_package(CUDAToolkit REQUIRED)
 FetchContent_Declare(
     nlohmann_json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.2
+    GIT_TAG v3.11.3
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
@@ -56,6 +64,7 @@ else()
         CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX=${SUPERBUILD_INSTALL_DIR}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
             -DBUILD_TESTING=OFF
             -DDEVDAT_USE_SYSTEM_JSON=ON
             -DJSON_INCLUDE_DIR=${JSON_INCLUDE_DIR}
@@ -75,6 +84,7 @@ else()
         CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX=${SUPERBUILD_INSTALL_DIR}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
             -DBUILD_TESTING=OFF
             -DBUILD_EXAMPLES=OFF
             -DUSE_SYSTEM_JSON=ON
@@ -98,6 +108,7 @@ else()
         CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX=${SUPERBUILD_INSTALL_DIR}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
             -DBUILD_TESTING=OFF
             -DCMAKE_PREFIX_PATH=${SUPERBUILD_INSTALL_DIR}
             -DPARAMHELPER_USE_SYSTEM_JSON=ON
@@ -178,6 +189,7 @@ ExternalProject_Add(
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
         -DCMAKE_PREFIX_PATH=${SUPERBUILD_INSTALL_DIR}
         -DBUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS}
         -DBUILD_DOCS=${BUILD_DOCS}
@@ -189,6 +201,8 @@ ExternalProject_Add(
         -DPYBIND11_SOURCE_DIR=${PYBIND11_SOURCE_DIR}
         -DEIGEN_INCLUDE_DIR=${EIGEN_INCLUDE_DIR}
         -DJSON_INCLUDE_DIR=${JSON_INCLUDE_DIR}  # Add JSON include path
+        # Allow setup.py to specify where Python modules should be built
+        $<$<BOOL:${ODEVIS_CMAKE_LIBRARY_OUTPUT_DIRECTORY}>:-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${ODEVIS_CMAKE_LIBRARY_OUTPUT_DIRECTORY}>
     DEPENDS ${ODEVIS_DEPS}
 )
 

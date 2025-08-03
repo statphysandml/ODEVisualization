@@ -1,0 +1,37 @@
+# Include important documentation files
+include README.md
+include LICENSE.md
+include pyproject.toml
+
+# Include all CMake files
+recursive-include . CMakeLists.txt
+recursive-include cmake *.cmake.in
+recursive-include cmake *.cmake
+recursive-include odevis/cmake *.cmake.in
+recursive-include odevis/cmake *.cmake
+
+# Include all source files
+recursive-include odevis/src *.cpp *.cu *.hpp *.h
+recursive-include odevis/include *.hpp *.h
+recursive-include odevis/python *.cpp *.cu *.hpp *.h *.py
+
+# Include flow equation wrapper
+graft odevis/python/flow_equation_wrapper/
+
+# Include test files
+recursive-include odevis/tests *.py *.cpp *.cu *.hpp *.h
+
+# Exclude build artifacts and temporary files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.so
+global-exclude *.dll
+global-exclude *.dylib
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .git*
+global-exclude build/*
+global-exclude *.egg-info/*
+
+# Include package data files
+recursive-include odevis/python *.json *.yaml *.yml

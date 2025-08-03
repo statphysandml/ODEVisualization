@@ -11,6 +11,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Options
 option(BUILD_TESTING "Build tests" ON)
 option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
+option(USE_SYSTEM_PYBIND11 "Use system-installed pybind11" OFF)
 
 # Enhanced debugging for dependency paths
 message(STATUS "CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}")
@@ -120,6 +122,28 @@ install(
 )
 
 # Add subdirectories based on options
+if(BUILD_PYTHON_BINDINGS)
+    # Handle pybind11 dependency
+    if(USE_SYSTEM_PYBIND11)
+        find_package(pybind11 CONFIG REQUIRED)
+    else()
+        # Use provided pybind11 or fetch it
+        if(DEFINED PYBIND11_SOURCE_DIR AND EXISTS "${PYBIND11_SOURCE_DIR}")
+            add_subdirectory(${PYBIND11_SOURCE_DIR} pybind11)
+        else()
+            include(FetchContent)
+            FetchContent_Declare(
+                pybind11
+                GIT_REPOSITORY https://github.com/pybind/pybind11.git
+                GIT_TAG v2.10.4
+            )
+            FetchContent_MakeAvailable(pybind11)
+        endif()
+    endif()
+    
+    add_subdirectory(python)
+endif()
+
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)

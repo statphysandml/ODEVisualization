@@ -1,0 +1,125 @@
+[build-system]
+requires = [
+    "setuptools>=68.0",
+    "wheel",
+    "cmake>=3.18",
+    "pybind11>=2.10.0",
+    "ninja; platform_system!='Windows'",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "odevisualization"
+version = "1.0.0"
+description = "A comprehensive library for visualizing and analyzing ordinary differential equations with CUDA acceleration"
+readme = "README.md"
+license = {file = "LICENSE.md"}
+authors = [
+    {name = "Lukas Kades", email = "statphysandml@thphys.uni-heidelberg.de"}
+]
+maintainers = [
+    {name = "Lukas Kades", email = "statphysandml@thphys.uni-heidelberg.de"}
+]
+keywords = ["ode", "visualization", "cuda", "differential-equations", "numerical-analysis"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: C++",
+    "Programming Language :: CUDA",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.19.0",
+    "matplotlib>=3.3.0",
+    "scipy>=1.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov",
+    "black",
+    "isort",
+    "flake8",
+    "mypy",
+    "pre-commit",
+]
+docs = [
+    "sphinx>=4.0.0",
+    "sphinx-rtd-theme",
+    "myst-parser",
+]
+test = [
+    "pytest>=6.0",
+    "pytest-cov",
+    "pytest-xdist",
+]
+
+[project.urls]
+Homepage = "https://github.com/statphysandml/ODEVisualization"
+Repository = "https://github.com/statphysandml/ODEVisualization"
+Documentation = "https://odevisualization.readthedocs.io"
+"Bug Tracker" = "https://github.com/statphysandml/ODEVisualization/issues"
+
+[tool.setuptools.packages.find]
+where = ["odevis/python"]
+include = ["odesolver*"]
+
+[tool.setuptools.package-data]
+"odesolver" = ["*.so", "*.dll", "*.dylib", "*.pyd"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["odevis/python/tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--disable-warnings",
+    "-v",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "cuda: marks tests that require CUDA",
+]
