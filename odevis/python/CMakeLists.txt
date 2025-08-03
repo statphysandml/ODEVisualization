@@ -7,7 +7,12 @@ pybind11_add_module(odevisualization_python
     src/recursive_search_python.cu
 )
 
-target_link_libraries(odevisualization_python PUBLIC odevisualization stdc++fs paramhelper::paramhelper flowequations::flowequations devdat::devdat Eigen3::Eigen)
+target_include_directories(odevisualization_python
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(odevisualization_python PUBLIC odevisualization stdc++fs paramhelper::paramhelper flowequations::flowequations devdat::devdat)
 
 target_compile_options(odevisualization_python PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
 

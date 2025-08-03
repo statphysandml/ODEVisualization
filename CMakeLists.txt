@@ -1,108 +1,200 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.18)
 
-# Silence warnings about empty CUDA_ARCHITECTURES properties on example targets:
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-  cmake_policy(SET CMP0104 OLD)
-endif()
-
-# Set a name and a version number for your project:
 project(ODEVisualization VERSION 0.0.1 LANGUAGES CXX CUDA)
 
-# Initialize some default paths
+# Include necessary modules
 include(GNUInstallDirs)
+include(ExternalProject)
+include(FetchContent)
 
-# Define the minimum C++ standard that is required
+# Build options
+option(BUILD_PYTHON_BINDINGS "Enable building of Python bindings" ON)
+option(BUILD_DOCS "Enable building of documentation" ON)
+option(BUILD_TESTING "Build tests" ON)
+
+# Component library options
+option(USE_SYSTEM_DEVDAT "Use system-installed devdat" OFF)
+option(USE_SYSTEM_FLOWEQUATIONS "Use system-installed flowequations" OFF)
+option(USE_SYSTEM_PARAMHELPER "Use system-installed paramhelper" OFF)
+option(USE_SYSTEM_EIGEN "Use system-installed Eigen" OFF)
+option(USE_SYSTEM_PYBIND11 "Use system-installed pybind11" OFF)
+
+# Set standard C++ properties
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_CUDA_STANDARD 14)
-set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Compilation options
-set(BUILD_PYTHON_BINDINGS ON CACHE BOOL "Enable building of Python bindings")
-set(BUILD_DOCS ON CACHE BOOL "Enable building of documentation")
+# Setup install directories for the external projects
+set(SUPERBUILD_INSTALL_DIR ${CMAKE_BINARY_DIR}/installed)
+set(CMAKE_PREFIX_PATH ${SUPERBUILD_INSTALL_DIR} ${CMAKE_PREFIX_PATH})
 
-find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-# Update submodules as needed
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
+# Find Boost (required)
+find_package(Boost REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+
+# === Dependency Handling ===
+
+# nlohmann_json (needed by paramhelper)
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.2
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
+# Store the nlohmann/json path to pass to dependencies
+get_target_property(JSON_INCLUDE_DIR nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
+
+# 1. devdat library
+if(USE_SYSTEM_DEVDAT)
+    find_package(devdat REQUIRED)
+else()
+    ExternalProject_Add(
+        devdat_ext
+        GIT_REPOSITORY https://github.com/statphysandml/devdat.git
+        GIT_TAG main
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX=${SUPERBUILD_INSTALL_DIR}
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DBUILD_TESTING=OFF
+            -DDEVDAT_USE_SYSTEM_JSON=ON
+            -DJSON_INCLUDE_DIR=${JSON_INCLUDE_DIR}
+        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+    )
+    set(DEVDAT_DIR ${SUPERBUILD_INSTALL_DIR})
+endif()
+
+# 2. flowequations library (depends on devdat)
+if(USE_SYSTEM_FLOWEQUATIONS)
+    find_package(flowequations REQUIRED)
+else()
+    ExternalProject_Add(
+        flowequations_ext
+        GIT_REPOSITORY https://github.com/statphysandml/FlowEquationInterface.git
+        GIT_TAG main
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX=${SUPERBUILD_INSTALL_DIR}
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DBUILD_TESTING=OFF
+            -DBUILD_EXAMPLES=OFF
+            -DUSE_SYSTEM_JSON=ON
+            -DJSON_INCLUDE_DIR=${JSON_INCLUDE_DIR}
+            -DCMAKE_PREFIX_PATH=${SUPERBUILD_INSTALL_DIR}
+            -DDEVDAT_DIR=${SUPERBUILD_INSTALL_DIR}
+        DEPENDS devdat_ext
+        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+    )
+    set(FLOWEQUATIONS_DIR ${SUPERBUILD_INSTALL_DIR})
+endif()
+
+# 3. paramhelper library
+if(USE_SYSTEM_PARAMHELPER)
+    find_package(paramhelper REQUIRED)
+else()
+    ExternalProject_Add(
+        paramhelper_ext
+        GIT_REPOSITORY https://github.com/statphysandml/paramhelper.git
+        GIT_TAG main
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX=${SUPERBUILD_INSTALL_DIR}
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DBUILD_TESTING=OFF
+            -DCMAKE_PREFIX_PATH=${SUPERBUILD_INSTALL_DIR}
+            -DPARAMHELPER_USE_SYSTEM_JSON=ON
+            -DJSON_INCLUDE_DIR=${JSON_INCLUDE_DIR}
+        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+    )
+    set(PARAMHELPER_DIR ${SUPERBUILD_INSTALL_DIR})
+endif()
+
+# 4. Eigen
+if(USE_SYSTEM_EIGEN)
+    find_package(Eigen3 REQUIRED)
+    # Use the existing target from find_package
+    set(EIGEN_INCLUDE_DIR ${EIGEN3_INCLUDE_DIR})
+else()
+    FetchContent_Declare(
+        eigen
+        GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+        GIT_TAG 3.4.0
+    )
+    # Just populate, don't make available (to avoid target conflicts)
+    FetchContent_GetProperties(eigen)
+    if(NOT eigen_POPULATED)
+        FetchContent_Populate(eigen)
+    endif()
+    
+    # Create our wrapper target with a unique name
+    add_library(eigen_wrapper INTERFACE)
+    target_include_directories(eigen_wrapper INTERFACE 
+        $<BUILD_INTERFACE:${eigen_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/eigen>
+    )
+    
+    # Store the include directory to pass to the main project
+    set(EIGEN_INCLUDE_DIR ${eigen_SOURCE_DIR})
+endif()
+
+# 5. pybind11 (if needed)
+if(BUILD_PYTHON_BINDINGS)
+    if(USE_SYSTEM_PYBIND11)
+        find_package(pybind11 REQUIRED)
+    else()
+        FetchContent_Declare(
+            pybind11
+            GIT_REPOSITORY https://github.com/pybind/pybind11.git
+            GIT_TAG v2.10.4
+        )
+        FetchContent_MakeAvailable(pybind11)
+        
+        # Store the directory for the main project to use
+        set(PYBIND11_SOURCE_DIR ${pybind11_SOURCE_DIR})
     endif()
 endif()
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/ext/ParamHelper/CMakeLists.txt" OR NOT EXISTS "${PROJECT_SOURCE_DIR}/ext/FlowEquationInterface/CMakeLists.txt")
-    message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+# === Main ODEVisualization Project ===
+
+# Create empty dependency list
+set(ODEVIS_DEPS "")
+
+# Add dependencies conditionally
+if(NOT USE_SYSTEM_DEVDAT)
+    list(APPEND ODEVIS_DEPS "devdat_ext")
 endif()
 
-# Compilation options
-
-# compile the external submodule
-include_directories(ext/ParamHelper/include)
-add_subdirectory(ext/ParamHelper)
-
-include_directories(ext/FlowEquationInterface/ext/DevDat/include)
-include_directories(ext/FlowEquationInterface/include)
-add_subdirectory(ext/FlowEquationInterface)
-
-include_directories(ext/eigen/Eigen)
-add_subdirectory(ext/eigen)
-
-if(BUILD_PYTHON_BINDINGS)
-    message("Integrate python for python_bindings")
-    # Add Python bindings
-    add_subdirectory(ext/pybind11)
-    # Python wrapper
-    add_subdirectory(python)
+if(NOT USE_SYSTEM_FLOWEQUATIONS)
+    list(APPEND ODEVIS_DEPS "flowequations_ext")
 endif()
 
-# compile the library
-add_subdirectory(src)
-
-
-# compile the tests
-include(CTest)
-if(BUILD_TESTING)
-  add_subdirectory(tests)
+if(NOT USE_SYSTEM_PARAMHELPER)
+    list(APPEND ODEVIS_DEPS "paramhelper_ext")
 endif()
 
-if(BUILD_DOCS)
-  # Add the documentation
-  add_subdirectory(doc)
-endif()
-
-
-# Add an alias target for use if this project is included as a subproject in another project
-add_library(odevisualization::odevisualization ALIAS odevisualization)
-
-# Install targets and configuration
-install(
-  TARGETS odevisualization
-  EXPORT odevisualization-config
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+# Use the dependency list in ExternalProject_Add
+ExternalProject_Add(
+    odevisualization_main
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/odevis
+    BINARY_DIR ${CMAKE_BINARY_DIR}/odevis
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_PREFIX_PATH=${SUPERBUILD_INSTALL_DIR}
+        -DBUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS}
+        -DBUILD_DOCS=${BUILD_DOCS}
+        -DBUILD_TESTING=${BUILD_TESTING}
+        -DUSE_SYSTEM_EIGEN=${USE_SYSTEM_EIGEN}
+        -DUSE_SYSTEM_PYBIND11=${USE_SYSTEM_PYBIND11}
+        -DEigen3_DIR=${Eigen3_DIR}
+        -Dpybind11_DIR=${pybind11_DIR}
+        -DPYBIND11_SOURCE_DIR=${PYBIND11_SOURCE_DIR}
+        -DEIGEN_INCLUDE_DIR=${EIGEN_INCLUDE_DIR}
+        -DJSON_INCLUDE_DIR=${JSON_INCLUDE_DIR}  # Add JSON include path
+    DEPENDS ${ODEVIS_DEPS}
 )
 
-install(
-  EXPORT odevisualization-config
-  NAMESPACE odevisualization::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/odevisualization
-)
+# Make installation of the main project be the installation of the superbuild
+install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/odevis)")
 
-install(
-  DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-
-# This prints a summary of found dependencies
+# Feature summary
 include(FeatureSummary)
 feature_summary(WHAT ALL)

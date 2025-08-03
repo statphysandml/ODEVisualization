@@ -107,19 +107,20 @@ namespace odesolver {
             }
             std::cout << std::endl; */
 
-            // Reduce on indices with potential fixed points (filter the value with pot_fixed_points==True) // (offset iterator + 1)  -> not used anymore (why initially used??)
+            // Reduce on indices with potential fixed points (filter for indices with pot_fixed_points==False)
             dev_vec_int indices_of_pot_fixed_points(total_number_of_cubes);
-            auto last_potential_fixed_point_iterator = thrust::remove_copy_if(
-                    thrust::make_counting_iterator(0),
-                    thrust::make_counting_iterator(total_number_of_cubes),
-                    pot_fixed_points.begin(), // Works as mask for values that should be copied (checked if identity is fulfilled)
-                    indices_of_pot_fixed_points.begin(),
-                    thrust::identity<int>());
-
+            // Use thrust::copy_if instead of remove_copy_if
+            auto last_potential_fixed_point_iterator = thrust::copy_if(
+                thrust::make_counting_iterator(0),
+                thrust::make_counting_iterator(total_number_of_cubes),
+                pot_fixed_points.begin(), // stencil
+                indices_of_pot_fixed_points.begin(),
+                thrust::logical_not<bool>() // copy if pot_fixed_points is false
+            );
             // Store valid indices of potential fixed points in host_indices_of_pot_fixed_points
-            thrust::host_vector<int> host_indices_of_pot_fixed_points(indices_of_pot_fixed_points.begin(), last_potential_fixed_point_iterator);
-            // indices_of_pot_fixed_points.resize(last_potential_fixed_point_iterator - indices_of_pot_fixed_points.begin());  -> alternative way to do this
-            // host_indices_of_pot_fixed_points = indices_of_pot_fixed_points;
+            thrust::host_vector<int> host_indices_of_pot_fixed_points;
+            host_indices_of_pot_fixed_points.resize(last_potential_fixed_point_iterator - indices_of_pot_fixed_points.begin());
+            thrust::copy(indices_of_pot_fixed_points.begin(), last_potential_fixed_point_iterator, host_indices_of_pot_fixed_points.begin());
 
             // Test output
             /* std::cout << "Indices of potential fixed points: " << std::endl;

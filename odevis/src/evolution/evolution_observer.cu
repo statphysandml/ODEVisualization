@@ -33,7 +33,8 @@ namespace odesolver {
 
         int FlowObserver::n_valid_coordinates() const
         {
-            return thrust::count(valid_coordinates_mask_ptr_->begin(), valid_coordinates_mask_ptr_->end(), true);
+            // Use thrust::reduce instead of thrust::count
+            return thrust::reduce(valid_coordinates_mask_ptr_->begin(), valid_coordinates_mask_ptr_->end(), 0, thrust::plus<int>());
         }
 
         bool FlowObserver::valid_coordinates() const
@@ -47,8 +48,14 @@ namespace odesolver {
         // Changes conditional_mask to false if conditions is false
         void FlowObserver::update_valid_coordinates(dev_vec_bool &conditions)
         {
-            thrust::transform_if(conditions.begin(), conditions.end(), valid_coordinates_mask_ptr_->begin(), valid_coordinates_mask_ptr_->begin(),
-            [] __host__ __device__ (const bool &status) { return status; }, thrust::identity<bool>());
+            thrust::transform_if(
+                conditions.begin(),
+                conditions.end(),
+                valid_coordinates_mask_ptr_->begin(),
+                valid_coordinates_mask_ptr_->begin(),
+                [] __host__ __device__ (const bool &status) { return status; },
+                cuda::std::identity{}
+            );
         }
 
         DivergentFlow::DivergentFlow(
@@ -298,7 +305,7 @@ namespace odesolver {
             thrust::transform(intersections_.begin(), intersections_.end(), vicinities_.begin(), intersections_and_vicinities_.begin(),
                 [] __host__ __device__ (const bool &intersection, const bool &vicinity) { return intersection or vicinity; });
 
-            int n_intersections_and_vicinities = thrust::count(intersections_and_vicinities_.begin(), intersections_and_vicinities_.end(), true);
+            int n_intersections_and_vicinities = thrust::reduce(intersections_and_vicinities_.begin(), intersections_and_vicinities_.end(), 0, thrust::plus<int>());
 
             // Store intersections
             if(remember_intersections_ and n_intersections_and_vicinities > 0)
@@ -306,7 +313,7 @@ namespace odesolver {
                 // Copy intersection types to DevDat
                 intersection_type_.resize(coordinates.n_elems());
 
-                thrust::copy_if(intersections_.begin(), intersections_.end(), intersections_and_vicinities_.begin(), intersection_type_.begin(), thrust::identity<bool>()); // true = actual intersection, false = no actual intersection, but vicinity
+                thrust::copy_if(intersections_.begin(), intersections_.end(), intersections_and_vicinities_.begin(), intersection_type_.begin(), cuda::std::identity{}); // true = actual intersection, false = no actual intersection, but vicinity
 
                 auto n_total = detected_intersections_types_ptr_->size();
 
@@ -318,7 +325,7 @@ namespace odesolver {
                 flattened_intersection_coordinates_.resize(n_intersections_and_vicinities * coordinates.dim_size());
 
                 for(auto dim_index = 0; dim_index < coordinates.dim_size(); dim_index++) {
-                    thrust::copy_if(coordinates[dim_index].begin(), coordinates[dim_index].end(), intersections_and_vicinities_.begin(), flattened_intersection_coordinates_.begin() + dim_index * n_intersections_and_vicinities, thrust::identity<bool>());
+                    thrust::copy_if(coordinates[dim_index].begin(), coordinates[dim_index].end(), intersections_and_vicinities_.begin(), flattened_intersection_coordinates_.begin() + dim_index * n_intersections_and_vicinities, cuda::std::identity{});
                 }
 
                 // Copy intersection coordinates to std::vector (by transposing and conversion to std::vector)
@@ -335,7 +342,7 @@ namespace odesolver {
 
             // Update intersection counter
             intersection_counter_ptr_->resize(coordinates.n_elems(), 0);
-            thrust::transform_if(intersection_counter_ptr_->begin(), intersection_counter_ptr_->end(), intersections_.begin(), intersection_counter_ptr_->begin(), [] __host__ __device__ (const int &counter) { return counter + 1; }, thrust::identity<bool>());
+            thrust::transform_if(intersection_counter_ptr_->begin(), intersection_counter_ptr_->end(), intersections_.begin(), intersection_counter_ptr_->begin(), [] __host__ __device__ (const int &counter) { return counter + 1; }, cuda::std::identity{});
 
             previous_coordinates_ = coordinates;
         }

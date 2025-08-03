@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     param_helper::proj::set_relative_path_to_project_root_dir("../");
 
     testing_devdat();
-    find_fixed_points();
+    // find_fixed_points();
     compute_flow_t();
 
     find_fixed_points();

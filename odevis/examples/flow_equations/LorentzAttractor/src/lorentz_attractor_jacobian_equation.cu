@@ -6,19 +6,19 @@ size_t LorentzAttractorJacobianEquations::dim_ = 3;
 
 void LorentzAttractorJacobianEquation0::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
-	thrust::fill(thrust::device, derivatives.begin(), derivatives.end(), -10);
+	thrust::fill(derivatives.begin(), derivatives.end(), -10);
 }
 
 
 void LorentzAttractorJacobianEquation1::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
-	thrust::fill(thrust::device, derivatives.begin(), derivatives.end(), 10);
+	thrust::fill(derivatives.begin(), derivatives.end(), 10);
 }
 
 
 void LorentzAttractorJacobianEquation2::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
-	thrust::fill(thrust::device, derivatives.begin(), derivatives.end(), 0);
+	thrust::fill(derivatives.begin(), derivatives.end(), 0);
 }
 
 
@@ -30,7 +30,7 @@ void LorentzAttractorJacobianEquation3::operator() (devdat::DimensionIteratorC &
 
 void LorentzAttractorJacobianEquation4::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
-	thrust::fill(thrust::device, derivatives.begin(), derivatives.end(), -1);
+	thrust::fill(derivatives.begin(), derivatives.end(), -1);
 }
 
 
@@ -54,6 +54,6 @@ void LorentzAttractorJacobianEquation7::operator() (devdat::DimensionIteratorC &
 
 void LorentzAttractorJacobianEquation8::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
-	thrust::fill(thrust::device, derivatives.begin(), derivatives.end(), const_expr0_);
+	thrust::fill(derivatives.begin(), derivatives.end(), const_expr0_);
 }
 
