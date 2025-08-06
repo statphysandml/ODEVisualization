@@ -57,39 +57,13 @@ pip install . --install-option="--use-superbuild"
 pip install . --install-option="--use-system-deps"
 ```
 
-## Quick Start
-
-```python
-import odesolver as ode
-import numpy as np
-
-# Define your ODE system
-# Example: Lorenz attractor
-def lorenz_system(t, state, params):
-    x, y, z = state
-    sigma, rho, beta = params
-    
-    dxdt = sigma * (y - x)
-    dydt = x * (rho - z) - y
-    dzdt = x * y - beta * z
-    
-    return np.array([dxdt, dydt, dzdt])
-
-# Set up initial conditions and parameters
-initial_state = np.array([1.0, 1.0, 1.0])
-params = np.array([10.0, 28.0, 8.0/3.0])
-
-# Create and run simulation
-# (Specific API details will depend on the actual implementation)
-```
-
 ## Examples
 
 The library includes several example systems:
 
 - **Lorenz Attractor**: Classic chaotic system
-- **Three-Point System**: Multi-body dynamics
-- **Four-Point System**: Extended multi-body system
+- **Three-Point System**: Will follow
+- **Four-Point System**: Will follow
 
 See the `examples/` directory for complete implementations.
 
@@ -128,11 +102,12 @@ If you use ODEVisualization in your research, please cite:
 
 ```bibtex
 @software{odevisualization,
-  title={ODE Visualization: GPU-Accelerated Analysis of Ordinary Differential Equations for the Functional Renormalization Group},
-  author={Kades, Lukas; Sadlo, Filip; Pawlowski, Jan M.}
-  url={https://github.com/statphysandml/ODEVisualization},
-  version={1.0.0},
-  year={2025}
+  title = {ODE Visualization: GPU-Accelerated Analysis of Ordinary Differential Equations for the Functional Renormalization Group},
+  author = {Kades, Lukas and Sadlo, Filip and Pawlowski, Jan M.},
+  year = {2025},
+  version = {1.0.0},
+  url = {https://github.com/statphysandml/ODEVisualization},
+  note = {Accessed: 2025-08-06}
 }
 ```
 
