@@ -128,8 +128,8 @@ If you use ODEVisualization in your research, please cite:
 
 ```bibtex
 @software{odevisualization,
-  title={ODEVisualization: GPU-Accelerated Analysis of Ordinary Differential Equations},
-  author={Kades, Lukas},
+  title={ODE Visualization: GPU-Accelerated Analysis of Ordinary Differential Equations for the Functional Renormalization Group},
+  author={Kades, Lukas; Sadlo, Filip; Pawlowski, Jan M.}
   url={https://github.com/statphysandml/ODEVisualization},
   version={1.0.0},
   year={2025}

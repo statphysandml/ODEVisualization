@@ -98,6 +98,10 @@ class CMakeBuild(build_ext):
         # Use the current directory as the superbuild root
         superbuild_dir = Path(ext.sourcedir).resolve()
         
+        # Create install directory and override superbuild install location
+        install_dir = Path(extdir).parent / "cmake_install"
+        install_dir.mkdir(exist_ok=True)
+        
         cmake_args = self._get_base_cmake_args(extdir, cfg)
         cmake_args.extend([
             '-DBUILD_PYTHON_BINDINGS=ON',
@@ -109,6 +113,10 @@ class CMakeBuild(build_ext):
             '-DUSE_SYSTEM_PYBIND11=ON',  # Use system pybind11 to avoid version issues
             # Add policy version minimum to handle old dependencies
             '-DCMAKE_POLICY_VERSION_MINIMUM=3.5',
+            # Override the superbuild install directory to our cmake_install location
+            f'-DSUPERBUILD_INSTALL_DIR={install_dir}',
+            # Disable LTO to avoid version conflicts between system and conda compilers
+            '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF',
             # Pass the library output directory for the odevis subproject
             f'-DODEVIS_CMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}',
         ])

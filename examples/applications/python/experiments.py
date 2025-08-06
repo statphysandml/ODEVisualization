@@ -1,7 +1,7 @@
 import numpy as np
 from odesolver.coordinates import Coordinates
 
-from lorentzattractor.lorentz_attractor import LorentzAttractor
+from lorentz_attractor import LorentzAttractor
 
 from odesolver.recursive_search import RecursiveSearch
 

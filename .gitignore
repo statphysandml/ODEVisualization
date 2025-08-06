@@ -1,74 +1,23 @@
-# Python build artifacts
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-*.egg-info/
-dist/
-build/
-.eggs/
-*.egg
-
-# LaTeX build artifacts
 *.aux
 *.log
 *.out
 *.synctex.gz
 *.toc
 *.pyc
+*.so
+*.egg-info/
 
-# CMake build artifacts
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-Makefile
-install_manifest.txt
-*.cmake
-!*Config.cmake.in
-*-prefix/
-*-build/
-
-# Compiled extensions
-*.dll
-*.dylib
-*.pyd
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Virtual environments
-venv/
-env/
-.env
-
-# Temporary files
-*.tmp
-*.bak
-*~
-
-# Build directories
-build/
-install/
-cmake_install/
-ODEVisualizationLib.egg-info/
-
-# Documentation source (keep only specific files)
 doc/source/*
 !doc/source/figures/
 !doc/source/report.tex
 !doc/source/references.bib
+
+build/
+install/
+.vscode/
+.idea/
+__pychache__/
+ODEVisualizationLib.egg-info/
 
 examples/applications/c++/*
 !examples/applications/c++/CMakeLists.txt
@@ -107,3 +56,6 @@ examples/further_systems/FourPointSystem/*
 !examples/further_systems/FourPointSystem/src
 
 config.h
+odevis/cmake_install/
+
+examples/flow_equations/Betafunctionsyukawa/

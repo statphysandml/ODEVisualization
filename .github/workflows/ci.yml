@@ -1,4 +1,4 @@
-name: C++ CI
+name: CI
 
 on:
   # We run CI on pushes to the main branch
@@ -14,27 +14,23 @@ on:
 
 jobs:
   build-and-test:
-    name: C++ Testing on ${{matrix.os}}
+    name: Testing on ${{matrix.os}}
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-18.04, macos-10.15]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
+
       with:
         submodules: 'recursive'
 
-    - name: Install system dependencies (Ubuntu)
+    - name: upgrade g++ compiler on ubuntu
+      run: |
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 10
+        sudo update-alternatives --set g++ /usr/bin/g++-9
       if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake build-essential ninja-build libboost-all-dev
-
-    - name: Install system dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install cmake ninja boost
 
     - name: make build directory
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -42,7 +38,7 @@ jobs:
     - name: configure cmake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Debug -DBUILD_DOCS=OFF -DBUILD_PYTHON_BINDINGS=OFF
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Debug -DBUILD_DOCS=OFF
 
     - name: build
       shell: bash
@@ -56,18 +52,22 @@ jobs:
 
 
   coverage-test:
-    name: C++ Coverage Testing
-    runs-on: ubuntu-latest
+    name: Coverage Testing
+    runs-on: ubuntu-18.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
       with:
         submodules: 'recursive'
 
-    - name: Install dependencies
+    - name: Install LCov
       run: |
-        sudo apt-get update
-        sudo apt-get install -y lcov cmake build-essential ninja-build libboost-all-dev
+        sudo apt-get install -y lcov
+
+    - name: upgrade g++ compiler on ubuntu
+      run: |
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 10
+        sudo update-alternatives --set g++ /usr/bin/g++-9
 
     - name: make build directory
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -75,7 +75,7 @@ jobs:
     - name: configure cmake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_CXX_FLAGS="--coverage" -DBUILD_DOCS=OFF -DBUILD_PYTHON_BINDINGS=OFF
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_CXX_FLAGS="--coverage" -DBUILD_DOCS=OFF
 
     - name: build
       shell: bash

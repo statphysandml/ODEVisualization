@@ -4,7 +4,7 @@ import matplotlib.gridspec as gridspec
 
 from odesolver.coordinates import Coordinates
 
-from lorentzattractor.lorentz_attractor import LorentzAttractor
+from lorentz_attractor import LorentzAttractor
 
 from odesolver.mesh import Mesh
 

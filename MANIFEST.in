@@ -7,19 +7,17 @@ include pyproject.toml
 recursive-include . CMakeLists.txt
 recursive-include cmake *.cmake.in
 recursive-include cmake *.cmake
-recursive-include odevis/cmake *.cmake.in
-recursive-include odevis/cmake *.cmake
 
 # Include all source files
-recursive-include odevis/src *.cpp *.cu *.hpp *.h
-recursive-include odevis/include *.hpp *.h
-recursive-include odevis/python *.cpp *.cu *.hpp *.h *.py
+recursive-include src *.cpp *.cu *.hpp *.h
+recursive-include include *.hpp *.h
+recursive-include python *.cpp *.cu *.hpp *.h *.py
 
 # Include flow equation wrapper
-graft odevis/python/flow_equation_wrapper/
+graft python/flow_equation_wrapper/
 
 # Include test files
-recursive-include odevis/tests *.py *.cpp *.cu *.hpp *.h
+recursive-include tests *.py *.cpp *.cu *.hpp *.h
 
 # Exclude build artifacts and temporary files
 global-exclude *.pyc
@@ -34,4 +32,4 @@ global-exclude build/*
 global-exclude *.egg-info/*
 
 # Include package data files
-recursive-include odevis/python *.json *.yaml *.yml
+recursive-include python *.json *.yaml *.yml

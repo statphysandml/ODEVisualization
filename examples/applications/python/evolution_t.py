@@ -1,4 +1,4 @@
-from lorentzattractor.lorentz_attractor import LorentzAttractor
+from lorentz_attractor import LorentzAttractor
 
 # from odesolver.observers import TrajectoryObserver, IntersectionObserver
 

@@ -13,7 +13,7 @@ name = "odevisualization"
 version = "1.0.0"
 description = "A comprehensive library for visualizing and analyzing ordinary differential equations with CUDA acceleration"
 readme = "README.md"
-license = {file = "LICENSE.md"}
+license = "MIT"
 authors = [
     {name = "Lukas Kades", email = "statphysandml@thphys.uni-heidelberg.de"}
 ]
@@ -24,7 +24,6 @@ keywords = ["ode", "visualization", "cuda", "differential-equations", "numerical
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: MacOS",
@@ -74,6 +73,7 @@ Repository = "https://github.com/statphysandml/ODEVisualization"
 Documentation = "https://odevisualization.readthedocs.io"
 "Bug Tracker" = "https://github.com/statphysandml/ODEVisualization/issues"
 
+
 [tool.setuptools.packages.find]
 where = ["odevis/python"]
 include = ["odesolver*"]
@@ -109,7 +109,7 @@ ensure_newline_before_comments = true
 line_length = 88
 
 [tool.pytest.ini_options]
-testpaths = ["odevis/python/tests"]
+testpaths = ["python/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]

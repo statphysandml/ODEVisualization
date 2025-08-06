@@ -8,6 +8,9 @@ set(CMAKE_CUDA_STANDARD 14)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# Disable LTO to avoid compiler version conflicts
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+
 # Options
 option(BUILD_TESTING "Build tests" ON)
 option(BUILD_EXAMPLES "Build examples" OFF)

@@ -33,7 +33,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Setup install directories for the external projects
-set(SUPERBUILD_INSTALL_DIR ${CMAKE_BINARY_DIR}/installed)
+set(SUPERBUILD_INSTALL_DIR ${CMAKE_BINARY_DIR}/installed CACHE PATH "Directory where superbuild dependencies are installed")
 set(CMAKE_PREFIX_PATH ${SUPERBUILD_INSTALL_DIR} ${CMAKE_PREFIX_PATH})
 
 # Find Boost (required)
@@ -52,6 +52,10 @@ FetchContent_MakeAvailable(nlohmann_json)
 
 # Store the nlohmann/json path to pass to dependencies
 get_target_property(JSON_INCLUDE_DIR nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
+
+# Copy nlohmann/json headers to superbuild directory immediately for examples to use
+file(COPY ${nlohmann_json_SOURCE_DIR}/include/nlohmann 
+     DESTINATION ${SUPERBUILD_INSTALL_DIR}/include)
 
 # 1. devdat library
 if(USE_SYSTEM_DEVDAT)
