@@ -58,13 +58,15 @@ if(JSON_INCLUDE_DIR)
     message(STATUS "Found JSON headers at: ${JSON_INCLUDE_DIR}")
     
     # Add JSON include path to global CUDA flags
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -I${JSON_INCLUDE_DIR} -Wno-deprecated-gpu-targets")
-    message(STATUS "Added global CUDA flags: -I${JSON_INCLUDE_DIR} -Wno-deprecated-gpu-targets")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -I${JSON_INCLUDE_DIR}")
+    message(STATUS "Added global CUDA flag: -I${JSON_INCLUDE_DIR}")
 else()
     message(WARNING "nlohmann/json.hpp not found, compilation might fail")
 endif()
 
 # Find required packages
+find_package(Boost REQUIRED)
+find_package(CUDAToolkit REQUIRED)
 find_package(paramhelper CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(devdat CONFIG REQUIRED)
@@ -95,6 +97,7 @@ target_compile_options(Example_obj PRIVATE
     $<$<COMPILE_LANGUAGE:CUDA>:
         --expt-extended-lambda
         --expt-relaxed-constexpr
+        -Wno-deprecated-gpu-targets
     >
 ) 
 

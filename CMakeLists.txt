@@ -213,6 +213,32 @@ ExternalProject_Add(
 # Make installation of the main project be the installation of the superbuild
 install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/odevis)")
 
+# Also install the dependencies from superbuild directory to final install location
+install(CODE "
+    if(EXISTS \"${SUPERBUILD_INSTALL_DIR}\")
+        message(STATUS \"Installing dependencies from ${SUPERBUILD_INSTALL_DIR} to ${CMAKE_INSTALL_PREFIX}\")
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                \"${SUPERBUILD_INSTALL_DIR}/include\"
+                \"${CMAKE_INSTALL_PREFIX}/include\"
+            RESULT_VARIABLE copy_headers_result
+        )
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                \"${SUPERBUILD_INSTALL_DIR}/lib\"
+                \"${CMAKE_INSTALL_PREFIX}/lib\"
+            RESULT_VARIABLE copy_libs_result
+        )
+        if(copy_headers_result OR copy_libs_result)
+            message(WARNING \"Some dependency files may not have been copied correctly\")
+        else()
+            message(STATUS \"Dependencies successfully installed\")
+        endif()
+    else()
+        message(STATUS \"Superbuild install directory not found, skipping dependency installation\")
+    endif()
+")
+
 # Feature summary
 include(FeatureSummary)
 feature_summary(WHAT ALL)

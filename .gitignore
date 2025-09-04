@@ -28,6 +28,7 @@ examples/flow_equations/LorentzAttractor/*
 !examples/flow_equations/LorentzAttractor/README.md
 !examples/flow_equations/LorentzAttractor/setup.py
 !examples/flow_equations/LorentzAttractor/CMakeLists.txt
+!examples/flow_equations/LorentzAttractor/cmake
 !examples/flow_equations/LorentzAttractor/include
 !examples/flow_equations/LorentzAttractor/python_pybind
 !examples/flow_equations/LorentzAttractor/src
@@ -36,6 +37,7 @@ examples/flow_equations/ThreePointSystem/*
 !examples/flow_equations/ThreePointSystem/README.md
 !examples/flow_equations/ThreePointSystem/setup.py
 !examples/flow_equations/ThreePointSystem/CMakeLists.txt
+!examples/flow_equations/ThreePointSystem/cmake
 !examples/flow_equations/ThreePointSystem/include
 !examples/flow_equations/ThreePointSystem/python_pybind
 !examples/flow_equations/ThreePointSystem/src
@@ -47,6 +49,7 @@ examples/further_systems/ThreePointSystem/*
 !examples/further_systems/ThreePointSystem/CMakeLists.txt
 !!examples/further_systems/ThreePointSystem/flow_equations
 !examples/further_systems/ThreePointSystem/include
+!examples/further_systems/ThreePointSystem/python
 !examples/further_systems/ThreePointSystem/src
 
 examples/further_systems/FourPointSystem/*

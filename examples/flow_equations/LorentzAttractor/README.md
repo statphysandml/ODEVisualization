@@ -2,6 +2,7 @@
 
 Implementation of the Lorentz Attractor providing the possibility to use all functionalities of the ODEVisualization library with the newly generated flow equation system.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # Prerequisites
 

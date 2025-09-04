@@ -22,6 +22,7 @@ message(STATUS "CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}")
 message(STATUS "CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
 
 # Find dependencies
+find_package(Boost REQUIRED)
 find_package(devdat REQUIRED)
 find_package(paramhelper REQUIRED)
 find_package(flowequations REQUIRED)
@@ -43,32 +44,6 @@ else()
 endif()
 
 add_subdirectory(src)
-
-## Main library target
-#add_library(odevisualization
-#    src/collection/collection_expander.cu
-#    src/collection/collection_chainer.cu
-#    # Add other source files as needed
-#)##
-
-# Include directories - make sure to include JSON paths for CUDA
-#target_include_directories(odevisualization
-#    PUBLIC
-#        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-#    PRIVATE
-#        ${CMAKE_CURRENT_SOURCE_DIR}/src
-#        # Explicitly add JSON include directory for CUDA compilation
-#        $<$<BOOL:${JSON_INCLUDE_DIR}>:${JSON_INCLUDE_DIR}>
-#)
-
-# Link dependencies
-#target_link_libraries(odevisualization
-#    PUBLIC
-#        devdat::devdat
-#        paramhelper::paramhelper
-#        flowequations::flowequations
-#)
 
 # Create an alias target
 add_library(${PROJECT_NAME}::odevisualization ALIAS odevisualization)

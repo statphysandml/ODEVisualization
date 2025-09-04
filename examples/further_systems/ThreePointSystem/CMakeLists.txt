@@ -20,35 +20,110 @@ set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# General compilation options
-set(BUILD_PYTHON_BINDINGS ON CACHE BOOL "Enable building of Python bindings")
+# Enable CUDA device linking - crucial for libraries with device code
+set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
+message(STATUS "Enabled CUDA separable compilation for device linking")
 
+# Path to superbuild libraries
+set(SUPERBUILD_INSTALL_DIR "" CACHE PATH "Path to superbuild installed libraries")
+if(NOT SUPERBUILD_INSTALL_DIR)
+    message(STATUS "SUPERBUILD_INSTALL_DIR not set, will use system paths")
+endif()
 
-# Include libraries
-find_package(ParamHelper CONFIG REQUIRED)
+# Add superbuild path to CMAKE_PREFIX_PATH if provided
+if(SUPERBUILD_INSTALL_DIR)
+    list(APPEND CMAKE_PREFIX_PATH "${SUPERBUILD_INSTALL_DIR}")
+    message(STATUS "Looking for dependencies in: ${CMAKE_PREFIX_PATH}")
+endif()
+
+# Debug: Print the actual paths being searched
+message(STATUS "CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}")
+
+# Find JSON include directory for CUDA compilation
+find_path(JSON_INCLUDE_DIR "nlohmann/json.hpp"
+    PATHS
+        ${CMAKE_PREFIX_PATH}
+        ${SUPERBUILD_INSTALL_DIR}
+    PATH_SUFFIXES
+        include
+    NO_DEFAULT_PATH
+)
+
+# If not found in specified paths, try system paths
+if(NOT JSON_INCLUDE_DIR)
+    find_path(JSON_INCLUDE_DIR "nlohmann/json.hpp")
+endif()
+
+if(JSON_INCLUDE_DIR)
+    message(STATUS "Found JSON headers at: ${JSON_INCLUDE_DIR}")
+    
+    # Add JSON include path to global CUDA flags
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -I${JSON_INCLUDE_DIR}")
+    message(STATUS "Added global CUDA flag: -I${JSON_INCLUDE_DIR}")
+else()
+    message(WARNING "nlohmann/json.hpp not found, compilation might fail")
+endif()
+
+# Find required packages
+find_package(paramhelper CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(devdat CONFIG REQUIRED)
 find_package(flowequations CONFIG REQUIRED)
-find_package(ODEVisualization CONFIG REQUIRED)
+find_package(odevisualization CONFIG REQUIRED)
+find_package(threepointsystem CONFIG REQUIRED)
 
-# Include ODE systems
-find_package(ThreePointSystem CONFIG REQUIRED)
-
-# This prints a summary of found dependencies
+# Print a summary of found dependencies
 include(FeatureSummary)
 feature_summary(WHAT ALL)
 
-add_executable(
-    ThreePointSystem
+# Define source files for the Example executable
+set(THREEPOINTSYSTEM_SOURCES
     src/main.cpp
     src/fixed_point_search_t.cu
 )
 
-target_link_libraries(ThreePointSystem PUBLIC paramhelper::paramhelper flowequations::flowequations devdat::devdat Eigen3::Eigen odevisualization::odevisualization threepointsystem::threepointsystem)
+# Create an object library first to handle CUDA device linking correctly
+add_library(ThreePointSystem_obj OBJECT ${THREEPOINTSYSTEM_SOURCES})
 
-target_compile_options(ThreePointSystem PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda; --expt-relaxed-constexpr>) 
+# Set CUDA compile options for the object library
+target_compile_options(ThreePointSystem_obj PRIVATE 
+    $<$<COMPILE_LANGUAGE:CUDA>:
+        --expt-extended-lambda
+        --expt-relaxed-constexpr
+        -Wno-deprecated-gpu-targets
+    >
+) 
 
-target_include_directories(ThreePointSystem PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}>
-  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include/>
+# Set include directories for the object library
+target_include_directories(ThreePointSystem_obj PUBLIC
+    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    ${CMAKE_SOURCE_DIR}/include/
+    $<$<BOOL:${JSON_INCLUDE_DIR}>:${JSON_INCLUDE_DIR}>
+)
+
+# Link libraries to the object library
+target_link_libraries(ThreePointSystem_obj PUBLIC 
+    paramhelper::paramhelper
+    flowequations::flowequations 
+    devdat::devdat 
+    odevisualization::odevisualization 
+    threepointsystem::threepointsystem
+    Eigen3::Eigen
+)
+
+# Create the actual executable with device linking
+add_executable(ThreePointSystem $<TARGET_OBJECTS:ThreePointSystem_obj>)
+
+# Link the executable with the CUDA device code
+target_link_libraries(ThreePointSystem PUBLIC ThreePointSystem_obj)
+
+# Ensure CUDA device linking happens
+set_target_properties(ThreePointSystem PROPERTIES
+    CUDA_RESOLVE_DEVICE_SYMBOLS ON
+)
+
+# Install the executable
+install(
+    TARGETS ThreePointSystem
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

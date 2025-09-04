@@ -1,133 +1,164 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.18)
 
-# Silence warnings about empty CUDA_ARCHITECTURES properties on example targets:
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-  cmake_policy(SET CMP0104 OLD)
-endif()
+project(threepointsystem VERSION 0.0.1 LANGUAGES CXX CUDA)
 
-# Set a name and a version number for your project:
-project(ThreePointSystem VERSION 0.0.1 LANGUAGES CXX CUDA)
-
-# Initialize some default paths
-include(GNUInstallDirs)
-
-# Define the minimum C++ standard that is required
+# C++ and CUDA standards
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set(CMAKE_CUDA_STANDARD 14)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Compilation options
-set(BUILD_PYTHON_BINDINGS ON CACHE BOOL "Enable building of Python bindings")
+# Install directories
+include(GNUInstallDirs)
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ext/FlowEquationInterface")
-find_package(Git QUIET)
-    if(GIT_FOUND)
-        message("Downloading FlowEquationInterface into ${CMAKE_CURRENT_SOURCE_DIR}/ext")
-        file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext")
-        execute_process(COMMAND ${GIT_EXECUTABLE} clone https://github.com/statphysandml/FlowEquationInterface.git
-                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext"
-                RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git clone https://github.com/statphysandml/FlowEquationInterface.git failed with ${GIT_SUBMOD_RESULT}.")
-        endif()
-    endif()
+# Options
+option(BUILD_PYTHON_BINDINGS "Enable building of Python bindings" ON)
+option(USE_SYSTEM_PYBIND11 "Use system-installed pybind11" ON)
+
+# Path to superbuild libraries - MODIFY THIS FOR YOUR SYSTEM
+set(SUPERBUILD_INSTALL_DIR "" CACHE PATH "Path to superbuild installed libraries")
+if(NOT SUPERBUILD_INSTALL_DIR)
+    message(FATAL_ERROR "Please set SUPERBUILD_INSTALL_DIR to your ODEVisualization superbuild install directory")
 endif()
 
-include_directories(ext/FlowEquationInterface/ext/DevDat/include)
-include_directories(ext/FlowEquationInterface/include)
-add_subdirectory(ext/FlowEquationInterface)
+# Add superbuild path to CMAKE_PREFIX_PATH
+list(APPEND CMAKE_PREFIX_PATH "${SUPERBUILD_INSTALL_DIR}")
+message(STATUS "Looking for dependencies in: ${CMAKE_PREFIX_PATH}")
 
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ext/FlowEquationInterface")
-    message(FATAL_ERROR "FlowEquationInterface was not added to ${CMAKE_CURRENT_SOURCE_DIR}/ext/FlowEquationInterface. Please install git or add FlowEquationInterface manually.")
+# Find JSON include directory
+find_path(JSON_INCLUDE_DIR "nlohmann/json.hpp"
+    PATHS
+        ${CMAKE_PREFIX_PATH}
+        ${SUPERBUILD_INSTALL_DIR}
+    PATH_SUFFIXES
+        include
+    NO_DEFAULT_PATH
+)
+
+# If not found in superbuild, try system paths
+if(NOT JSON_INCLUDE_DIR)
+    find_path(JSON_INCLUDE_DIR "nlohmann/json.hpp")
 endif()
 
-if(BUILD_PYTHON_BINDINGS AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11")
-    find_package(Git QUIET)
-    if(GIT_FOUND)
-        message("Downloading pybind11 into ${CMAKE_CURRENT_SOURCE_DIR}/ext")
-        file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext")
-        execute_process(COMMAND ${GIT_EXECUTABLE} clone https://github.com/pybind/pybind11.git
-                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext"
-                RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git clone https://github.com/pybind/pybind11.git failed with ${GIT_SUBMOD_RESULT}.")
-        endif()
-        execute_process(COMMAND ${GIT_EXECUTABLE} checkout "v2.6.2"
-                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11"
-                RESULT_VARIABLE GIT_SUBMOD_RESULT OUTPUT_QUIET ERROR_QUIET)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git checkout \"v2.6.2\" failed with ${GIT_SUBMOD_RESULT}.")
-        endif()
-    endif()
-
-    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/ext/pybind11")
-        message(FATAL_ERROR "pybind11 was not added to ${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11. Please install git or add pybind11 manually.")
-    endif()
+if(JSON_INCLUDE_DIR)
+    message(STATUS "Found JSON headers at: ${JSON_INCLUDE_DIR}")
+else()
+    message(WARNING "nlohmann/json.hpp not found, compilation might fail")
 endif()
 
-if(BUILD_PYTHON_BINDINGS AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11_json")
-    find_package(Git QUIET)
-    if(GIT_FOUND)
-        message("Downloading pybind11_json into ${CMAKE_CURRENT_SOURCE_DIR}/ext")
-        file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext")
-        execute_process(COMMAND ${GIT_EXECUTABLE} clone https://github.com/pybind/pybind11_json.git
-                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext"
-                RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "https://github.com/pybind/pybind11_json.git failed with ${GIT_SUBMOD_RESULT}.")
-        endif()
-        execute_process(COMMAND ${GIT_EXECUTABLE} checkout "0.2.12"
-                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11_json"
-                RESULT_VARIABLE GIT_SUBMOD_RESULT OUTPUT_QUIET ERROR_QUIET)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git checkout \"0.2.12\" failed with ${GIT_SUBMOD_RESULT}.")
-        endif()
-    endif()
-
-    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/ext/pybind11_json")
-        message(FATAL_ERROR "pybind11_json was not added to ${CMAKE_CURRENT_SOURCE_DIR}/ext/pybind11_json. Please install git or add pybind11_json manually.")
-    endif()
+# Set global CUDA flags for JSON include - this is crucial for proper compilation
+if(JSON_INCLUDE_DIR)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -I${JSON_INCLUDE_DIR}")
+    message(STATUS "Added global CUDA flag: -I${JSON_INCLUDE_DIR}")
 endif()
 
+# Find required packages
+find_package(devdat REQUIRED)
+find_package(flowequations REQUIRED)
+
+message(STATUS "Found devdat: ${devdat_FOUND}")
+message(STATUS "Found flowequations: ${flowequations_FOUND}")
+
+# === Python bindings setup ===
 if(BUILD_PYTHON_BINDINGS)
-    message("Integrate python for python_bindings")
-    add_subdirectory(ext/pybind11)
-    # add_subdirectory(ext/pybind11_json)
-
-    # Python wrapper
+    if(USE_SYSTEM_PYBIND11)
+        find_package(pybind11 CONFIG REQUIRED)
+    else()
+        # Use FetchContent for pybind11
+        include(FetchContent)
+        FetchContent_Declare(
+            pybind11
+            GIT_REPOSITORY https://github.com/pybind/pybind11.git
+            GIT_TAG v2.10.4
+        )
+        FetchContent_MakeAvailable(pybind11)
+    endif()
+    
     add_subdirectory(python_pybind)
 endif()
 
-# compile the library
-add_subdirectory(src)
-
-# Add an alias target for use if this project is included as a subproject in another project
-add_library(threepointsystem::threepointsystem ALIAS threepointsystem)
-
-# Install targets and configuration
-install(
-  TARGETS threepointsystem
-  EXPORT threepointsystem-config
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+# === Main library ===
+add_library(threepointsystem STATIC
+    src/three_point_system_flow_equation.cu
+    src/three_point_system_jacobian_equation.cu
 )
 
-install(
-  EXPORT threepointsystem-config
-  NAMESPACE threepointsystem::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/threepointsystem
+# Set CUDA compile options
+target_compile_options(threepointsystem PRIVATE 
+    $<$<COMPILE_LANGUAGE:CUDA>:
+        --expt-extended-lambda 
+        --expt-relaxed-constexpr
+        -Wno-deprecated-gpu-targets
+    >
+) 
+
+# Set library dependencies
+target_link_libraries(threepointsystem 
+    PUBLIC 
+        flowequations::flowequations 
+        devdat::devdat
 )
 
-install(
-  DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+# Set include directories
+target_include_directories(threepointsystem 
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include/>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    PRIVATE
+        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 )
 
-# This prints a summary of found dependencies
+# Create alias for downstream projects
+add_library(${PROJECT_NAME}::threepointsystem ALIAS threepointsystem)
+
+# === Installation ===
+
+# Install targets
+install(
+    TARGETS threepointsystem
+    EXPORT ${PROJECT_NAME}Targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+# Install headers
+install(
+    DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+# Generate and install config files
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# Export targets
+install(
+    EXPORT ${PROJECT_NAME}Targets
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+# Install config files
+install(
+    FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+# Print summary of found dependencies
 include(FeatureSummary)
 feature_summary(WHAT ALL)

@@ -40,6 +40,7 @@ target_include_directories(odevisualization
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        ${Boost_INCLUDE_DIRS}
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/../src
         # Explicitly add JSON include directory for CUDA compilation
@@ -52,8 +53,8 @@ target_link_libraries(odevisualization
         paramhelper::paramhelper
         flowequations::flowequations
         devdat::devdat
+        ${Boost_LIBRARIES}
         #eigen_wrapper   # Updated to use our renamed Eigen target
-        #Boost::boost    # Modern way to link Boost
 )
 
 # Add Eigen include path explicitly if provided
