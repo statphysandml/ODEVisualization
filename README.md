@@ -218,8 +218,8 @@ Clustered fixed points
 The library includes several example systems:
 
 - **Lorenz Attractor**: Classic chaotic system
-- **Three-Point System**: Multi-body dynamics
-- **Four-Point System**: Extended multi-body system
+- **Three-Point System**: Will follow
+- **Four-Point System**: Will follow
 
 See the `examples/` directory for complete implementations.
 
@@ -243,11 +243,12 @@ If you use ODEVisualization in your research, please cite:
 
 ```bibtex
 @software{odevisualization,
-  title={ODE Visualization: GPU-Accelerated Analysis of Ordinary Differential Equations for the Functional Renormalization Group},
-  author={Kades, Lukas; Sadlo, Filip; Pawlowski, Jan M.}
-  url={https://github.com/statphysandml/ODEVisualization},
-  version={1.0.0},
-  year={2025}
+  title = {ODE Visualization: GPU-Accelerated Analysis of Ordinary Differential Equations for the Functional Renormalization Group},
+  author = {Kades, Lukas and Sadlo, Filip and Pawlowski, Jan M.},
+  year = {2025},
+  version = {1.0.0},
+  url = {https://github.com/statphysandml/ODEVisualization},
+  note = {Accessed: 2025-08-06}
 }
 ```
 
