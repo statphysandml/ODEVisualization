@@ -6,19 +6,19 @@ size_t {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }
 
 void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquation0::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
-	thrust::fill(thrust::device, derivatives.begin(), derivatives.end(), -10);
+	thrust::fill(derivatives.begin(), derivatives.end(), -10);
 }
 
 
 void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquation1::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
-	thrust::fill(thrust::device, derivatives.begin(), derivatives.end(), 10);
+	thrust::fill(derivatives.begin(), derivatives.end(), 10);
 }
 
 
 void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquation2::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
-	thrust::fill(thrust::device, derivatives.begin(), derivatives.end(), 0);
+	thrust::fill(derivatives.begin(), derivatives.end(), 0);
 }
 
 
@@ -30,7 +30,7 @@ void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}J
 
 void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquation4::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
-	thrust::fill(thrust::device, derivatives.begin(), derivatives.end(), -1);
+	thrust::fill(derivatives.begin(), derivatives.end(), -1);
 }
 
 
@@ -54,6 +54,6 @@ void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}J
 
 void {{ cookiecutter.project_slug.replace("-", " ").title().replace(" ", "") }}JacobianEquation8::operator() (devdat::DimensionIteratorC &derivatives, const devdat::DevDatC &variables)
 {
-	thrust::fill(thrust::device, derivatives.begin(), derivatives.end(), const_expr0_);
+	thrust::fill(derivatives.begin(), derivatives.end(), const_expr0_);
 }
 
