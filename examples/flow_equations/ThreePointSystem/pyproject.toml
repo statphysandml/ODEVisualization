@@ -1,0 +1,49 @@
+[build-system]
+requires = [
+    "setuptools>=68.0",
+    "wheel",
+    "cmake>=3.18",
+    "pybind11>=2.10.0",
+    "ninja; platform_system!='Windows'",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "three-point-system"
+version = "0.0.1"
+description = "Three Point System flow equations for ODEVisualization"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "your@email.com"}
+]
+keywords = ["ode", "flow-equations", "differential-equations"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: C++",
+    "Programming Language :: CUDA",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.19.0",
+    "odevisualization",
+]
+
+[tool.setuptools.packages.find]
+where = ["python_pybind"]
+include = ["three_point_system*"]
+
+[tool.setuptools.package-data]
+"three_point_system" = ["*.so", "*.dll", "*.dylib", "*.pyd"]
